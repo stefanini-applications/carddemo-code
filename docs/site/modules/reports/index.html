@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #a18cd1; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #a18cd1; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #a18cd1; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📊 Reports</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CR00 · CBTRN03C · CBSTM03A</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Reports module bridges online CICS interaction with batch report generation. A user submits a report request online (CR00), which is submitted to the internal reader (INTRDR) as a batch job. Batch programs then generate transaction reports and account statements stored in GDG (Generation Data Group) datasets for archival and printing.</p>
+        <h3>CICS Transaction</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CR00</td><td>CORPT00C</td><td>Online report request — accepts date range, submits JCL to internal reader</td></tr>
+        </table>
+        <h3>Batch Programs</h3>
+        <table>
+            <tr><th>Program</th><th>JCL Job</th><th>Function</th></tr>
+            <tr><td>CBTRN03C</td><td>TRANREPT</td><td>Generate transaction report filtered by date range</td></tr>
+            <tr><td>CBSTM03A</td><td>CREASTMT</td><td>Generate account statements, write to GDG dataset</td></tr>
+            <tr><td>CBSTM03B</td><td>CREASTMT</td><td>Statement generation support routines (called by CBSTM03A)</td></tr>
+        </table>
+        <h3>Business Context</h3>
+        <p>Reports cover a date range specified interactively on the CR00 screen. The <strong>internal reader (INTRDR)</strong> mechanism allows CICS to submit batch jobs dynamically without operator intervention — CORPT00C writes the JCL stream to INTRDR, which MVS picks up and schedules immediately.</p>
+        <p>Account statements are stored in <strong>GDG (Generation Data Group)</strong> datasets. GDG base datasets are defined by <strong>DEFGDGB</strong> and <strong>DEFGDGD</strong> JCL members — each statement run increments the generation number, preserving a rolling history of statement generations. Outputs are available for printing or downstream archival systems.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>Request Transaction Report for Date Range</strong><br>
+            As a manager, I want to submit a request for a transaction report covering a specific date range so that I can review activity for any given period.<br><br>
+            <em>Program: CORPT00C (CR00) — accepts START-DATE and END-DATE, builds JCL with DATE-FROM/DATE-TO parameters, submits to INTRDR; batch TRANREPT job is scheduled automatically</em>
+        </div>
+        <div class="story-box">
+            <strong>View Account Statement</strong><br>
+            As a cardholder, I want to retrieve my most recent account statement so that I can review my billing cycle activity.<br><br>
+            <em>CREASTMT (CBSTM03A) generates the statement and writes it to GDG (+1 generation); statement contains account summary, transaction detail, payment due</em>
+        </div>
+        <div class="story-box">
+            <strong>Admin: Generate Monthly Statements for All Accounts</strong><br>
+            As a billing administrator, I want to trigger monthly statement generation for all active accounts so that statements are produced at end of cycle.<br><br>
+            <em>CREASTMT JCL job runs CBSTM03A sequentially across all ACCTDATA records; each account gets a GDG generation; run typically follows EOD batch pipeline</em>
+        </div>
+        <div class="story-box">
+            <strong>Access Statement History from GDG</strong><br>
+            As a customer service representative, I want to access a prior month's statement so that I can answer a customer inquiry about past billing.<br><br>
+            <em>GDG relative generation numbers (0, -1, -2 …) allow access to previous statement generations; DEFGDGB defines the maximum number of generations retained</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>CORPT00C internal reader submission pattern</strong> — complete INTRDR write pattern reusable for any online-to-batch job submission story</li>
+            <li><strong>CBTRN03C date-filter pattern</strong> — sequential TRANSACT VSAM scan with date range comparison is directly reusable for any date-filtered report story</li>
+            <li><strong>CBSTM03A GDG write pattern</strong> — GDG (+1) dataset definition and write pattern is the template for any archival output story</li>
+            <li><strong>CBSTM03B support routines</strong> — formatting and calculation routines callable from new statement sections</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Change report header/footer text or column layout</td><td>CBTRN03C report format change only; no logic change</td></tr>
+            <tr><td>1–2 (Simple)</td><td>Add page numbers to transaction report</td><td>CBTRN03C counter + print line change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add merchant-name filter to transaction report</td><td>CBTRN03C: add filter parameter + TRAN-MERCHANT-NAME comparison</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add transaction-type filter to CR00 screen</td><td>CORPT00C BMS + JCL parameter build + CBTRN03C filter addition</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add new section to account statement</td><td>CBSTM03A: new section + CBSTM03B support routine addition</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New report type joining transactions + account + customer</td><td>New batch program with multi-VSAM sequential merge</td></tr>
+            <tr><td>5–8 (Complex)</td><td>PDF generation for account statements</td><td>New output program + AFP/PDF library integration + GDG output change</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Email delivery of statements</td><td>New MQ or SMTP interface + CBSTM03A output split + customer email field</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>CORPT00C</td><td>CICS Program (CR00)</td><td>Online report request — builds and submits JCL to INTRDR</td></tr>
+            <tr><td>CBTRN03C</td><td>Batch Program (TRANREPT)</td><td>Transaction report — date-range scan of TRANSACT VSAM</td></tr>
+            <tr><td>CBSTM03A.CBL</td><td>Batch Program (CREASTMT)</td><td>Statement generation — reads accounts + transactions, writes to GDG</td></tr>
+            <tr><td>CBSTM03B.CBL</td><td>Batch Program (CREASTMT)</td><td>Statement support routines — formatting, calculations, page layout</td></tr>
+            <tr><td>CORPT00.bms</td><td>BMS Map</td><td>Report request screen — date range input, job ID display</td></tr>
+            <tr><td>TRANSACT VSAM</td><td>VSAM KSDS</td><td>Primary data source for CBTRN03C transaction reports</td></tr>
+            <tr><td>GDG Datasets</td><td>GDG</td><td>Statement output — base defined by DEFGDGB/DEFGDGD JCL</td></tr>
+            <tr><td>INTRDR</td><td>CICS Resource</td><td>Internal reader — CORPT00C writes JCL to trigger batch jobs</td></tr>
+        </table>
+
+        <h3>JCL Jobs</h3>
+        <table>
+            <tr><th>Job Name</th><th>Program</th><th>Function</th></tr>
+            <tr><td>TRANREPT</td><td>CBTRN03C</td><td>Transaction report — runs on demand after CR00 submission</td></tr>
+            <tr><td>CREASTMT</td><td>CBSTM03A + CBSTM03B</td><td>Statement generation — runs end-of-cycle; GDG (+1) output</td></tr>
+            <tr><td>DEFGDGB</td><td>IDCAMS</td><td>Define GDG base dataset for statement history</td></tr>
+            <tr><td>DEFGDGD</td><td>IDCAMS</td><td>Define GDG model dataset (DCB attributes)</td></tr>
+        </table>
+
+        <h3>Internal Reader Submission Pattern</h3>
+        <pre>CORPT00C (CR00) INTRDR Submission:
+1. Accept START-DATE and END-DATE from user
+2. Validate date range (START <= END, valid format)
+3. Open CICS INTRDR file
+4. Write JCL header records (//TRANREPT JOB ...)
+5. Write EXEC PGM=CBTRN03C step
+6. Write DD statements with DATE-FROM=&amp;START, DATE-TO=&amp;END
+7. Close INTRDR (triggers MVS job scheduler)
+8. Display confirmation with submitted job name on screen</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>User must be signed in to access CR00</td></tr>
+            <tr><td>Transactions</td><td>Prerequisite</td><td>TRANSACT VSAM is the data source for CBTRN03C</td></tr>
+            <tr><td>Accounts</td><td>Prerequisite</td><td>ACCTDATA VSAM is the data source for CBSTM03A</td></tr>
+            <tr><td>Batch Processing</td><td>Related</td><td>TRANREPT/CREASTMT are part of the broader EOD batch pipeline</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Online Report Request (CR00)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid date range, <strong>WHEN</strong> CR00 submits the report request, <strong>THEN</strong> JCL is written to INTRDR and a job ID is displayed as confirmation</li>
+            <li><strong>GIVEN</strong> an invalid date range (start after end), <strong>WHEN</strong> CR00 validates, <strong>THEN</strong> an error message is displayed and no job is submitted</li>
+            <li><strong>GIVEN</strong> an invalid date format, <strong>WHEN</strong> CR00 validates, <strong>THEN</strong> a format-error message is displayed</li>
+        </ul>
+        <h3>Transaction Report (CBTRN03C / TRANREPT)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a TRANREPT job with a valid date range, <strong>WHEN</strong> the job completes, <strong>THEN</strong> return code is 0 and the report contains all transactions within the specified date range</li>
+            <li><strong>GIVEN</strong> a date range with no transactions, <strong>WHEN</strong> CBTRN03C completes, <strong>THEN</strong> the report contains a "no transactions found" message and RC=0</li>
+        </ul>
+        <h3>Statement Generation (CBSTM03A / CREASTMT)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a CREASTMT run, <strong>WHEN</strong> CBSTM03A completes, <strong>THEN</strong> the GDG generation number is incremented by 1 and the new statement is accessible as GDG(0)</li>
+            <li><strong>GIVEN</strong> a completed statement run, <strong>WHEN</strong> the previous generation is accessed (GDG(-1)), <strong>THEN</strong> the prior statement is still available and unmodified</li>
+            <li><strong>GIVEN</strong> a CREASTMT run, <strong>WHEN</strong> it completes with RC=0, <strong>THEN</strong> every active account has a corresponding statement generation</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

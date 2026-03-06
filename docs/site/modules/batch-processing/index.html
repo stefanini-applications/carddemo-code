@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Processing - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #3498db; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #3498db; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #3498db; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>⚙️ Batch Processing</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">JCL · EOD Pipeline · CBACT · CBTRN</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Batch Processing module defines the end-of-day (EOD) and periodic JCL pipeline that processes transactions, calculates interest, updates accounts, generates statements, and manages VSAM files. All online CICS activity pauses while batch runs (CLOSEFIL), and resumes when batch completes (OPENFIL).</p>
+        <h3>Batch Programs</h3>
+        <table>
+            <tr><th>Program</th><th>Language</th><th>Function</th></tr>
+            <tr><td>CBTRN02C</td><td>COBOL</td><td>Post daily transactions from DALYTRAN to TRANSACT VSAM + update balances (POSTTRAN)</td></tr>
+            <tr><td>CBACT04C</td><td>COBOL</td><td>Nightly interest calculation using DISCGRP rates (INTCALC)</td></tr>
+            <tr><td>CBSTM03A</td><td>COBOL</td><td>Account statement generation — main driver (CREASTMT)</td></tr>
+            <tr><td>CBSTM03B</td><td>COBOL</td><td>Statement generation support routines (CREASTMT)</td></tr>
+            <tr><td>CBCUS01C</td><td>COBOL</td><td>Customer file processing utility</td></tr>
+            <tr><td>CBACT01C</td><td>COBOL</td><td>Sequential account file read utility</td></tr>
+            <tr><td>CBACT02C</td><td>COBOL</td><td>Keyed account file read utility</td></tr>
+            <tr><td>CBACT03C</td><td>COBOL</td><td>Account record update utility</td></tr>
+            <tr><td>CBEXPORT</td><td>COBOL</td><td>Export transactions to flat file (TRANEXTR)</td></tr>
+            <tr><td>CBIMPORT</td><td>COBOL</td><td>Import transactions from flat file</td></tr>
+            <tr><td>COBSWAIT</td><td>COBOL</td><td>Wait utility — pauses job stream for a specified interval</td></tr>
+            <tr><td>MVSWAIT</td><td>Assembler</td><td>Low-level MVS wait service (called by COBSWAIT)</td></tr>
+            <tr><td>COBDATFT</td><td>Assembler</td><td>Date/time formatting utility used by batch programs</td></tr>
+            <tr><td>CSUTLDTC</td><td>COBOL</td><td>Date utility — date arithmetic, validation, formatting</td></tr>
+        </table>
+        <h3>Business Context</h3>
+        <p>The batch pipeline runs after CICS is quiesced using the <strong>CLOSEFIL</strong> job to prevent concurrent VSAM updates. The full EOD sequence is orchestrated by JCL jobs in <code>app/jcl/</code>. Scheduler definitions are provided for both <strong>CA7</strong> and <strong>Control-M</strong> in <code>app/scheduler/</code>. GDG datasets retain statement history across runs. The pipeline concludes with <strong>OPENFIL</strong> to restore CICS access.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>EOD Job Sequence</h3>
+        <ol>
+            <li><strong>CLOSEFIL</strong> — quiesce CICS, close VSAM files for exclusive batch access</li>
+            <li><strong>TRANBKP</strong> — backup TRANSACT VSAM before posting</li>
+            <li><strong>POSTTRAN</strong> (CBTRN02C) — post DALYTRAN records to TRANSACT VSAM; update ACCTDATA balances</li>
+            <li><strong>INTCALC</strong> (CBACT04C) — calculate interest on all account balances using DISCGRP rates</li>
+            <li><strong>COMBTRAN</strong> — combine transaction files for downstream processing</li>
+            <li><strong>CREASTMT</strong> (CBSTM03A/B) — generate account statements, write to GDG</li>
+            <li><strong>TRANIDX</strong> — rebuild TRANSACT AIX for online card-number-based lookup</li>
+            <li><strong>OPENFIL</strong> — restore CICS access to VSAM files</li>
+        </ol>
+
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>Run Nightly Batch to Post Daily Transactions</strong><br>
+            As a batch operations manager, I want POSTTRAN to post all DALYTRAN records to TRANSACT VSAM each night so that cardholder balances are current by morning.<br><br>
+            <em>CBTRN02C reads DALYTRAN sequentially, inserts each record to TRANSACT VSAM KSDS, updates ACCTDATA balance; RC=0 required</em>
+        </div>
+        <div class="story-box">
+            <strong>Calculate Interest on Outstanding Balances</strong><br>
+            As a finance manager, I want INTCALC (CBACT04C) to apply interest charges to all accounts each night so that finance charges are accurate.<br><br>
+            <em>CBACT04C reads ACCTDATA sequentially, looks up ACCT-GROUP-ID in DISCGRP, calculates interest, updates TCATBALF and ACCTDATA balance</em>
+        </div>
+        <div class="story-box">
+            <strong>Generate Monthly Statements</strong><br>
+            As a billing administrator, I want CREASTMT to generate a statement for every active account at end of billing cycle so that statements are available for mailing.<br><br>
+            <em>CBSTM03A reads ACCTDATA + TRANSACT VSAM, formats statement, writes to GDG (+1 generation); CBSTM03B provides support routines</em>
+        </div>
+        <div class="story-box">
+            <strong>Restart Failed Batch from Checkpoint</strong><br>
+            As a batch operations manager, I want to restart a failed batch job from its last checkpoint so that I do not have to reprocess already-completed records.<br><br>
+            <em>Requires checkpoint/restart implementation (Complex) — CBTRN02C position save + POSTTRAN JCL RESTART parameter</em>
+        </div>
+        <div class="story-box">
+            <strong>Schedule Batch via CA7 / Control-M</strong><br>
+            As a scheduling administrator, I want to define the EOD job dependencies in the scheduler so that jobs run automatically in the correct sequence each night.<br><br>
+            <em>app/scheduler/CardDemo.ca7 (CA7) and app/scheduler/CardDemo.controlm (Control-M) provide ready-to-use scheduler definitions</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>All JCL jobs provided</strong> — complete EOD pipeline JCL in <code>app/jcl/</code>; new stories extend existing jobs</li>
+            <li><strong>CBTRN02C sequential-to-KSDS post pattern</strong> — the template for any new batch posting story</li>
+            <li><strong>CBACT04C interest rate lookup pattern</strong> — DISCGRP read + rate application is reusable for any discount/rate calculation story</li>
+            <li><strong>IDCAMS for VSAM operations</strong> — DEFINE/DELETE/REPRO/BLDINDEX patterns provided in existing JCL</li>
+            <li><strong>GDG patterns in CREASTMT</strong> — GDG (+1) dataset allocation and write pattern reusable for any archival output story</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Change a JCL job step parameter (e.g., REGION size, TIME limit)</td><td>JCL-only change; no program change</td></tr>
+            <tr><td>1–2 (Simple)</td><td>Add a new SYSOUT DD to capture program messages</td><td>JCL DD addition only</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add new batch validation step (e.g., debit/credit balance check)</td><td>New COBOL program + JCL step insertion in pipeline</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Modify interest rate formula (e.g., daily compounding)</td><td>CBACT04C logic change + DISCGRP rate field addition</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Parallel batch processing for large volume</td><td>JCL PARALLEL step design + program partitioning + synchronization step</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New multi-file reconciliation job</td><td>New COBOL program + multiple DD inputs + error reporting output</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Checkpoint/restart implementation</td><td>CBTRN02C checkpoint save + POSTTRAN JCL RESTART logic + position file</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Location</th><th>Role</th></tr>
+            <tr><td>All EOD JCL</td><td>app/jcl/</td><td>CLOSEFIL, TRANBKP, POSTTRAN, INTCALC, COMBTRAN, CREASTMT, TRANIDX, OPENFIL</td></tr>
+            <tr><td>CBTRN01-03C</td><td>app/cbl/</td><td>Transaction file read, post, report</td></tr>
+            <tr><td>CBACT01-04C</td><td>app/cbl/</td><td>Account file read (seq/keyed/update), interest calculation</td></tr>
+            <tr><td>CBSTM03A/B</td><td>app/cbl/</td><td>Statement generation main + support</td></tr>
+            <tr><td>CBEXPORT / CBIMPORT</td><td>app/cbl/</td><td>Transaction export and import utilities</td></tr>
+            <tr><td>COBSWAIT</td><td>app/cbl/</td><td>Wait utility (calls MVSWAIT assembler routine)</td></tr>
+            <tr><td>COBDATFT.asm</td><td>app/asm/</td><td>Date/time formatting (assembler)</td></tr>
+            <tr><td>MVSWAIT.asm</td><td>app/asm/</td><td>MVS wait service (assembler)</td></tr>
+            <tr><td>CSUTLDTC.cbl</td><td>app/cbl/</td><td>Date arithmetic and validation utility</td></tr>
+        </table>
+
+        <h3>Scheduler Files</h3>
+        <table>
+            <tr><th>File</th><th>Scheduler</th><th>Contents</th></tr>
+            <tr><td>app/scheduler/CardDemo.ca7</td><td>CA7</td><td>Job network definitions, dependencies, schedule triggers</td></tr>
+            <tr><td>app/scheduler/CardDemo.controlm</td><td>Control-M</td><td>Job flow definitions, conditions, cyclic schedule</td></tr>
+        </table>
+
+        <h3>EOD Pipeline Flow</h3>
+        <pre>EOD Batch Pipeline (app/jcl/):
+┌─────────────┐
+│  CLOSEFIL   │ ── Quiesce CICS, close VSAM files
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   TRANBKP   │ ── Backup TRANSACT VSAM (IDCAMS REPRO)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  POSTTRAN   │ ── CBTRN02C: DALYTRAN → TRANSACT VSAM + ACCTDATA update
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   INTCALC   │ ── CBACT04C: ACCTDATA + DISCGRP → interest update
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  COMBTRAN   │ ── Combine transaction files
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│  CREASTMT   │ ── CBSTM03A/B: statements to GDG (+1)
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   TRANIDX   │ ── IDCAMS BLDINDEX: rebuild TRANSACT AIX
+└──────┬──────┘
+       ▼
+┌─────────────┐
+│   OPENFIL   │ ── Restore CICS access to VSAM files
+└─────────────┘</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Transactions</td><td>Input</td><td>DALYTRAN file is the input to POSTTRAN; TRANSACT VSAM is updated</td></tr>
+            <tr><td>Accounts</td><td>Input/Output</td><td>ACCTDATA VSAM is read and updated by POSTTRAN and INTCALC</td></tr>
+            <tr><td>Reports</td><td>Downstream</td><td>CREASTMT is part of the EOD pipeline; CR00 can trigger TRANREPT on demand</td></tr>
+            <tr><td>CICS (all modules)</td><td>Prerequisite</td><td>CLOSEFIL must quiesce CICS before batch; OPENFIL restores it after</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Transaction Posting (POSTTRAN)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a DALYTRAN file with valid records, <strong>WHEN</strong> POSTTRAN runs, <strong>THEN</strong> all records are posted to TRANSACT VSAM KSDS with RC=0</li>
+            <li><strong>GIVEN</strong> posted transactions, <strong>WHEN</strong> POSTTRAN completes, <strong>THEN</strong> account balances in ACCTDATA VSAM reflect all posted transaction amounts</li>
+        </ul>
+        <h3>Interest Calculation (INTCALC)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> accounts with varying group IDs, <strong>WHEN</strong> INTCALC runs, <strong>THEN</strong> each account's interest is calculated using the correct rate from DISCGRP for its group ID</li>
+            <li><strong>GIVEN</strong> a zero-balance account, <strong>WHEN</strong> INTCALC processes it, <strong>THEN</strong> no interest charge is applied</li>
+        </ul>
+        <h3>Statement Generation (CREASTMT)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a CREASTMT run, <strong>WHEN</strong> CBSTM03A completes with RC=0, <strong>THEN</strong> the GDG generation number is incremented and each active account has a statement</li>
+        </ul>
+        <h3>File Management</h3>
+        <ul>
+            <li><strong>GIVEN</strong> CLOSEFIL has run, <strong>WHEN</strong> CICS attempts to access a managed VSAM file, <strong>THEN</strong> the access is refused until OPENFIL completes</li>
+            <li><strong>GIVEN</strong> the full EOD pipeline completes, <strong>WHEN</strong> OPENFIL runs, <strong>THEN</strong> all CICS-managed VSAM files are accessible to online transactions</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

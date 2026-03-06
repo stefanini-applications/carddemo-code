@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #4facfe; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #4facfe; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #4facfe; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💸 Transactions</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CT00 · CT01 · CT02 · CBTRN</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Transactions module handles the full lifecycle of financial transactions: online listing with paging, individual record viewing, online entry of new transactions, and batch posting of daily transaction files. It is the core financial processing engine of CardDemo.</p>
+        <h3>CICS Transactions</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CT00</td><td>COTRN00C</td><td>List transactions for a card/account — forward/backward paging</td></tr>
+            <tr><td>CT01</td><td>COTRN01C</td><td>View a single transaction detail record</td></tr>
+            <tr><td>CT02</td><td>COTRN02C</td><td>Add a new transaction — validates type, category, card status</td></tr>
+        </table>
+        <h3>Batch Programs</h3>
+        <table>
+            <tr><th>Program</th><th>JCL Job</th><th>Function</th></tr>
+            <tr><td>CBTRN01C</td><td>—</td><td>Sequential read of transaction file (utility)</td></tr>
+            <tr><td>CBTRN02C</td><td>POSTTRAN</td><td>Post daily transactions from DALYTRAN to TRANSACT VSAM KSDS</td></tr>
+            <tr><td>CBTRN03C</td><td>TRANREPT</td><td>Generate transaction report for a date range</td></tr>
+            <tr><td>CBEXPORT</td><td>TRANEXTR</td><td>Export transactions to flat file</td></tr>
+            <tr><td>CBIMPORT</td><td>—</td><td>Import transactions from flat file to TRANSACT VSAM</td></tr>
+        </table>
+        <h3>Data Store</h3>
+        <p><strong>TRANSACT VSAM KSDS</strong> — 350-byte transaction records keyed on TRAN-ID (16 chars), defined in copybook <strong>CVTRA05Y</strong>. An Alternate Index (AIX) enables card-number-based lookup, supporting the CT00 filtered list view.</p>
+        <h3>Business Context</h3>
+        <p>Daily transactions arrive in the <strong>DALYTRAN</strong> sequential file. The batch job <strong>POSTTRAN</strong> (CBTRN02C) reads this file and posts each record to TRANSACT VSAM KSDS, updating the account balance atomically. <strong>TRAN-TYPE-CD</strong> references the TRANTYPE file; <strong>TRAN-CAT-CD</strong> references the TRANCATG file — both are validated on add (CT02) and used for categorized reporting (CBTRN03C).</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>List Transactions for Card/Account</strong><br>
+            As a cardholder, I want to see a paginated list of transactions for my card so that I can review my spending history.<br><br>
+            <em>Program: COTRN00C (CT00) — uses TRANSACT AIX by card number; supports PF7/PF8 for backward/forward paging</em>
+        </div>
+        <div class="story-box">
+            <strong>View Transaction Detail</strong><br>
+            As a cardholder, I want to view the full detail of a specific transaction including merchant and amount so that I can verify or dispute a charge.<br><br>
+            <em>Program: COTRN01C (CT01) — keyed read on TRANSACT VSAM using TRAN-ID</em>
+        </div>
+        <div class="story-box">
+            <strong>Add New Transaction</strong><br>
+            As a teller, I want to add a new transaction for a card so that manual adjustments and corrections can be entered online.<br><br>
+            <em>Program: COTRN02C (CT02) — validates CARD-ACTIVE-STATUS, TRAN-TYPE-CD (TRANTYPE), TRAN-CAT-CD (TRANCATG), then inserts to TRANSACT VSAM</em>
+        </div>
+        <div class="story-box">
+            <strong>Batch Post Daily Transactions</strong><br>
+            As a batch operations manager, I want POSTTRAN (CBTRN02C) to post all daily transactions to the TRANSACT VSAM and update account balances so that end-of-day processing completes accurately.<br><br>
+            <em>Input: DALYTRAN sequential file; Output: TRANSACT VSAM KSDS + updated ACCTDATA balances; RC=0 expected</em>
+        </div>
+        <div class="story-box">
+            <strong>Export Transactions</strong><br>
+            As a data analyst, I want to export all transactions within a date range to a flat file so that I can perform offline analysis.<br><br>
+            <em>Program: CBEXPORT — sequential scan of TRANSACT VSAM with date filter; output to export flat file</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVTRA05Y fully defined</strong> — complete 350-byte transaction record; no data modeling required for standard stories</li>
+            <li><strong>CT00 paging pattern</strong> — forward/backward paging using TRANSACT AIX is directly reusable for any paginated list story</li>
+            <li><strong>CBTRN02C post logic</strong> — sequential-to-KSDS post with balance update is the template for any new batch posting rule</li>
+            <li><strong>CBTRN03C date-range filter</strong> — sequential scan with date comparison is reusable for any report with date range filtering</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display-only field to transaction detail screen</td><td>BMS map change + COTRN01C data move; no logic change</td></tr>
+            <tr><td>1–2 (Simple)</td><td>Filter transaction list by date range</td><td>CT00 additional filter condition on existing AIX scan</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add new transaction type code to TRANTYPE</td><td>TRANTYPE file update + COTRN02C validation addition</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add category filter to transaction list</td><td>CT00 additional filter; TRANCATG lookup; BMS map field</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add duplicate-check validation to CT02</td><td>COTRN02C: check TRANSACT VSAM for existing TRAN-ID before insert</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New batch posting rule (e.g., foreign currency conversion)</td><td>CBTRN02C logic + new reference file + CVTRA05Y field addition</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Multi-file transaction reconciliation</td><td>New batch program reading DALYTRAN + external file + TRANSACT VSAM</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Real-time balance update during online add</td><td>COTRN02C: ACCTDATA VSAM update within CICS UOW; requires careful VSAM locking</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COTRN00C</td><td>CICS Program (CT00)</td><td>Transaction list with forward/backward AIX paging</td></tr>
+            <tr><td>COTRN01C</td><td>CICS Program (CT01)</td><td>Transaction detail — keyed read on TRANSACT VSAM</td></tr>
+            <tr><td>COTRN02C</td><td>CICS Program (CT02)</td><td>Add transaction — validates card, type, category; inserts to VSAM</td></tr>
+            <tr><td>CBTRN01C</td><td>Batch Program</td><td>Sequential transaction file read utility</td></tr>
+            <tr><td>CBTRN02C</td><td>Batch Program (POSTTRAN)</td><td>Post DALYTRAN → TRANSACT VSAM + account balance update</td></tr>
+            <tr><td>CBTRN03C</td><td>Batch Program (TRANREPT)</td><td>Transaction report with date-range filter</td></tr>
+            <tr><td>CBEXPORT</td><td>Batch Program (TRANEXTR)</td><td>Export transactions to flat file</td></tr>
+            <tr><td>CBIMPORT</td><td>Batch Program</td><td>Import transactions from flat file</td></tr>
+            <tr><td>CVTRA05Y.cpy</td><td>Copybook</td><td>350-byte transaction record layout (primary)</td></tr>
+            <tr><td>CVTRA06Y.cpy</td><td>Copybook</td><td>Extended transaction record definitions</td></tr>
+            <tr><td>BMS Maps</td><td>BMS</td><td>COTRN00.bms, COTRN01.bms, COTRN02.bms</td></tr>
+            <tr><td>TRANSACT VSAM KSDS</td><td>VSAM</td><td>Primary transaction store; AIX on CARD-NUM</td></tr>
+            <tr><td>DALYTRAN</td><td>Sequential File</td><td>Daily transaction input file for POSTTRAN batch</td></tr>
+        </table>
+
+        <h3>Transaction Record Layout (CVTRA05Y — Key Fields)</h3>
+        <pre>01  TRAN-RECORD.
+    05  TRAN-ID                    PIC X(16).
+    05  TRAN-TYPE-CD               PIC X(2).
+    05  TRAN-CAT-CD                PIC 9(4).
+    05  TRAN-SOURCE                PIC X(10).
+    05  TRAN-DESC                  PIC X(100).
+    05  TRAN-AMT                   PIC S9(9)V99 COMP-3.
+    05  TRAN-MERCHANT-ID           PIC 9(9).
+    05  TRAN-MERCHANT-NAME         PIC X(50).
+    05  TRAN-MERCHANT-CITY         PIC X(50).
+    05  TRAN-MERCHANT-ZIP          PIC X(10).
+    05  TRAN-CARD-NUM              PIC X(16).
+    05  TRAN-ORIG-TS               PIC X(26).
+    05  TRAN-PROC-TS               PIC X(26).</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>User must be signed in to access CT00/CT01/CT02</td></tr>
+            <tr><td>Accounts</td><td>Prerequisite</td><td>TRAN-ACCT-ID must reference valid ACCTDATA record</td></tr>
+            <tr><td>Credit Cards</td><td>Prerequisite</td><td>CARD-ACTIVE-STATUS checked before CT02 insert</td></tr>
+            <tr><td>Batch Processing</td><td>Downstream</td><td>POSTTRAN (CBTRN02C) is part of EOD pipeline; TRANREPT runs after POSTTRAN</td></tr>
+            <tr><td>Reports</td><td>Downstream</td><td>CBTRN03C reads TRANSACT VSAM for transaction reports</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Transaction List (CT00)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> an authenticated user with a valid card number, <strong>WHEN</strong> CT00 is invoked, <strong>THEN</strong> transactions are listed in reverse chronological order using the TRANSACT AIX</li>
+            <li><strong>GIVEN</strong> more transactions than fit on one screen, <strong>WHEN</strong> the user presses PF8, <strong>THEN</strong> the next page of transactions is displayed; PF7 returns to previous page</li>
+        </ul>
+        <h3>Add Transaction (CT02)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid transaction entry, <strong>WHEN</strong> CT02 processes it, <strong>THEN</strong> the record is inserted into TRANSACT VSAM with a unique TRAN-ID and a confirmation is displayed</li>
+            <li><strong>GIVEN</strong> an inactive card, <strong>WHEN</strong> CT02 validates the card, <strong>THEN</strong> the transaction is rejected with an "inactive card" error message</li>
+            <li><strong>GIVEN</strong> an invalid TRAN-TYPE-CD, <strong>WHEN</strong> CT02 validates the type, <strong>THEN</strong> the transaction is rejected with a validation error</li>
+            <li><strong>GIVEN</strong> a duplicate TRAN-ID, <strong>WHEN</strong> CT02 attempts the insert, <strong>THEN</strong> the insert is rejected and an appropriate error is displayed</li>
+        </ul>
+        <h3>Batch Post (CBTRN02C / POSTTRAN)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a DALYTRAN file with valid transaction records, <strong>WHEN</strong> POSTTRAN runs, <strong>THEN</strong> all records are posted to TRANSACT VSAM with RC=0</li>
+            <li><strong>GIVEN</strong> posted transactions, <strong>WHEN</strong> POSTTRAN completes, <strong>THEN</strong> corresponding account balances in ACCTDATA VSAM reflect the posted amounts atomically</li>
+            <li><strong>GIVEN</strong> a record with an invalid type code, <strong>WHEN</strong> POSTTRAN processes it, <strong>THEN</strong> the record is written to the error report and processing continues</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

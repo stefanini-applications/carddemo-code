@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQ Integration - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #f8a000 0%, #f8d000 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #f8a000; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #f8a000; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #f8a000; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📨 MQ Integration</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-optional">Optional Module</span>
+        <span class="badge badge-optional">CDRD · CDRA · IBM MQ · VSAM</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The MQ Integration module is an optional extension demonstrating asynchronous request/response patterns between distributed systems and the CardDemo mainframe. It provides two CICS programs that expose mainframe data via IBM MQ, enabling external cloud or distributed applications to query mainframe data without direct CICS coupling.</p>
+        <h3>CICS Programs</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CDRD</td><td>CODATE01</td><td>Date query — receives MQ request for system date, returns current date as response</td></tr>
+            <tr><td>CDRA</td><td>COACCT01</td><td>Account query — receives MQ request with account number, returns account data from VSAM</td></tr>
+        </table>
+        <h3>MQ Queue Configuration</h3>
+        <table>
+            <tr><th>Queue Name</th><th>Direction</th><th>Description</th></tr>
+            <tr><td>CARDDEMO.REQUEST.QUEUE</td><td>Inbound</td><td>Receives requests from external systems</td></tr>
+            <tr><td>CARDDEMO.RESPONSE.QUEUE</td><td>Outbound</td><td>Sends responses back to requesting systems</td></tr>
+        </table>
+        <p>CICS resources: <strong>MQCONN(MQ01)</strong>, <strong>MQQUEUE(CARDREQ)</strong> for request queue, <strong>MQQUEUE(CARDRES)</strong> for response queue.</p>
+        <h3>Business Context</h3>
+        <p>This module enables distributed and cloud systems to query mainframe data via MQ without requiring direct CICS connectivity or knowledge of VSAM internals. <strong>CDRD</strong> demonstrates the simplest possible MQ request/response pattern (date query). <strong>CDRA</strong> extends that pattern with VSAM data extraction — making it a building block for exposing any mainframe entity as a service. Both programs demonstrate proper message correlation using REQUEST-ID to match responses to requests.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Message Formats</h3>
+        <h4>Date Request Message (CARDDEMO.REQUEST.QUEUE)</h4>
+        <pre>01  DATE-REQUEST.
+    05  REQUEST-TYPE               PIC X(4) VALUE 'DATE'.
+    05  REQUEST-ID                 PIC X(8).</pre>
+        <h4>Date Response Message (CARDDEMO.RESPONSE.QUEUE)</h4>
+        <pre>01  DATE-RESPONSE.
+    05  REQUEST-ID                 PIC X(8).
+    05  SYSTEM-DATE                PIC X(10).   *&gt; YYYY-MM-DD</pre>
+        <h4>Account Request Message (CARDDEMO.REQUEST.QUEUE)</h4>
+        <pre>01  ACCOUNT-REQUEST.
+    05  REQUEST-TYPE               PIC X(4) VALUE 'ACCT'.
+    05  REQUEST-ID                 PIC X(8).
+    05  ACCOUNT-NUMBER             PIC X(11).</pre>
+        <h4>Account Response Message (CARDDEMO.RESPONSE.QUEUE)</h4>
+        <pre>01  ACCOUNT-RESPONSE.
+    05  REQUEST-ID                 PIC X(8).
+    05  ACCOUNT-DATA               PIC X(300).  *&gt; CVACT01Y record</pre>
+
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>External System Queries System Date via MQ</strong><br>
+            As an external system, I want to query the mainframe system date via MQ so that I can synchronize time-sensitive operations.<br><br>
+            <em>CODATE01 (CDRD): MQGET from CARDREQ queue; check REQUEST-TYPE='DATE'; get ASKTIME/FORMATTIME; MQPUT response with REQUEST-ID correlation and SYSTEM-DATE to CARDRES queue</em>
+        </div>
+        <div class="story-box">
+            <strong>External System Retrieves Account Balance via MQ</strong><br>
+            As an external banking system, I want to retrieve account data for a given account number via MQ so that I can display balance information in a mobile app without direct VSAM access.<br><br>
+            <em>COACCT01 (CDRA): MQGET request with ACCOUNT-NUMBER; VSAM keyed read on ACCTDATA using ACCOUNT-NUMBER; MQPUT response with REQUEST-ID + ACCOUNT-DATA (full 300-byte CVACT01Y record)</em>
+        </div>
+        <div class="story-box">
+            <strong>Modernization Architect Exposes VSAM Data as MQ Service</strong><br>
+            As a modernization architect, I want to expose credit card account data as a queued service so that new cloud microservices can consume mainframe data without tight coupling.<br><br>
+            <em>COACCT01 is the reference implementation — MQ request/response + VSAM read + message correlation; extend this pattern for cards (CVACT02Y), transactions (CVTRA05Y)</em>
+        </div>
+        <div class="story-box">
+            <strong>Integration Tester Verifies MQ Request/Response Correlation</strong><br>
+            As an integration tester, I want to verify that MQ responses are correctly correlated to their requests so that I can confirm the service is reliable under concurrent load.<br><br>
+            <em>Send multiple requests with unique REQUEST-IDs; verify each response contains the matching REQUEST-ID; test with CODATE01 (simple) before testing COACCT01 (complex)</em>
+        </div>
+
+        <h3>Integration Patterns</h3>
+        <ul>
+            <li><strong>Request/response over async MQ</strong> — sender puts to REQUEST queue; receiver (CICS) processes and puts to RESPONSE queue; sender polls RESPONSE queue for matching REQUEST-ID</li>
+            <li><strong>Message correlation by REQUEST-ID</strong> — 8-char REQUEST-ID is echoed in every response; external systems use this to match responses to pending requests</li>
+            <li><strong>VSAM account data extraction</strong> — COACCT01 extracts full 300-byte CVACT01Y record into MQ message payload; consumer maps fields from the record layout</li>
+            <li><strong>MQ timeout handling</strong> — MQGET with WAIT option; timeout returns MQRC_NO_MSG_AVAILABLE; CICS transaction ends cleanly</li>
+        </ul>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>CODATE01 simple MQPUT/MQGET pattern</strong> — simplest possible MQ request/response; ideal starting point for new MQ service stories</li>
+            <li><strong>COACCT01 VSAM + MQ pattern</strong> — adds VSAM keyed read before MQPUT response; template for any "expose VSAM entity via MQ" story</li>
+            <li><strong>Message correlation pattern</strong> — REQUEST-ID echo in response is reusable across all new MQ service programs</li>
+            <li><strong>CICS MQCONN resource definitions</strong> — MQ01, CARDREQ, CARDRES already defined; new queues follow same DEFINE QLOCAL pattern</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add new field to account response message</td><td>COACCT01: add field move from CVACT01Y to response area; MQ message format change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>New entity query — cards via MQ (CVACT02Y)</td><td>New CICS program following COACCT01 pattern; CARDDATA VSAM read + MQ response</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add error response message for invalid account</td><td>COACCT01: add NOT FOUND condition + error response structure + MQPUT error response</td></tr>
+            <tr><td>3–5 (Medium)</td><td>New transaction query via MQ</td><td>New CICS program; TRANSACT VSAM AIX lookup by card number + MQ response</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Bulk data extract via MQ batches</td><td>New batch program: sequential VSAM scan + multiple MQPUT messages in batches</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Publish-subscribe pattern</td><td>MQ topic definition + CICS publish program + multiple subscriber queue setup</td></tr>
+            <tr><td>5–8 (Complex)</td><td>MQ trigger for event-driven CICS program</td><td>MQ trigger monitor + CICS trigger definition + new event-handler CICS program</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>CODATE01</td><td>CICS Program (CDRD)</td><td>Date query service — MQGET request, FORMATTIME, MQPUT response</td></tr>
+            <tr><td>COACCT01</td><td>CICS Program (CDRA)</td><td>Account query service — MQGET request, VSAM read, MQPUT response</td></tr>
+            <tr><td>CVACT01Y.cpy</td><td>Copybook</td><td>300-byte account record layout (account response payload)</td></tr>
+            <tr><td>ACCTDATA VSAM</td><td>VSAM KSDS</td><td>Account data source for COACCT01 keyed read</td></tr>
+            <tr><td>CARDDEMO.REQUEST.QUEUE</td><td>IBM MQ Queue</td><td>Inbound requests from external systems</td></tr>
+            <tr><td>CARDDEMO.RESPONSE.QUEUE</td><td>IBM MQ Queue</td><td>Outbound responses to external systems</td></tr>
+        </table>
+
+        <h3>COACCT01 Processing Flow</h3>
+        <pre>COACCT01 (CDRA) Account Query Flow:
+1. EXEC CICS MQGET QUEUE(CARDREQ) INTO(REQUEST-MSG) WAIT(5000)
+2. Check MQRC — if NO_MSG_AVAILABLE, end transaction normally
+3. Extract REQUEST-ID and ACCOUNT-NUMBER from REQUEST-MSG
+4. Validate REQUEST-TYPE = 'ACCT'
+5. READ ACCTDATA VSAM keyed on ACCOUNT-NUMBER
+6. If NOT FOUND: build error response, MQPUT to CARDRES, end
+7. If FOUND: move ACCOUNT-RECORD (300 bytes) to ACCOUNT-DATA
+8. Build response: REQUEST-ID + ACCOUNT-DATA
+9. EXEC CICS MQPUT QUEUE(CARDRES) FROM(RESPONSE-MSG)
+10. EXEC CICS RETURN</pre>
+
+        <h3>MQ Queue Setup (DEFINE QLOCAL)</h3>
+        <pre>* MQ queue definitions (run in MQ admin):
+DEFINE QLOCAL('CARDDEMO.REQUEST.QUEUE')  +
+    DEFPSIST(YES) MAXDEPTH(5000)
+
+DEFINE QLOCAL('CARDDEMO.RESPONSE.QUEUE') +
+    DEFPSIST(NO) MAXDEPTH(5000)
+
+* CICS resource definitions:
+MQCONN(MQ01)   MQMANAGER(QM01) STATUS(ENABLED)
+MQQUEUE(CARDREQ) QUEUE('CARDDEMO.REQUEST.QUEUE')
+MQQUEUE(CARDRES) QUEUE('CARDDEMO.RESPONSE.QUEUE')</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Details</th></tr>
+            <tr><td>Base CardDemo</td><td>ACCTDATA VSAM must be present and loaded for COACCT01 to function</td></tr>
+            <tr><td>IBM MQ</td><td>MQ queue manager must be active; queues must be defined</td></tr>
+            <tr><td>CICS with MQ support</td><td>CICS MQCONN resource (MQ01) must be defined and enabled in CICS region</td></tr>
+            <tr><td>MQ queues created</td><td>CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE must be defined via DEFINE QLOCAL</td></tr>
+            <tr><td>ACCTDATA VSAM accessible</td><td>COACCT01 requires ACCTDATA open in CICS region</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Date Query (CDRD / CODATE01)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a date request on the MQ queue with REQUEST-TYPE='DATE', <strong>WHEN</strong> CODATE01 processes it, <strong>THEN</strong> a response is placed on CARDDEMO.RESPONSE.QUEUE with the current system date in YYYY-MM-DD format within the configured timeout</li>
+            <li><strong>GIVEN</strong> a date request with REQUEST-ID='REQ00001', <strong>WHEN</strong> CODATE01 sends the response, <strong>THEN</strong> the response message contains REQUEST-ID='REQ00001' for correlation</li>
+            <li><strong>GIVEN</strong> no messages on the request queue, <strong>WHEN</strong> CODATE01 executes, <strong>THEN</strong> the transaction ends normally with no error after the MQWAIT timeout expires</li>
+        </ul>
+        <h3>Account Query (CDRA / COACCT01)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid account number in the MQ request, <strong>WHEN</strong> COACCT01 processes it, <strong>THEN</strong> the response contains the 300-byte account data from ACCTDATA VSAM with matching REQUEST-ID</li>
+            <li><strong>GIVEN</strong> an account number not found in ACCTDATA VSAM, <strong>WHEN</strong> COACCT01 processes the request, <strong>THEN</strong> an error response is placed on the response queue indicating the account was not found</li>
+            <li><strong>GIVEN</strong> multiple concurrent requests with different REQUEST-IDs, <strong>WHEN</strong> COACCT01 processes and responds, <strong>THEN</strong> each response message contains the correct REQUEST-ID matching its originating request</li>
+        </ul>
+        <h3>Error Handling</h3>
+        <ul>
+            <li><strong>GIVEN</strong> an MQ timeout (no message within wait interval), <strong>WHEN</strong> COACCT01 or CODATE01 detects the timeout, <strong>THEN</strong> the CICS transaction ends cleanly with no abend and no orphaned resources</li>
+            <li><strong>GIVEN</strong> an MQPUT failure on the response queue, <strong>WHEN</strong> the program handles the MQRC, <strong>THEN</strong> the error is logged to CICS CSSL and the transaction rolls back cleanly</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

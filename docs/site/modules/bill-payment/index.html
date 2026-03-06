@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Payment - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #43e97b; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #43e97b; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #43e97b; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🧾 Bill Payment</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CB00 · COBIL00C</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Bill Payment module provides a single CICS transaction for submitting credit card bill payments online. It reads the current account balance, accepts a payment amount from the cardholder, creates a debit transaction record, and atomically updates the account balance — all within a single CICS unit of work.</p>
+        <h3>CICS Transaction</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CB00</td><td>COBIL00C</td><td>Submit bill payment — validate amount, update account, create transaction record</td></tr>
+        </table>
+        <h3>Data Stores</h3>
+        <p><strong>ACCTDATA VSAM KSDS</strong> — account record updated to decrement <code>ACCT-CURR-BAL</code> and increment <code>ACCT-CURR-CYC-CREDIT</code> after a successful payment.</p>
+        <p><strong>TRANSACT VSAM KSDS</strong> — a payment transaction record is written using the <strong>CVTRA05Y</strong> layout with a payment-type transaction code, creating an auditable record of the payment event.</p>
+        <h3>Business Context</h3>
+        <p>Bill payment is the primary mechanism for cardholders to reduce their outstanding balance. The payment flow is tightly coupled: the account balance read, validation, transaction record insert, and account balance update must all succeed or all roll back — the program uses CICS syncpoint logic to ensure atomicity across both VSAM files.</p>
+        <h3>Business Rules</h3>
+        <ul>
+            <li>Payment amount must be greater than zero</li>
+            <li>Payment amount cannot exceed the current account balance (<code>ACCT-CURR-BAL</code>)</li>
+            <li>Account must be in active status</li>
+            <li>Both the account update and transaction record insert must commit atomically</li>
+            <li><code>ACCT-CURR-CYC-CREDIT</code> is incremented by the payment amount to track cycle-to-date credits</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>Make Payment for Specific Amount</strong><br>
+            As a cardholder, I want to submit a payment against my credit card balance so that I can reduce my outstanding debt.<br><br>
+            <em>Program: COBIL00C (CB00) — reads ACCTDATA, validates amount, writes payment transaction to TRANSACT VSAM, updates ACCTDATA balance</em>
+        </div>
+        <div class="story-box">
+            <strong>View Current Balance Before Payment</strong><br>
+            As a cardholder, I want to see my current balance displayed on the payment screen so that I know the maximum amount I can pay.<br><br>
+            <em>COBIL00C displays ACCT-CURR-BAL from ACCTDATA VSAM on the COBIL00.bms payment screen before the user enters an amount</em>
+        </div>
+        <div class="story-box">
+            <strong>Receive Payment Confirmation</strong><br>
+            As a cardholder, I want to receive a confirmation message after submitting a payment so that I know the payment was accepted.<br><br>
+            <em>COBIL00C displays confirmation with new balance after successful VSAM updates; TRAN-ID of the payment record shown</em>
+        </div>
+        <div class="story-box">
+            <strong>Payment Appears in Transaction List</strong><br>
+            As a cardholder, I want my payment to appear in my transaction history immediately after submission so that I have a complete audit trail.<br><br>
+            <em>Payment creates CVTRA05Y record in TRANSACT VSAM — visible via CT00 (COTRN00C) immediately after commit</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>COBIL00C complete implementation</strong> — already implements the full account read + transaction write + balance update pattern; new stories can extend this directly</li>
+            <li><strong>COBIL00.bms screen map exists</strong> — payment screen layout ready; field additions are incremental BMS changes</li>
+            <li><strong>CVACT01Y + CVTRA05Y reused</strong> — no new copybooks needed for standard payment stories</li>
+            <li><strong>Atomic update pattern</strong> — CICS syncpoint handling in COBIL00C is a template for any story requiring multi-VSAM atomicity</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Update confirmation message text</td><td>BMS map text change only; no logic change</td></tr>
+            <tr><td>1–2 (Simple)</td><td>Display statement closing date on payment screen</td><td>Add ACCT field read + BMS map field; no logic change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Minimum payment calculation and display</td><td>COBIL00C: add minimum payment formula + new display field on COBIL00.bms</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Autopay scheduling (mark account for recurring payment)</td><td>New ACCT field + COBIL00C logic + batch job to process autopay accounts</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Partial payment workflow with remaining balance tracking</td><td>Multi-screen flow + COBIL00C redesign + new statement integration</td></tr>
+            <tr><td>5–8 (Complex)</td><td>EFT integration via MQ for external bank transfer</td><td>New MQ interface + COBIL00C pending-state logic + confirmation callback program</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Payment history report by date range</td><td>New batch program scanning TRANSACT VSAM for payment-type transactions</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COBIL00C</td><td>CICS Program (CB00)</td><td>Bill payment — validates amount, updates account, creates transaction</td></tr>
+            <tr><td>COBIL00.bms</td><td>BMS Map</td><td>Payment screen — displays current balance, accepts payment amount</td></tr>
+            <tr><td>CVACT01Y.cpy</td><td>Copybook</td><td>Account record layout (ACCT-CURR-BAL, ACCT-CURR-CYC-CREDIT fields)</td></tr>
+            <tr><td>CVTRA05Y.cpy</td><td>Copybook</td><td>Transaction record layout for the payment transaction insert</td></tr>
+            <tr><td>ACCTDATA VSAM</td><td>VSAM KSDS</td><td>Account store — balance decremented on successful payment</td></tr>
+            <tr><td>TRANSACT VSAM</td><td>VSAM KSDS</td><td>Transaction store — payment record inserted on successful payment</td></tr>
+        </table>
+
+        <h3>Payment Processing Flow</h3>
+        <pre>CB00 (COBIL00C) Payment Flow:
+1. Read ACCTDATA VSAM (keyed on ACCT-ID) → display ACCT-CURR-BAL
+2. Accept PAYMENT-AMT from user input
+3. Validate: PAYMENT-AMT > 0 AND PAYMENT-AMT <= ACCT-CURR-BAL
+4. Read ACCTDATA for update (exclusive lock)
+5. Build CVTRA05Y payment record with:
+      TRAN-TYPE-CD = payment type code
+      TRAN-AMT     = PAYMENT-AMT (negative debit)
+      TRAN-ORIG-TS = current timestamp
+6. Insert TRANSACT VSAM record
+7. Decrement ACCT-CURR-BAL by PAYMENT-AMT
+8. Increment ACCT-CURR-CYC-CREDIT by PAYMENT-AMT
+9. Rewrite ACCTDATA VSAM record
+10. CICS SYNCPOINT (commit both updates atomically)
+11. Display confirmation with new balance and TRAN-ID</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>User must be signed in; session provides ACCT-ID context</td></tr>
+            <tr><td>Accounts</td><td>Prerequisite</td><td>ACCTDATA VSAM must have the account record; COBIL00C reads and updates it</td></tr>
+            <tr><td>Transactions</td><td>Downstream</td><td>Payment creates a TRANSACT VSAM record; visible in CT00 list immediately</td></tr>
+            <tr><td>Reports</td><td>Downstream</td><td>CBTRN03C includes payment transactions in date-range reports</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Payment Validation</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a payment amount of zero or negative, <strong>WHEN</strong> CB00 validates the input, <strong>THEN</strong> the payment is rejected with an error message "Payment amount must be greater than zero"</li>
+            <li><strong>GIVEN</strong> a payment amount exceeding the current balance, <strong>WHEN</strong> CB00 validates the input, <strong>THEN</strong> the payment is rejected with an error showing the maximum allowable amount</li>
+            <li><strong>GIVEN</strong> an inactive account, <strong>WHEN</strong> CB00 reads the account, <strong>THEN</strong> the payment screen displays an error and no payment is processed</li>
+        </ul>
+        <h3>Payment Processing</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid payment amount, <strong>WHEN</strong> CB00 processes the payment, <strong>THEN</strong> ACCT-CURR-BAL is decremented by the payment amount and ACCT-CURR-CYC-CREDIT is incremented by the same amount</li>
+            <li><strong>GIVEN</strong> a successful payment, <strong>WHEN</strong> CB00 completes, <strong>THEN</strong> a payment transaction record exists in TRANSACT VSAM with the correct amount and timestamp</li>
+            <li><strong>GIVEN</strong> a VSAM I/O error during commit, <strong>WHEN</strong> CB00 detects the error, <strong>THEN</strong> the entire unit of work is rolled back and an error message is displayed</li>
+        </ul>
+        <h3>Confirmation Display</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a successful payment, <strong>WHEN</strong> the confirmation screen is displayed, <strong>THEN</strong> the new account balance and the payment transaction ID are shown clearly</li>
+            <li><strong>GIVEN</strong> a completed payment, <strong>WHEN</strong> the cardholder navigates to CT00, <strong>THEN</strong> the payment appears in the transaction list with correct amount and type code</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

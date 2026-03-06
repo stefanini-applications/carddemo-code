@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Cards - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #f5576c; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #f5576c; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #f5576c; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💳 Credit Cards</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CCLI · CCDL · CCUP</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Credit Cards module provides online listing, viewing, and updating of credit cards associated with an account. Cards are the primary instrument for transaction authorization and are linked to accounts via the CARDXREF cross-reference VSAM.</p>
+        <h3>CICS Transactions</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CCLI</td><td>COCRDLIC</td><td>List all cards for an account (paginated)</td></tr>
+            <tr><td>CCDL</td><td>COCRDSLC</td><td>View detailed card information</td></tr>
+            <tr><td>CCUP</td><td>COCRDUPC</td><td>Update card fields (embossed name, status)</td></tr>
+        </table>
+        <h3>Data Stores</h3>
+        <p><strong>CARDDATA VSAM KSDS</strong> — 150-byte card records keyed on CARD-NUM (16 chars), defined in copybook <strong>CVACT02Y</strong>.</p>
+        <p><strong>CARDXREF VSAM KSDS</strong> — cross-reference records linking card numbers to account IDs, defined in copybook <strong>CVACT03Y</strong>. An Alternate Index (AIX) on CARDXREF enables lookup by account ID, supporting the card-list-by-account navigation pattern.</p>
+        <h3>Business Context</h3>
+        <p>Multiple cards may be associated with a single account. The card's <strong>CARD-ACTIVE-STATUS</strong> field (A=Active, I=Inactive) is checked by COTRN02C before any transaction is accepted — inactive cards are declined at the point of entry.</p>
+        <p>The AIX on CARDXREF enables efficient navigation from an account ID to all associated card numbers without a full file scan, which underpins the CCLI list transaction.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>List All Cards for Account</strong><br>
+            As a cardholder, I want to see all credit cards linked to my account so that I can manage each card individually.<br><br>
+            <em>Program: COCRDLIC (CCLI) — reads CARDXREF AIX by account ID, displays paginated list of CARD-NUM + CARD-ACTIVE-STATUS</em>
+        </div>
+        <div class="story-box">
+            <strong>View Card Details</strong><br>
+            As a cardholder, I want to view the full details of a specific card including expiry date and embossed name so that I can confirm card information.<br><br>
+            <em>Program: COCRDSLC (CCDL) — keyed read on CARDDATA VSAM using CARD-NUM; CVV not displayed on screen</em>
+        </div>
+        <div class="story-box">
+            <strong>Activate / Deactivate Card</strong><br>
+            As a customer service representative, I want to change a card's active status so that lost or replaced cards can be deactivated immediately.<br><br>
+            <em>Program: COCRDUPC (CCUP) — read-for-update → set CARD-ACTIVE-STATUS → rewrite to CARDDATA VSAM</em>
+        </div>
+        <div class="story-box">
+            <strong>Update Embossed Name</strong><br>
+            As a customer service representative, I want to update the embossed name on a card so that name-change requests are reflected in the system.<br><br>
+            <em>Field: CARD-EMBOSSED-NAME PIC X(50) — updated via COCRDUPC (CCUP)</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVACT02Y copybook</strong> — fully defined 150-byte card record; no data modeling required</li>
+            <li><strong>CVACT03Y xref lookup pattern</strong> — AIX-based account-to-card navigation already implemented in COCRDLIC</li>
+            <li><strong>BMS maps exist</strong> — COCRDLI.bms, COCRDSLI.bms, COCRDUPD.bms ready for modification</li>
+            <li><strong>AIX on CARDXREF</strong> — enables account-to-card navigation without file scan; pattern reusable for any account-scoped list</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display-only field to card view screen</td><td>BMS map change + COCRDSLC data move; no logic change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Card activation/deactivation workflow with confirmation step</td><td>COCRDUPC + new confirmation screen + BMS map</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add new validation rule (e.g., expiry date must be future)</td><td>Single program logic change in COCRDUPC</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Card reissue workflow (new card number, update CARDDATA + CARDXREF)</td><td>Two VSAM updates (old record inactive + new record insert) + CARDXREF update</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Card number tokenization for PCI compliance</td><td>New tokenization service interface + changes across CARDDATA, CARDXREF, TRANSACT</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COCRDLIC</td><td>CICS Program (CCLI)</td><td>Card list — AIX lookup by account, paginated display</td></tr>
+            <tr><td>COCRDSLC</td><td>CICS Program (CCDL)</td><td>Card detail — keyed read on CARDDATA VSAM</td></tr>
+            <tr><td>COCRDUPC</td><td>CICS Program (CCUP)</td><td>Card update — read-for-update, field edit, rewrite</td></tr>
+            <tr><td>CVACT02Y.cpy</td><td>Copybook</td><td>150-byte card record layout</td></tr>
+            <tr><td>CVACT03Y.cpy</td><td>Copybook</td><td>CARDXREF cross-reference record (card-to-account mapping)</td></tr>
+            <tr><td>CVCRD01Y.cpy</td><td>Copybook</td><td>Working storage definitions shared across card programs</td></tr>
+            <tr><td>BMS Maps</td><td>BMS</td><td>COCRDLI.bms, COCRDSLI.bms, COCRDUPD.bms</td></tr>
+            <tr><td>CARDDATA VSAM</td><td>VSAM KSDS</td><td>Primary card record store, keyed on CARD-NUM</td></tr>
+            <tr><td>CARDXREF VSAM</td><td>VSAM KSDS + AIX</td><td>Card-to-account cross-reference; AIX enables account-based lookup</td></tr>
+        </table>
+
+        <h3>Card Record Layout (CVACT02Y — Key Fields)</h3>
+        <pre>01  CARD-RECORD.
+    05  CARD-NUM                   PIC X(16).
+    05  CARD-ACCT-ID               PIC 9(11).
+    05  CARD-CVV-CD                PIC 9(3).
+    05  CARD-EMBOSSED-NAME         PIC X(50).
+    05  CARD-EXPIRAION-DATE        PIC X(10).
+    05  CARD-ACTIVE-STATUS         PIC X(1).
+       88 CARD-ACTIVE              VALUE 'A'.
+       88 CARD-INACTIVE            VALUE 'I'.</pre>
+
+        <h3>CARDXREF Cross-Reference Layout (CVACT03Y)</h3>
+        <pre>01  CARD-XREF-RECORD.
+    05  XREF-CARD-NUM              PIC X(16).
+    05  XREF-CUST-ID               PIC 9(9).
+    05  XREF-ACCT-ID               PIC 9(11).</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>User must be signed in; CCLI/CCDL/CCUP check session</td></tr>
+            <tr><td>Accounts</td><td>Prerequisite</td><td>ACCT-ID must exist in ACCTDATA before card lookup</td></tr>
+            <tr><td>Transactions</td><td>Downstream</td><td>CARD-ACTIVE-STATUS checked in COTRN02C before transaction add</td></tr>
+            <tr><td>Authorization (optional)</td><td>Downstream</td><td>CARDXREF used in COPAUA0C for MQ authorization lookup</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Card List (CCLI)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> an authenticated user with a valid account ID, <strong>WHEN</strong> CCLI is invoked, <strong>THEN</strong> all cards associated with that account are listed via CARDXREF AIX lookup</li>
+            <li><strong>GIVEN</strong> an account with more than one page of cards, <strong>WHEN</strong> the user pages forward, <strong>THEN</strong> the next set of cards is displayed correctly</li>
+            <li><strong>GIVEN</strong> an account with no associated cards, <strong>WHEN</strong> CCLI is invoked, <strong>THEN</strong> an appropriate "no cards found" message is displayed</li>
+        </ul>
+        <h3>Card Detail (CCDL)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid card number, <strong>WHEN</strong> CCDL is invoked, <strong>THEN</strong> all card details are displayed accurately from CARDDATA VSAM</li>
+            <li><strong>GIVEN</strong> a card detail screen, <strong>WHEN</strong> it is displayed, <strong>THEN</strong> CVV (CARD-CVV-CD) is not shown or is masked</li>
+        </ul>
+        <h3>Card Update (CCUP)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid status change request, <strong>WHEN</strong> CCUP processes it, <strong>THEN</strong> CARD-ACTIVE-STATUS is updated in CARDDATA VSAM and a confirmation is displayed</li>
+            <li><strong>GIVEN</strong> a name update, <strong>WHEN</strong> CCUP processes it, <strong>THEN</strong> CARD-EMBOSSED-NAME is updated and the change is immediately visible on CCDL</li>
+            <li><strong>GIVEN</strong> an invalid status value, <strong>WHEN</strong> CCUP validates input, <strong>THEN</strong> the update is rejected with a clear validation error</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

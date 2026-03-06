@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #11998e; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #11998e; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #11998e; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🏦 Accounts</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CAVW · CAUP · CBACT01-04C</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Accounts module provides online viewing and updating of credit card account information, backed by nightly batch processing for interest calculations and account maintenance. It is the central entity of the CardDemo application — all other modules reference account records.</p>
+        <h3>CICS Transactions</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CAVW</td><td>COACTVWC</td><td>View account details (read-only)</td></tr>
+            <tr><td>CAUP</td><td>COACTUPC</td><td>Update account fields (ZIP, credit limit)</td></tr>
+        </table>
+        <h3>Batch Programs</h3>
+        <table>
+            <tr><th>Program</th><th>Function</th></tr>
+            <tr><td>CBACT01C</td><td>Sequential account file read</td></tr>
+            <tr><td>CBACT02C</td><td>Keyed account file read</td></tr>
+            <tr><td>CBACT03C</td><td>Account update utility</td></tr>
+            <tr><td>CBACT04C</td><td>Nightly interest calculation</td></tr>
+        </table>
+        <h3>Data Store</h3>
+        <p>Account records are stored in the <strong>ACCTDATA VSAM KSDS</strong> (AWS.M2.CARDDEMO.ACCTDATA.PS). Each record is 300 bytes keyed on <code>ACCT-ID</code> (11 digits), defined in copybook <strong>CVACT01Y</strong>.</p>
+        <h3>Business Context</h3>
+        <p>Accounts are the central entity in CardDemo. They are linked to:</p>
+        <ul>
+            <li><strong>Credit Cards</strong> — via CARDXREF VSAM (CVACT03Y), enabling lookup by account or card number</li>
+            <li><strong>Customers</strong> — via CUSTDATA VSAM (customer demographic data)</li>
+            <li><strong>Transactions</strong> — TRANSACT VSAM KSDS references ACCT-ID on every transaction record</li>
+        </ul>
+        <p>Interest is calculated nightly by <strong>CBACT04C</strong>. The program reads each account's <code>ACCT-GROUP-ID</code>, looks up the applicable interest rate in the <strong>DISCGRP</strong> file, and updates balances in <strong>TCATBALF</strong>.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>View Account Balance</strong><br>
+            As a cardholder, I want to view my current account balance and credit limit so that I can manage my spending.<br><br>
+            <em>Key fields: ACCT-CURR-BAL, ACCT-CREDIT-LIMIT, ACCT-CURR-CYC-DEBIT, ACCT-CURR-CYC-CREDIT</em>
+        </div>
+        <div class="story-box">
+            <strong>Update Account ZIP / Credit Limit</strong><br>
+            As a customer service representative, I want to update a cardholder's billing ZIP code and credit limit so that account information stays current.<br><br>
+            <em>Program: COACTUPC (CAUP) — reads current record, applies changes, rewrites to ACCTDATA VSAM</em>
+        </div>
+        <div class="story-box">
+            <strong>Batch Interest Calculation</strong><br>
+            As a batch operations manager, I want the nightly CBACT04C job to calculate and apply interest to all outstanding balances so that accounts reflect accurate charges each morning.<br><br>
+            <em>Input: ACCTDATA + DISCGRP; Output: updated ACCTDATA + TCATBALF entries</em>
+        </div>
+        <div class="story-box">
+            <strong>Account Status Management</strong><br>
+            As a risk officer, I want to set an account status to inactive so that no further transactions are authorized against it.<br><br>
+            <em>Field: ACCT-ACTIVE-STATUS PIC X(1) — controls transaction eligibility checks in COTRN02C</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVACT01Y copybook</strong> — fully defined 300-byte account record; no data modeling required</li>
+            <li><strong>COACTVWC read pattern</strong> — keyed VSAM read with ACCT-ID is directly reusable for any account display story</li>
+            <li><strong>COACTUPC update pattern</strong> — read-for-update → modify → rewrite pattern is reusable for any account field update story</li>
+            <li><strong>CBACT01-03C</strong> — provide sequential read, keyed read, and update patterns for batch account stories</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display-only field to account view screen</td><td>BMS map change + COACTVWC data move; no logic change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add validation rule for credit limit update</td><td>COACTUPC business rule + error message; single program change</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add new account field to CVACT01Y</td><td>Copybook change propagates to COACTVWC, COACTUPC, batch programs</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New interest calculation rule</td><td>CBACT04C logic + DISCGRP file structure change</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Account closure workflow</td><td>Multi-step: status change + card deactivation + transaction freeze</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Integration with external credit scoring API</td><td>New batch program + MQ or file-based interface + COACTUPC update</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COACTVWC</td><td>CICS Program (CAVW)</td><td>Account view — keyed VSAM read, screen display</td></tr>
+            <tr><td>COACTUPC</td><td>CICS Program (CAUP)</td><td>Account update — read-for-update, field edit, rewrite</td></tr>
+            <tr><td>CBACT01C</td><td>Batch Program</td><td>Sequential account file read utility</td></tr>
+            <tr><td>CBACT02C</td><td>Batch Program</td><td>Keyed account file read utility</td></tr>
+            <tr><td>CBACT03C</td><td>Batch Program</td><td>Account record update utility</td></tr>
+            <tr><td>CBACT04C</td><td>Batch Program</td><td>Nightly interest calculation (reads DISCGRP, updates TCATBALF)</td></tr>
+            <tr><td>CVACT01Y.cpy</td><td>Copybook</td><td>300-byte account record layout (shared across all account programs)</td></tr>
+            <tr><td>COACTVW.bms</td><td>BMS Map</td><td>Account view screen map</td></tr>
+            <tr><td>COACTUP.bms</td><td>BMS Map</td><td>Account update screen map</td></tr>
+            <tr><td>ACCTDATA VSAM</td><td>VSAM KSDS</td><td>AWS.M2.CARDDEMO.ACCTDATA.PS — primary account store</td></tr>
+        </table>
+
+        <h3>Account Record Layout (CVACT01Y — Selected Fields)</h3>
+        <pre>01  ACCOUNT-RECORD.
+    05  ACCT-ID                    PIC 9(11).
+    05  ACCT-ACTIVE-STATUS         PIC X(1).
+    05  ACCT-CURR-BAL              PIC S9(10)V99 COMP-3.
+    05  ACCT-CREDIT-LIMIT          PIC S9(10)V99 COMP-3.
+    05  ACCT-CASH-CREDIT-LIMIT     PIC S9(10)V99 COMP-3.
+    05  ACCT-OPEN-DATE             PIC X(10).
+    05  ACCT-EXPIRATION-DATE       PIC X(10).
+    05  ACCT-REISSUE-DATE          PIC X(10).
+    05  ACCT-CURR-CYC-CREDIT       PIC S9(10)V99 COMP-3.
+    05  ACCT-CURR-CYC-DEBIT        PIC S9(10)V99 COMP-3.
+    05  ACCT-GROUP-ID              PIC X(10).
+    05  ACCT-ADDR-ZIP              PIC X(10).</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>User must be signed in; CAVW/CAUP check session via COSGN00C</td></tr>
+            <tr><td>Credit Cards</td><td>Downstream</td><td>CARDXREF VSAM (CVACT03Y) links cards to ACCT-ID</td></tr>
+            <tr><td>Transactions</td><td>Downstream</td><td>TRANSACT VSAM stores TRAN-ACCT-ID referencing ACCT-ID</td></tr>
+            <tr><td>Batch Processing</td><td>Downstream</td><td>CBACT01-04C are part of the EOD batch pipeline</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Account View (CAVW)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> an authenticated user with a valid account ID, <strong>WHEN</strong> CAVW is invoked, <strong>THEN</strong> account balance and credit limit are displayed correctly from ACCTDATA VSAM</li>
+            <li><strong>GIVEN</strong> an invalid account ID, <strong>WHEN</strong> CAVW is invoked, <strong>THEN</strong> an appropriate error message is displayed and no account data is shown</li>
+            <li><strong>GIVEN</strong> an unauthenticated session, <strong>WHEN</strong> CAVW is invoked, <strong>THEN</strong> the user is redirected to the sign-on screen</li>
+        </ul>
+        <h3>Account Update (CAUP)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid update request, <strong>WHEN</strong> CAUP processes the change, <strong>THEN</strong> the updated fields are written back to ACCTDATA VSAM and a confirmation message is displayed</li>
+            <li><strong>GIVEN</strong> a credit limit reduction below the current balance, <strong>WHEN</strong> CAUP processes the change, <strong>THEN</strong> the update is rejected with a validation error message</li>
+        </ul>
+        <h3>Batch Interest Calculation (CBACT04C)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> accounts with outstanding balances, <strong>WHEN</strong> CBACT04C runs, <strong>THEN</strong> interest is calculated using the correct rate from DISCGRP for each account's group ID</li>
+            <li><strong>GIVEN</strong> an account with zero balance, <strong>WHEN</strong> CBACT04C runs, <strong>THEN</strong> no interest charge is applied</li>
+            <li><strong>GIVEN</strong> a batch run, <strong>WHEN</strong> CBACT04C completes, <strong>THEN</strong> return code is 0 and all updated records are committed to ACCTDATA VSAM</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

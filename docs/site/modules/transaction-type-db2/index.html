@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Type DB2 - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #0072ff; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #0072ff; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #0072ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🗄️ Transaction Type DB2</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-optional">Optional Module</span>
+        <span class="badge badge-optional">CTTU · CTLI · DB2 · COBTUPDT</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Transaction Type DB2 module is an optional extension that maintains transaction type and category reference data in DB2 tables. It demonstrates static embedded SQL, cursor-based browsing with forward/backward paging, and proper COMMIT/ROLLBACK with SQLCA error handling in a CICS/DB2 environment.</p>
+        <h3>CICS Programs</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CTTU</td><td>COTRTUPC</td><td>Add/edit transaction type — INSERT and UPDATE with SQLCA handling</td></tr>
+            <tr><td>CTLI</td><td>COTRTLIC</td><td>List/update/delete transaction types — cursor-based forward/backward paging</td></tr>
+        </table>
+        <h3>Batch Program</h3>
+        <table>
+            <tr><th>Program</th><th>JCL Job</th><th>Function</th></tr>
+            <tr><td>COBTUPDT</td><td>MNTTRDB2</td><td>Batch maintain DB2 TRANSACTION_TYPE table</td></tr>
+            <tr><td>CBEXPORT</td><td>TRANEXTR</td><td>Extract DB2 transaction types to VSAM for use by core transaction processing</td></tr>
+        </table>
+        <h3>Business Context</h3>
+        <p>The module maintains <strong>CARDDEMO.TRANSACTION_TYPE</strong> and <strong>CARDDEMO.TRANSACTION_TYPE_CATEGORY</strong> DB2 tables. These tables are the authoritative source for transaction type codes. The <strong>TRANEXTR</strong> batch job extracts the DB2 data to the VSAM TRANTYPE file, which is then used by the core transaction programs (COTRN02C) for validation. Admin Menu CA00 options 5 (CTLI) and 6 (CTTU) provide access to these screens.</p>
+        <p>This module serves as a <strong>DB2 patterns reference</strong> for modernization teams — it demonstrates all key DB2/CICS interaction patterns in one focused module.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>DB2 Patterns Demonstrated</h3>
+        <table>
+            <tr><th>Pattern</th><th>Program</th><th>Details</th></tr>
+            <tr><td>Static embedded SQL</td><td>COTRTUPC, COTRTLIC</td><td>SQL precompiler; no dynamic SQL construction</td></tr>
+            <tr><td>DECLARE CURSOR</td><td>COTRTLIC</td><td>Cursor declared for full table browse</td></tr>
+            <tr><td>FETCH forward/backward</td><td>COTRTLIC</td><td>Forward: FETCH NEXT; Backward: reopen cursor from start and FETCH to position</td></tr>
+            <tr><td>INSERT/UPDATE/DELETE</td><td>COTRTUPC, COTRTLIC</td><td>All three DML operations with SQLCA check after each</td></tr>
+            <tr><td>COMMIT/ROLLBACK in CICS</td><td>COTRTUPC, COTRTLIC</td><td>EXEC CICS SYNCPOINT / EXEC CICS SYNCPOINT ROLLBACK</td></tr>
+            <tr><td>DB2 precompiler</td><td>Both</td><td>DSNHPC precompile step in JCL before COBOL compile</td></tr>
+            <tr><td>SQLCA error handling</td><td>Both</td><td>SQLCODE check after every SQL statement; user message on error</td></tr>
+            <tr><td>Referential integrity</td><td>COTRTLIC (DELETE)</td><td>RESTRICT FK from TRANSACTION_TYPE_CATEGORY prevents orphan delete</td></tr>
+        </table>
+
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>Admin Adds New Transaction Type</strong><br>
+            As a system administrator, I want to add a new transaction type code so that it is available for use in transaction entry (CT02).<br><br>
+            <em>COTRTUPC (CTTU) — INSERT INTO CARDDEMO.TRANSACTION_TYPE (TR_TYPE, TR_DESCRIPTION); SQLCA checked; EXEC CICS SYNCPOINT on success</em>
+        </div>
+        <div class="story-box">
+            <strong>Admin Updates Transaction Type Description</strong><br>
+            As a system administrator, I want to update the description of an existing transaction type so that it accurately reflects current business usage.<br><br>
+            <em>COTRTUPC (CTTU) — UPDATE CARDDEMO.TRANSACTION_TYPE SET TR_DESCRIPTION=:WS-DESC WHERE TR_TYPE=:WS-TYPE; SQLCA error handling</em>
+        </div>
+        <div class="story-box">
+            <strong>Admin Deletes Transaction Type (Referential Integrity Check)</strong><br>
+            As a system administrator, I want to delete an unused transaction type code so that the reference table stays clean.<br><br>
+            <em>COTRTLIC (CTLI) — DELETE FROM CARDDEMO.TRANSACTION_TYPE WHERE TR_TYPE=:WS-TYPE; FK RESTRICT on TRANSACTION_TYPE_CATEGORY prevents delete if categories exist; SQLCODE -530 shown as user error</em>
+        </div>
+        <div class="story-box">
+            <strong>Batch Synchronize DB2 to VSAM</strong><br>
+            As a batch operations manager, I want TRANEXTR to extract transaction types from DB2 to the VSAM TRANTYPE file nightly so that online programs validate against current data.<br><br>
+            <em>TRANEXTR job: SELECT all rows from TRANSACTION_TYPE → write sequential file → IDCAMS REPRO to TRANTYPE VSAM</em>
+        </div>
+        <div class="story-box">
+            <strong>Browse Transaction Types with Paging</strong><br>
+            As an administrator, I want to browse the list of all transaction types with forward and backward navigation so that I can review the full reference set.<br><br>
+            <em>COTRTLIC (CTLI) — DECLARE cursor; FETCH NEXT for forward; reopen cursor + FETCH n times for backward; 10 rows per screen</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>COTRTLIC cursor paging pattern</strong> — forward/backward DB2 cursor navigation is directly reusable for any DB2 browsing transaction in the system</li>
+            <li><strong>COTRTUPC INSERT/UPDATE pattern</strong> — static embedded SQL with SQLCA handling is the template for any DB2 write story</li>
+            <li><strong>COBTUPDT batch DB2 update pattern</strong> — batch DB2 maintenance with COMMIT/ROLLBACK is reusable for any batch DB2 update story</li>
+            <li><strong>SQLCA error handling template</strong> — consistent SQLCODE → user message mapping pattern applicable to all DB2 programs</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display field to transaction type list</td><td>BMS map change + COTRTLIC data move; DB2 column already exists</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add validation rule (e.g., type code must be uppercase alpha)</td><td>COTRTUPC validation routine addition + error message</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add search/filter by description keyword</td><td>COTRTLIC: new LIKE predicate in cursor WHERE clause + BMS search field</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New DB2 table for transaction sub-types</td><td>New DDL + FK relationship + COTRTUPC/COTRTLIC program additions + TRANEXTR update</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Stored procedure integration</td><td>DB2 stored procedure definition + CALL statement in COTRTUPC + error handling changes</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Dynamic SQL query for admin ad-hoc search</td><td>PREPARE/EXECUTE in CICS; SQLDA for dynamic column binding; security review required</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>DB2 Tables</h3>
+        <table>
+            <tr><th>Table</th><th>Column</th><th>Type</th><th>Constraint</th></tr>
+            <tr><td>TRANSACTION_TYPE</td><td>TR_TYPE</td><td>CHAR(2)</td><td>PRIMARY KEY</td></tr>
+            <tr><td>TRANSACTION_TYPE</td><td>TR_DESCRIPTION</td><td>VARCHAR(50)</td><td>NOT NULL</td></tr>
+            <tr><td>TRANSACTION_TYPE_CATEGORY</td><td>TRC_TYPE_CODE</td><td>CHAR(2)</td><td>FK → TRANSACTION_TYPE(TR_TYPE) ON DELETE RESTRICT</td></tr>
+            <tr><td>TRANSACTION_TYPE_CATEGORY</td><td>TRC_TYPE_CATEGORY</td><td>CHAR(4)</td><td>Part of composite PK</td></tr>
+            <tr><td>TRANSACTION_TYPE_CATEGORY</td><td>TRC_CAT_DATA</td><td>VARCHAR(50)</td><td>NOT NULL</td></tr>
+        </table>
+        <p>Tables created by the <strong>CREADB21</strong> JCL job. Schema: <strong>CARDDEMO</strong>.</p>
+
+        <h3>Cursor Paging Pattern (COTRTLIC)</h3>
+        <pre>-- Forward paging:
+EXEC SQL DECLARE TRT-CURSOR CURSOR FOR
+    SELECT TR_TYPE, TR_DESCRIPTION
+    FROM CARDDEMO.TRANSACTION_TYPE
+    ORDER BY TR_TYPE
+END-EXEC.
+
+EXEC SQL OPEN TRT-CURSOR END-EXEC.
+PERFORM VARYING WS-ROW FROM 1 BY 1
+    UNTIL WS-ROW > 10 OR SQLCODE = +100
+    EXEC SQL FETCH TRT-CURSOR INTO :WS-TYPE, :WS-DESC END-EXEC
+    IF SQLCODE = 0
+        MOVE WS-TYPE TO SCREEN-TYPE(WS-ROW)
+        MOVE WS-DESC TO SCREEN-DESC(WS-ROW)
+    END-IF
+END-PERFORM.
+
+-- Backward paging: close cursor, reopen, FETCH to (current-page-start - 10)</pre>
+
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COTRTUPC</td><td>CICS Program (CTTU)</td><td>Add/edit — INSERT/UPDATE with SQLCA; EXEC CICS SYNCPOINT</td></tr>
+            <tr><td>COTRTLIC</td><td>CICS Program (CTLI)</td><td>Browse/delete — cursor paging; DELETE with FK check</td></tr>
+            <tr><td>COBTUPDT</td><td>Batch Program (MNTTRDB2)</td><td>Batch DB2 maintenance with COMMIT/ROLLBACK</td></tr>
+            <tr><td>CBEXPORT</td><td>Batch Program (TRANEXTR)</td><td>DB2 → VSAM synchronization for core transaction programs</td></tr>
+            <tr><td>CREADB21</td><td>JCL</td><td>Create TRANSACTION_TYPE and TRANSACTION_TYPE_CATEGORY tables</td></tr>
+            <tr><td>TRANTYPE VSAM</td><td>VSAM</td><td>VSAM copy of DB2 data; used by COTRN02C for online validation</td></tr>
+        </table>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Details</th></tr>
+            <tr><td>Base CardDemo</td><td>COTRN02C uses TRANTYPE VSAM populated by TRANEXTR</td></tr>
+            <tr><td>DB2 subsystem</td><td>DB2 must be active; CREADB21 JCL must have run to create tables</td></tr>
+            <tr><td>CICS DB2 support</td><td>DB2ENTRY and DB2TRAN resources must be defined in CICS</td></tr>
+            <tr><td>DB2 precompiler</td><td>DSNHPC precompile step required in compile JCL for COTRTUPC and COTRTLIC</td></tr>
+            <tr><td>User Management (CA00)</td><td>CTLI and CTTU are accessed via Admin Menu CA00 options 5 and 6; admin access required</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Add/Update (CTTU)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a new unique type code, <strong>WHEN</strong> CTTU processes the add, <strong>THEN</strong> a row is inserted into CARDDEMO.TRANSACTION_TYPE and EXEC CICS SYNCPOINT commits the change</li>
+            <li><strong>GIVEN</strong> a duplicate type code, <strong>WHEN</strong> CTTU attempts the INSERT, <strong>THEN</strong> SQLCODE indicates duplicate key and a user-friendly error message is displayed</li>
+            <li><strong>GIVEN</strong> a DB2 error during INSERT, <strong>WHEN</strong> CTTU handles the SQLCA, <strong>THEN</strong> EXEC CICS SYNCPOINT ROLLBACK is issued and the error is displayed</li>
+        </ul>
+        <h3>Browse/Delete (CTLI)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> multiple transaction types exist, <strong>WHEN</strong> CTLI is invoked, <strong>THEN</strong> rows are displayed using the DB2 cursor with correct forward and backward paging</li>
+            <li><strong>GIVEN</strong> a type code with associated category rows, <strong>WHEN</strong> CTLI attempts to delete it, <strong>THEN</strong> the DB2 FK RESTRICT constraint fires (SQLCODE -530) and the user sees a referential integrity error</li>
+            <li><strong>GIVEN</strong> a type code with no categories, <strong>WHEN</strong> CTLI deletes it, <strong>THEN</strong> the row is removed from TRANSACTION_TYPE and the change is committed</li>
+        </ul>
+        <h3>Batch Synchronization</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a MNTTRDB2 run, <strong>WHEN</strong> COBTUPDT completes, <strong>THEN</strong> return code is 0 and DB2 TRANSACTION_TYPE reflects all intended changes</li>
+            <li><strong>GIVEN</strong> a TRANEXTR run, <strong>WHEN</strong> CBEXPORT completes, <strong>THEN</strong> TRANTYPE VSAM contains all rows from CARDDEMO.TRANSACTION_TYPE and COTRN02C validates against the updated data</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

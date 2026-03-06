@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #f7971e; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #f7971e; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #f7971e; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>👥 User Management</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-core">Core Module</span>
+        <span class="badge badge-core">CA00 · CU00-03 · COUSR00-03C</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The User Management module provides admin-only CRUD operations for system user accounts. Access is restricted to users with type 'A' (Administrator). The module covers the full lifecycle: listing, adding, updating, and deleting users in the USRSEC VSAM file.</p>
+        <h3>CICS Transactions</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CA00</td><td>COADM01C</td><td>Admin Menu — entry point; routes to user management and DB2 options</td></tr>
+            <tr><td>CU00</td><td>COUSR00C</td><td>List users — paginated (10 per screen), forward/backward</td></tr>
+            <tr><td>CU01</td><td>COUSR01C</td><td>Add new user — validates unique ID, type, inserts to USRSEC VSAM</td></tr>
+            <tr><td>CU02</td><td>COUSR02C</td><td>Update user — password, first/last name, type change</td></tr>
+            <tr><td>CU03</td><td>COUSR03C</td><td>Delete user — immediate hard-delete from USRSEC VSAM</td></tr>
+        </table>
+        <h3>Data Store</h3>
+        <p><strong>USRSEC VSAM</strong> (AWS.M2.CARDDEMO.USRSEC.PS) — 80-byte fixed-block records keyed on <code>SEC-USR-ID</code> (8 chars), defined in copybook <strong>CSUSR01Y</strong>. Initialized by the <strong>DUSRSECJ</strong> JCL job.</p>
+        <h3>Business Context</h3>
+        <p>Only users with <code>SEC-USR-TYPE = 'A'</code> can reach the CA00 Admin Menu and the CU00–CU03 screens. This is enforced at the COADM01C entry point by checking the session's user type. Password is stored in plain text in the base application — this is a known modernization target. There is no soft-delete, audit trail, or password history in the base implementation.</p>
+        <h3>Business Rules</h3>
+        <ul>
+            <li>Admin-only access (SEC-USR-TYPE = 'A' required for CA00)</li>
+            <li>User ID must be unique (8-char primary key)</li>
+            <li>SEC-USR-TYPE must be 'A' (Administrator) or 'U' (User)</li>
+            <li>Admin cannot delete their own session user (session risk)</li>
+            <li>Delete is immediate hard-delete — no confirmation step in base app</li>
+            <li>No audit trail in base implementation</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>List All System Users</strong><br>
+            As a system administrator, I want to see a paginated list of all user accounts so that I can monitor who has access to the system.<br><br>
+            <em>Program: COUSR00C (CU00) — sequential scan of USRSEC VSAM, 10 records per screen, PF7/PF8 paging</em>
+        </div>
+        <div class="story-box">
+            <strong>Add New User with Type and Credentials</strong><br>
+            As a system administrator, I want to create a new user account with a specified type and password so that I can grant system access to a new employee.<br><br>
+            <em>Program: COUSR01C (CU01) — validates unique SEC-USR-ID, validates SEC-USR-TYPE (A or U), inserts to USRSEC VSAM</em>
+        </div>
+        <div class="story-box">
+            <strong>Update User Password</strong><br>
+            As a system administrator, I want to reset a user's password so that I can restore access for users who are locked out.<br><br>
+            <em>Program: COUSR02C (CU02) — keyed read-for-update on USRSEC, update SEC-USR-PWD, rewrite record</em>
+        </div>
+        <div class="story-box">
+            <strong>Delete Departed User</strong><br>
+            As a system administrator, I want to delete a user account for a departed employee so that access is removed immediately.<br><br>
+            <em>Program: COUSR03C (CU03) — keyed delete from USRSEC VSAM; no soft-delete; immediate effect</em>
+        </div>
+        <div class="story-box">
+            <strong>View All Active Admin Accounts</strong><br>
+            As an auditor, I want to see all accounts with administrator type so that I can verify privileged access is appropriately controlled.<br><br>
+            <em>CU00 list filtered client-side on SEC-USR-TYPE = 'A'; or new filtered scan story (Medium complexity)</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>COUSR00-03C CRUD template</strong> — these four programs provide a complete VSAM CRUD template reusable for any new VSAM-backed entity in the system</li>
+            <li><strong>CU00 paging pattern</strong> — 10-records-per-screen with forward/backward navigation is directly reusable for any list story</li>
+            <li><strong>CSUSR01Y copybook</strong> — user security record shared with authentication (COSGN00C); ensures consistent user record layout across modules</li>
+            <li><strong>DUSRSECJ JCL</strong> — provides USRSEC initialization and load pattern for bulk user setup stories</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display-only field to user list (e.g., last login date)</td><td>BMS map change + COUSR00C data move; requires CSUSR01Y field addition</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Password strength validation (min length, complexity)</td><td>COUSR01C + COUSR02C: add validation routine + error messages</td></tr>
+            <tr><td>3–5 (Medium)</td><td>User search by last name on CU00 screen</td><td>COUSR00C: add search field to BMS + sequential scan with name filter</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add audit log entry on user create/update/delete</td><td>New audit VSAM file + write call in COUSR01-03C</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Password hashing integration (e.g., bcrypt via external service)</td><td>New hashing utility + COUSR01/02C + COSGN00C authentication change</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Role-based access control beyond A/U</td><td>CSUSR01Y field addition + propagation to COADM01C + all CU programs + authentication</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Bulk user import from external source</td><td>New batch CBIMPORT-style program + validation + USRSEC VSAM load</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+            <tr><td>COADM01C</td><td>CICS Program (CA00)</td><td>Admin Menu — checks SEC-USR-TYPE='A', routes to CU00-CU03 and DB2 options</td></tr>
+            <tr><td>COUSR00C</td><td>CICS Program (CU00)</td><td>User list — sequential USRSEC scan, 10 records/screen, PF7/PF8 paging</td></tr>
+            <tr><td>COUSR01C</td><td>CICS Program (CU01)</td><td>Add user — unique ID validation, type check, VSAM insert</td></tr>
+            <tr><td>COUSR02C</td><td>CICS Program (CU02)</td><td>Update user — read-for-update, field edit, rewrite</td></tr>
+            <tr><td>COUSR03C</td><td>CICS Program (CU03)</td><td>Delete user — keyed VSAM delete</td></tr>
+            <tr><td>CSUSR01Y.cpy</td><td>Copybook</td><td>80-byte user security record (shared with COSGN00C authentication)</td></tr>
+            <tr><td>COADM01.bms</td><td>BMS Map</td><td>Admin Menu screen</td></tr>
+            <tr><td>COUSR00-03.bms</td><td>BMS Maps</td><td>User list, add, update, delete screens</td></tr>
+            <tr><td>USRSEC VSAM</td><td>VSAM KSDS</td><td>AWS.M2.CARDDEMO.USRSEC.PS — 80-byte FB, keyed on SEC-USR-ID</td></tr>
+            <tr><td>DUSRSECJ</td><td>JCL</td><td>USRSEC VSAM initialization and initial user load</td></tr>
+        </table>
+
+        <h3>User Security Record Layout (CSUSR01Y)</h3>
+        <pre>01  SEC-USR-DATA.
+    05  SEC-USR-ID                 PIC X(8).
+    05  SEC-USR-FNAME              PIC X(20).
+    05  SEC-USR-LNAME              PIC X(20).
+    05  SEC-USR-PWD                PIC X(8).
+    05  SEC-USR-TYPE               PIC X(1).
+       88 SEC-USR-TYPE-ADMIN       VALUE 'A'.
+       88 SEC-USR-TYPE-USER        VALUE 'U'.
+    05  SEC-USR-FILLER             PIC X(23).</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Direction</th><th>Details</th></tr>
+            <tr><td>Authentication</td><td>Prerequisite</td><td>COSGN00C validates credentials against USRSEC VSAM (CSUSR01Y shared); admin type checked at CA00 entry</td></tr>
+            <tr><td>Transaction Type DB2 (optional)</td><td>Downstream</td><td>CA00 Admin Menu also routes to CTLI (option 5) and CTTU (option 6) for DB2 transaction type management</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>Access Control</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a user with SEC-USR-TYPE='U' (non-admin), <strong>WHEN</strong> they attempt to access CA00, <strong>THEN</strong> access is denied with an authorization error message</li>
+            <li><strong>GIVEN</strong> an unauthenticated session, <strong>WHEN</strong> CA00 is invoked directly, <strong>THEN</strong> the user is redirected to the sign-on screen</li>
+        </ul>
+        <h3>User List (CU00)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> an authenticated admin, <strong>WHEN</strong> CU00 is invoked, <strong>THEN</strong> up to 10 user records are displayed per screen from USRSEC VSAM</li>
+            <li><strong>GIVEN</strong> more than 10 users exist, <strong>WHEN</strong> the admin presses PF8, <strong>THEN</strong> the next 10 users are displayed; PF7 returns to previous page</li>
+        </ul>
+        <h3>Add User (CU01)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a new unique user ID, <strong>WHEN</strong> CU01 processes the add, <strong>THEN</strong> the record is inserted into USRSEC VSAM and a confirmation is displayed</li>
+            <li><strong>GIVEN</strong> a duplicate user ID, <strong>WHEN</strong> CU01 validates, <strong>THEN</strong> the insert is rejected with a "user ID already exists" error</li>
+            <li><strong>GIVEN</strong> an invalid user type (not A or U), <strong>WHEN</strong> CU01 validates, <strong>THEN</strong> the insert is rejected with a type validation error</li>
+        </ul>
+        <h3>Delete User (CU03)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid user ID, <strong>WHEN</strong> CU03 deletes the user, <strong>THEN</strong> the record is immediately removed from USRSEC VSAM</li>
+            <li><strong>GIVEN</strong> the admin attempts to delete their own user ID, <strong>WHEN</strong> CU03 validates, <strong>THEN</strong> the delete is rejected with a self-delete protection error</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>

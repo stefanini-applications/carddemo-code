@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #24292e; }
+        .header { background: linear-gradient(135deg, #e53935 0%, #e35d5b 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+        h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #1a1a2e; border-left: 4px solid #e53935; padding-left: 10px; }
+        h3 { font-size: 1.05rem; font-weight: 600; margin: 18px 0 10px; color: #333; }
+        p { font-size: 0.92rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { font-size: 0.92rem; line-height: 1.7; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+        th { background: #f0f0f7; padding: 10px 12px; text-align: left; font-weight: 600; color: #333; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.83rem; line-height: 1.5; margin: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+        .badge-core { background: #e8f0fe; color: #1a73e8; }
+        .badge-optional { background: #fce8b2; color: #b06000; }
+        .story-box { background: #f8f9ff; border-left: 4px solid #e53935; padding: 14px 16px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+        .complexity-table td:first-child { font-weight: 600; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        footer a { color: #e53935; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🛡️ Authorization</h1>
+    <p>User Story Development Guide · CardDemo Mainframe Application</p>
+    <div style="margin-top:12px">
+        <span class="badge badge-optional">Optional Module</span>
+        <span class="badge badge-optional">CP00 · CPVS · CPVD · IMS · DB2 · MQ</span>
+    </div>
+</div>
+<div class="container">
+    <section>
+        <h2>📋 Overview</h2>
+        <p>The Authorization module is an optional IMS/DB2/MQ extension that adds real-time card authorization processing to CardDemo. It receives authorization requests from a cloud POS emulator via IBM MQ, processes them against VSAM account data, stores results in an IMS HIDAM database, and supports fraud marking in DB2.</p>
+        <h3>CICS Programs</h3>
+        <table>
+            <tr><th>Transaction ID</th><th>Program</th><th>Function</th></tr>
+            <tr><td>CP00</td><td>COPAUA0C</td><td>MQ-triggered authorization processor — receives request, applies rules, sends response, stores in IMS</td></tr>
+            <tr><td>CPVS</td><td>COPAUS0C</td><td>View authorization summary list from IMS</td></tr>
+            <tr><td>CPVD</td><td>COPAUS1C</td><td>View authorization detail from IMS; mark fraud via PF5</td></tr>
+            <tr><td>—</td><td>COPAUS2C</td><td>Mark authorization as fraudulent — inserts record to DB2 AUTHFRDS table</td></tr>
+        </table>
+        <h3>Batch Program</h3>
+        <table>
+            <tr><th>Program</th><th>Function</th></tr>
+            <tr><td>CBPAUP0C</td><td>Purge expired authorization records from IMS; restore unused credit to ACCTDATA VSAM</td></tr>
+        </table>
+        <h3>Business Context</h3>
+        <p>A cloud POS emulator sends CSV-formatted authorization requests to the MQ queue <strong>AWS.M2.CARDDEMO.PAUTH.REQUEST</strong>. COPAUA0C (CP00) is MQ-triggered, processes each request by looking up the account via the CARDXREF VSAM AIX, applies configurable business rules (credit limit check, card status, expiry), and sends an approval/decline response to the <strong>AWS.M2.CARDDEMO.PAUTH.REPLY</strong> queue. The authorization summary is stored in the IMS HIDAM database for review. Fraud analysts can mark suspicious authorizations via CPVD (PF5), which triggers a DB2 insert in AUTHFRDS.</p>
+    </section>
+
+    <section>
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>MQ Message Formats</h3>
+        <h4>Authorization Request (CSV fields in AWS.M2.CARDDEMO.PAUTH.REQUEST)</h4>
+        <pre>AUTH-DATE, AUTH-TIME, CARD-NUM, AUTH-TYPE,
+CARD-EXPIRY-DATE, MESSAGE-TYPE, MESSAGE-SOURCE,
+PROCESSING-CODE, TRANSACTION-AMT,
+MERCHANT-CATAGORY-CODE, ACQR-COUNTRY-CODE,
+POS-ENTRY-MODE, MERCHANT-ID, MERCHANT-NAME,
+MERCHANT-CITY, MERCHANT-STATE, MERCHANT-ZIP,
+TRANSACTION-ID</pre>
+        <h4>Authorization Response (AWS.M2.CARDDEMO.PAUTH.REPLY)</h4>
+        <pre>CARD-NUM, TRANSACTION-ID, AUTH-ID-CODE,
+AUTH-RESP-CODE, AUTH-RESP-REASON, APPROVED-AMT</pre>
+
+        <h3>Story Templates</h3>
+        <div class="story-box">
+            <strong>POS System Sends Authorization Request via MQ</strong><br>
+            As a point-of-sale system, I want to send a card authorization request via MQ and receive an approval or decline response so that I can complete or refuse the transaction.<br><br>
+            <em>COPAUA0C triggered by MQ message on PAUTH.REQUEST queue; performs VSAM CARDXREF lookup, applies business rules, sends response to PAUTH.REPLY queue, stores summary in IMS PAUTSUM0 segment</em>
+        </div>
+        <div class="story-box">
+            <strong>Cardholder Views Pending Authorizations</strong><br>
+            As a cardholder, I want to see a list of recent authorizations on my card so that I can verify activity.<br><br>
+            <em>COPAUS0C (CPVS) — reads IMS PAUTSUM0 root segments for the account; displays authorization summary list</em>
+        </div>
+        <div class="story-box">
+            <strong>Fraud Analyst Marks Suspicious Authorization</strong><br>
+            As a fraud analyst, I want to flag a suspicious authorization so that it is recorded in the fraud database for investigation.<br><br>
+            <em>COPAUS1C (CPVD) — view auth detail; press PF5 to trigger COPAUS2C, which inserts a record into DB2 AUTHFRDS table with CARD_NUM, AUTH_TS, AUTH_FRAUD='Y', TRANSACTION_AMT</em>
+        </div>
+        <div class="story-box">
+            <strong>Batch Purges Expired Authorizations</strong><br>
+            As a batch operations manager, I want expired and declined authorizations purged nightly so that IMS storage is managed and unused credit holds are released.<br><br>
+            <em>CBPAUP0C — reads IMS PAUTSUM0/PAUTDTL1 segments, identifies expired records, deletes from IMS, restores ACCT-CASH-CREDIT-LIMIT to ACCTDATA VSAM for declined/expired holds</em>
+        </div>
+        <div class="story-box">
+            <strong>Risk Manager Views Fraud Cases</strong><br>
+            As a risk manager, I want to query all authorizations flagged as fraudulent so that I can manage risk exposure.<br><br>
+            <em>DB2 SELECT from AUTHFRDS table filtered by AUTH_FRAUD='Y'; new report program or DB2 query tool</em>
+        </div>
+
+        <h3>Acceleration Factors</h3>
+        <ul>
+            <li><strong>COPAUA0C MQ read pattern (MQGET)</strong> — complete MQ receive, parse, and respond pattern; reusable for any MQ-triggered processing story</li>
+            <li><strong>IMS GU/GN call patterns</strong> — COPAUS0C/1C demonstrate IMS Get Unique and Get Next for HIDAM navigation</li>
+            <li><strong>COPAUS2C DB2 INSERT pattern</strong> — static embedded SQL insert with SQLCA error handling; template for any DB2 write story</li>
+            <li><strong>CSV parsing from MQ message</strong> — field extraction from comma-delimited MQ message body is reusable for any CSV-over-MQ story</li>
+            <li><strong>CBPAUP0C purge/credit-restore pattern</strong> — IMS delete + VSAM update in same batch step is reusable for any cleanup/restore story</li>
+        </ul>
+
+        <h3>Complexity Reference</h3>
+        <table class="complexity-table">
+            <tr><th>Story Points</th><th>Example Story</th><th>Rationale</th></tr>
+            <tr><td>1–2 (Simple)</td><td>Add display field to authorization summary screen</td><td>BMS map change + COPAUS0C data move; IMS segment field already present</td></tr>
+            <tr><td>3–5 (Medium)</td><td>New business rule for auth approval/decline (e.g., velocity check)</td><td>COPAUA0C logic addition + possible new IMS counter field</td></tr>
+            <tr><td>3–5 (Medium)</td><td>Add authorization filter by date range on summary screen</td><td>COPAUS0C: additional IMS SSA condition or client-side filter + BMS field</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New fraud detection algorithm (e.g., ML score from external service)</td><td>New MQ/HTTP callout + COPAUA0C integration + DB2 score storage</td></tr>
+            <tr><td>5–8 (Complex)</td><td>New IMS segment addition (e.g., merchant analytics)</td><td>DBD/PSB change + recompile/reorg + program changes across COPAUA0C/COPAUS0-2C</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Multi-currency support</td><td>New currency conversion step in COPAUA0C + IMS/DB2 schema additions + response format change</td></tr>
+            <tr><td>5–8 (Complex)</td><td>Two-phase commit change (IMS + DB2 + MQ)</td><td>CICS sync point coordination across all three resource managers</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>🔧 Technical Foundation</h2>
+        <h3>IMS Database Structure</h3>
+        <table>
+            <tr><th>Segment</th><th>Type</th><th>Key Fields</th><th>Description</th></tr>
+            <tr><td>PAUTSUM0</td><td>Root (HIDAM)</td><td>CARD-NUM, AUTH-DATE, AUTH-TIME</td><td>Authorization Summary — one per authorization event</td></tr>
+            <tr><td>PAUTDTL1</td><td>Child of PAUTSUM0</td><td>TRANSACTION-ID</td><td>Authorization Detail — merchant, amount, response codes</td></tr>
+        </table>
+        <p>Database: <strong>DBPAUTP0</strong> (HIDAM). Index database: <strong>DBPAUTX0</strong>. PSBs defined for each program that accesses IMS.</p>
+
+        <h3>DB2 Tables</h3>
+        <table>
+            <tr><th>Table</th><th>Column</th><th>Type</th><th>Description</th></tr>
+            <tr><td>AUTHFRDS</td><td>CARD_NUM</td><td>CHAR(16)</td><td>Card number (part of composite key)</td></tr>
+            <tr><td>AUTHFRDS</td><td>AUTH_TS</td><td>TIMESTAMP</td><td>Authorization timestamp (part of composite key)</td></tr>
+            <tr><td>AUTHFRDS</td><td>AUTH_FRAUD</td><td>CHAR(1)</td><td>Fraud flag: 'Y' = fraud</td></tr>
+            <tr><td>AUTHFRDS</td><td>TRANSACTION_AMT</td><td>DECIMAL(12,2)</td><td>Transaction amount at time of authorization</td></tr>
+        </table>
+
+        <h3>MQ Queue Configuration</h3>
+        <pre>Request Queue:  AWS.M2.CARDDEMO.PAUTH.REQUEST
+Reply Queue:    AWS.M2.CARDDEMO.PAUTH.REPLY
+CICS MQCONN:    MQ01
+CICS MQQUEUE:   CARDPAUTH (request), CARDPAUTHR (reply)</pre>
+
+        <h3>Dependencies</h3>
+        <table>
+            <tr><th>Dependency</th><th>Details</th></tr>
+            <tr><td>Base CardDemo installed</td><td>VSAM files (ACCTDATA, CARDXREF) must be present and loaded</td></tr>
+            <tr><td>IMS DB configured</td><td>DBPAUTP0 and DBPAUTX0 databases defined; PSBs compiled and linked</td></tr>
+            <tr><td>DB2 AUTHFRDS table</td><td>Created by CREADB21 JCL job; CICS DB2ENTRY and DB2TRAN must be defined</td></tr>
+            <tr><td>IBM MQ</td><td>MQ queues defined (DEFINE QLOCAL); CICS MQCONN resource defined</td></tr>
+            <tr><td>VSAM files accessible</td><td>CARDXREF AIX must be built (BLDINDEX); ACCTDATA must be loaded</td></tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>✅ Acceptance Criteria Patterns</h2>
+        <h3>MQ Authorization Processing (CP00)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a valid authorization request on the MQ queue, <strong>WHEN</strong> COPAUA0C processes it, <strong>THEN</strong> an approval or decline response is placed on PAUTH.REPLY within 5 seconds</li>
+            <li><strong>GIVEN</strong> an authorization request, <strong>WHEN</strong> COPAUA0C processes it, <strong>THEN</strong> a PAUTSUM0 IMS record is created with the authorization details</li>
+            <li><strong>GIVEN</strong> a card number in the request, <strong>WHEN</strong> COPAUA0C performs the VSAM xref lookup, <strong>THEN</strong> the associated account ID and status are retrieved correctly via CARDXREF AIX</li>
+            <li><strong>GIVEN</strong> a request exceeding the account credit limit, <strong>WHEN</strong> COPAUA0C applies business rules, <strong>THEN</strong> AUTH-RESP-CODE indicates decline and APPROVED-AMT is zero in the response</li>
+        </ul>
+        <h3>Fraud Marking (CPVD / COPAUS2C)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> a fraud analyst presses PF5 on the authorization detail screen, <strong>WHEN</strong> COPAUS2C processes the fraud mark, <strong>THEN</strong> a record is inserted into DB2 AUTHFRDS with AUTH_FRAUD='Y' and the correct CARD_NUM and AUTH_TS</li>
+            <li><strong>GIVEN</strong> a DB2 insert error, <strong>WHEN</strong> COPAUS2C handles the SQLCA, <strong>THEN</strong> a clear error message is displayed and the CICS transaction rolls back</li>
+        </ul>
+        <h3>Batch Purge (CBPAUP0C)</h3>
+        <ul>
+            <li><strong>GIVEN</strong> expired authorization records in IMS, <strong>WHEN</strong> CBPAUP0C runs, <strong>THEN</strong> all expired records are deleted from IMS PAUTSUM0/PAUTDTL1</li>
+            <li><strong>GIVEN</strong> a purged authorization that had a credit hold, <strong>WHEN</strong> CBPAUP0C completes, <strong>THEN</strong> the corresponding ACCT-CASH-CREDIT-LIMIT in ACCTDATA VSAM is restored</li>
+            <li><strong>GIVEN</strong> the purge batch run, <strong>WHEN</strong> it completes, <strong>THEN</strong> return code is 0 and a summary count of purged records is written to SYSOUT</li>
+        </ul>
+    </section>
+</div>
+<footer>
+    <p><a href="../../index.html">← Back to Index</a> | <a href="../../../system-overview.md">System Overview</a></p>
+    <p style="margin-top:5px"><em>Last updated: 2025-03-06</em></p>
+</footer>
+</body>
+</html>
