@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 35px 20px; }
+        .header h1 { font-size: 2em; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { font-size: 1.3em; color: #1a237e; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e8eaf6; }
+        h3 { font-size: 1.05em; color: #283593; margin: 18px 0 10px; }
+        p { line-height: 1.7; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { line-height: 1.7; color: #444; margin-bottom: 4px; }
+        code { background: #e8eaf6; color: #1a237e; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 18px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.88em; line-height: 1.6; }
+        .badge { display: inline-block; background: #e8eaf6; color: #1a237e; font-size: 0.78em; padding: 3px 10px; border-radius: 12px; margin: 2px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th { background: #1a237e; color: white; padding: 10px 14px; text-align: left; }
+        td { padding: 9px 14px; border-bottom: 1px solid #e8eaf6; }
+        tr:nth-child(even) td { background: #f8f9ff; }
+        .us-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .us-box strong { color: #1b5e20; }
+        .ac-box { background: #fff3e0; border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #3949ab; text-decoration: none; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="max-width:1100px;margin:0 auto;padding:0 20px">
+            <h1>🔐 Authentication</h1>
+            <p>CardDemo User Story Development Guide</p>
+        </div>
+    </div>
+    <div class="container">
+        <a class="back-link" href="../../index.html">← Back to Index</a>
+
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Controls user signon/signoff and session initialization for the CardDemo application.</p>
+            <p><strong>Business Context:</strong> All access to CardDemo begins at the signon screen. Authentication determines user type (Regular vs Admin) and routes users to the appropriate menu. Without successful authentication, no other function is accessible.</p>
+            <p><strong>Transaction:</strong> <code>CC00</code> &nbsp;|&nbsp; <strong>Program:</strong> <code>COSGN00C</code> &nbsp;|&nbsp; <strong>BMS Map:</strong> <code>COSGN00</code></p>
+            <div>
+                <span class="badge">COBOL CICS</span>
+                <span class="badge">VSAM USRSEC</span>
+                <span class="badge">BMS</span>
+                <span class="badge">COMMAREA</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Templates</h2>
+            <div class="us-box">
+                <strong>US-AUTH-001:</strong> As a cardholder, I want to log in with my User ID and Password so that I can access my account functions.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-002:</strong> As an administrator, I want to log in so that I can access the admin menu and manage users.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-003:</strong> As a cardholder, I want to see an error message when my credentials are invalid so that I know my login failed.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-004:</strong> As a system operator, I want the signon screen to clear the password field after a failed attempt so that credentials are not exposed.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-box">
+                <strong>Valid login (Regular User):</strong><br>
+                GIVEN a valid regular user ID and password<br>
+                WHEN the user submits the signon screen<br>
+                THEN the Main Menu (CM00) is displayed
+            </div>
+            <div class="ac-box">
+                <strong>Valid login (Admin User):</strong><br>
+                GIVEN a valid admin user ID and password<br>
+                WHEN the user submits the signon screen<br>
+                THEN the Admin Menu (CA00) is displayed
+            </div>
+            <div class="ac-box">
+                <strong>Invalid credentials:</strong><br>
+                GIVEN an invalid user ID or password<br>
+                WHEN the user submits the signon screen<br>
+                THEN an error message is displayed and the user remains on the signon screen
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Story Complexity Guidelines</h2>
+            <table>
+                <tr><th>Complexity</th><th>Points</th><th>Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Display signon screen, clear error message</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add password complexity validation, add login attempt counter</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Integrate RACF authentication, implement session timeout, add multi-factor authentication</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+                <tr><td><code>COSGN00C</code></td><td>CICS Program</td><td>Signon screen controller – validates credentials, routes by user type</td></tr>
+                <tr><td><code>COSGN00</code></td><td>BMS Map</td><td>Screen layout for signon (User ID, Password, error message fields)</td></tr>
+                <tr><td><code>USRSEC</code></td><td>VSAM File</td><td>User security data store (record length 80, copybook CSUSR01Y)</td></tr>
+                <tr><td><code>CSUSR01Y</code></td><td>Copybook</td><td>SEC-USER-DATA structure: ID, first/last name, password, type</td></tr>
+                <tr><td><code>COCOM01Y</code></td><td>Copybook</td><td>Common communication area used across all CICS programs</td></tr>
+            </table>
+
+            <h3>Data Model – SEC-USER-DATA (CSUSR01Y)</h3>
+            <pre>01 SEC-USER-DATA.
+   05 SEC-USR-ID       PIC X(08)   -- User ID (8 chars, space-padded)
+   05 SEC-USR-FNAME    PIC X(20)   -- First name
+   05 SEC-USR-LNAME    PIC X(20)   -- Last name
+   05 SEC-USR-PWD      PIC X(08)   -- Password (8 chars)
+   05 SEC-USR-TYPE     PIC X(01)   -- R = Regular, A = Admin
+   05 SEC-USR-FILLER   PIC X(23)</pre>
+
+            <h3>Authentication Flow</h3>
+            <ol>
+                <li>User starts <code>CC00</code> transaction in CICS terminal</li>
+                <li><code>COSGN00C</code> displays BMS map <code>COSGN00</code></li>
+                <li>User enters User ID and Password, presses Enter</li>
+                <li>Program reads <code>USRSEC</code> VSAM file keyed by User ID</li>
+                <li>Compares entered password with <code>SEC-USR-PWD</code></li>
+                <li>On match: checks <code>SEC-USR-TYPE</code></li>
+                <li>Type <code>R</code> → XCTL to <code>COMEN01C</code> (CM00 Main Menu)</li>
+                <li>Type <code>A</code> → XCTL to <code>COADM01C</code> (CA00 Admin Menu)</li>
+                <li>On failure: display error message on signon screen</li>
+            </ol>
+
+            <h3>Default Credentials (Sample Data)</h3>
+            <table>
+                <tr><th>User ID</th><th>Password</th><th>Type</th></tr>
+                <tr><td><code>ADMIN001</code></td><td><code>PASSWORD</code></td><td>Admin (A)</td></tr>
+                <tr><td><code>USER0001</code></td><td><code>PASSWORD</code></td><td>Regular (R)</td></tr>
+            </table>
+
+            <h3>Dependencies</h3>
+            <ul>
+                <li><strong>VSAM USRSEC:</strong> Must be loaded via <code>DUSRSECJ</code> batch job before online use</li>
+                <li><strong>CICS Resources:</strong> Transaction <code>CC00</code> and mapset <code>COSGN00</code> must be defined in CICS CSD</li>
+                <li><strong>COMMAREA:</strong> Session state flows through CICS COMMAREA to all subsequent programs</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Development Acceleration Factors</h2>
+            <ul>
+                <li><strong>CSUSR01Y copybook:</strong> Standard user record layout, reuse for all user security operations</li>
+                <li><strong>COCOM01Y copybook:</strong> Common commarea pattern shared across all CICS programs</li>
+                <li><strong>DFHAID / DFHBMSCA:</strong> Standard CICS key handling copybooks included in all programs</li>
+                <li><strong>CC00 is the entry point:</strong> All new online user stories begin with an authenticated session from this module</li>
+            </ul>
+        </div>
+    </div>
+    <div style="text-align:center;padding:20px;color:#888;font-size:0.85em">
+        <a href="../../index.html" style="color:#3949ab">← Back to Index</a> | Last updated: 2025-03-06
+    </div>
+</body>
+</html>

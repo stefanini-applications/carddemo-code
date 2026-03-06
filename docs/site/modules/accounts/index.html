@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #004d40 0%, #00796b 100%); color: white; padding: 35px 20px; }
+        .header h1 { font-size: 2em; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { font-size: 1.3em; color: #004d40; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0f2f1; }
+        h3 { font-size: 1.05em; color: #00695c; margin: 18px 0 10px; }
+        p { line-height: 1.7; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { line-height: 1.7; color: #444; margin-bottom: 4px; }
+        code { background: #e0f2f1; color: #004d40; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 18px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.88em; line-height: 1.6; }
+        .badge { display: inline-block; background: #e0f2f1; color: #004d40; font-size: 0.78em; padding: 3px 10px; border-radius: 12px; margin: 2px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th { background: #004d40; color: white; padding: 10px 14px; text-align: left; }
+        td { padding: 9px 14px; border-bottom: 1px solid #e0f2f1; }
+        tr:nth-child(even) td { background: #f1faf9; }
+        .us-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .us-box strong { color: #1b5e20; }
+        .ac-box { background: #fff3e0; border-left: 4px solid #e65100; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #00796b; text-decoration: none; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="max-width:1100px;margin:0 auto;padding:0 20px">
+            <h1>💳 Accounts</h1>
+            <p>CardDemo User Story Development Guide</p>
+        </div>
+    </div>
+    <div class="container">
+        <a class="back-link" href="../../index.html">← Back to Index</a>
+
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Enables viewing and updating credit card account information including balances, credit limits, and key account dates.</p>
+            <p><strong>Business Context:</strong> Account management is a core function for both cardholders and customer service representatives. Cardholders use the view function to monitor their financial status; CSRs use the update function to apply limit changes and account modifications.</p>
+            <p><strong>Transactions:</strong> <code>CAVW</code> (view) &nbsp;|&nbsp; <code>CAUP</code> (update) &nbsp;|&nbsp; <strong>Programs:</strong> <code>COACTVWC</code> / <code>COACTUPC</code></p>
+            <div>
+                <span class="badge">COBOL CICS</span>
+                <span class="badge">VSAM ACCTFILE</span>
+                <span class="badge">BMS COACTVW / COACTUP</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Templates</h2>
+            <div class="us-box">
+                <strong>US-ACCT-001:</strong> As a cardholder, I want to view my current account balance so that I can monitor how much I have spent.
+            </div>
+            <div class="us-box">
+                <strong>US-ACCT-002:</strong> As a cardholder, I want to view my credit limit and cash credit limit so that I know my available spending power.
+            </div>
+            <div class="us-box">
+                <strong>US-ACCT-003:</strong> As a cardholder, I want to view my account open date and expiration date so that I can plan for card renewal.
+            </div>
+            <div class="us-box">
+                <strong>US-ACCT-004:</strong> As a customer service representative, I want to update an account's credit limit so that I can process approved limit increase requests.
+            </div>
+            <div class="us-box">
+                <strong>US-ACCT-005:</strong> As a customer service representative, I want to update the account group ID so that correct interest rates are applied.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-box">
+                <strong>Account View:</strong><br>
+                GIVEN an authenticated cardholder with a valid account ID<br>
+                WHEN the CAVW transaction is executed<br>
+                THEN all account fields (balance, limits, dates, group) are displayed accurately
+            </div>
+            <div class="ac-box">
+                <strong>Account Update – Success:</strong><br>
+                GIVEN a CSR has updated the credit limit with a valid numeric value<br>
+                WHEN the update is submitted<br>
+                THEN the ACCTFILE VSAM record is updated and a success message is displayed
+            </div>
+            <div class="ac-box">
+                <strong>Account Update – Validation:</strong><br>
+                GIVEN a CSR enters a non-numeric value in a numeric field<br>
+                WHEN the update is submitted<br>
+                THEN an error message is displayed and the record is not updated
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Story Complexity Guidelines</h2>
+            <table>
+                <tr><th>Complexity</th><th>Points</th><th>Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Display account view screen (CAVW)</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Update account fields with validation (CAUP); add field-level validation rules</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Multi-account view, credit limit approval workflow, integration with customer data</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+                <tr><td><code>COACTVWC</code></td><td>CICS Program</td><td>Account view – reads ACCTFILE and displays account details</td></tr>
+                <tr><td><code>COACTUPC</code></td><td>CICS Program</td><td>Account update – validates input and rewrites ACCTFILE record</td></tr>
+                <tr><td><code>COACTVW</code></td><td>BMS Map</td><td>Screen layout for account view</td></tr>
+                <tr><td><code>COACTUP</code></td><td>BMS Map</td><td>Screen layout for account update</td></tr>
+                <tr><td><code>ACCTFILE</code></td><td>VSAM KSDS</td><td>Account master (record length 300, key = ACCT-ID)</td></tr>
+                <tr><td><code>CVACT01Y</code></td><td>Copybook</td><td>ACCOUNT-RECORD structure</td></tr>
+            </table>
+
+            <h3>Data Model – ACCOUNT-RECORD (CVACT01Y)</h3>
+            <pre>01 ACCOUNT-RECORD.
+   05 ACCT-ID                  PIC 9(11)       -- 11-digit account ID (key)
+   05 ACCT-ACTIVE-STATUS       PIC X(01)       -- Account status (A=Active)
+   05 ACCT-CURR-BAL            PIC S9(10)V99   -- Current balance
+   05 ACCT-CREDIT-LIMIT        PIC S9(10)V99   -- Credit limit
+   05 ACCT-CASH-CREDIT-LIMIT   PIC S9(10)V99   -- Cash advance limit
+   05 ACCT-OPEN-DATE           PIC X(10)       -- Open date (YYYY-MM-DD)
+   05 ACCT-EXPIRAION-DATE      PIC X(10)       -- Expiration date (YYYY-MM-DD)
+   05 ACCT-REISSUE-DATE        PIC X(10)       -- Reissue date (YYYY-MM-DD)
+   05 ACCT-CURR-CYC-CREDIT     PIC S9(10)V99   -- Cycle credits
+   05 ACCT-CURR-CYC-DEBIT      PIC S9(10)V99   -- Cycle debits
+   05 ACCT-ADDR-ZIP            PIC X(10)       -- ZIP code
+   05 ACCT-GROUP-ID            PIC X(10)       -- Discount group ID
+   05 FILLER                   PIC X(178)</pre>
+
+            <h3>Dependencies</h3>
+            <ul>
+                <li><strong>authentication:</strong> CICS session must be established via CC00 before accessing accounts</li>
+                <li><strong>ACCTFILE VSAM:</strong> Must be loaded via <code>ACCTFILE</code> batch job</li>
+                <li><strong>bill-payment:</strong> Depends on ACCTFILE for balance updates</li>
+                <li><strong>batch-processing (INTCALC):</strong> CBACT04C reads ACCTFILE for interest calculation</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Development Acceleration Factors</h2>
+            <ul>
+                <li><strong>CVACT01Y copybook:</strong> Standard account record layout – reuse across all account-related programs</li>
+                <li><strong>COACTUPC pattern:</strong> Established update pattern with CICS REWRITE; use as template for similar update screens</li>
+                <li><strong>ACCTFILE KSDS:</strong> Direct keyed access by ACCT-ID enables fast single-record retrieval</li>
+            </ul>
+        </div>
+    </div>
+    <div style="text-align:center;padding:20px;color:#888;font-size:0.85em">
+        <a href="../../index.html" style="color:#00796b">← Back to Index</a> | Last updated: 2025-03-06
+    </div>
+</body>
+</html>

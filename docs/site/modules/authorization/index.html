@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #e65100 0%, #f57c00 100%); color: white; padding: 35px 20px; }
+        .header h1 { font-size: 2em; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .optional-badge { display: inline-block; background: rgba(255,255,255,0.25); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-top: 10px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2 { font-size: 1.3em; color: #e65100; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #fff3e0; }
+        h3 { font-size: 1.05em; color: #f57c00; margin: 18px 0 10px; }
+        p { line-height: 1.7; color: #444; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 12px; }
+        li { line-height: 1.7; color: #444; margin-bottom: 4px; }
+        code { background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 18px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 0.88em; line-height: 1.6; }
+        .badge { display: inline-block; background: #fff3e0; color: #e65100; font-size: 0.78em; padding: 3px 10px; border-radius: 12px; margin: 2px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th { background: #e65100; color: white; padding: 10px 14px; text-align: left; }
+        td { padding: 9px 14px; border-bottom: 1px solid #fff3e0; }
+        tr:nth-child(even) td { background: #fffaf5; }
+        .us-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .us-box strong { color: #1b5e20; }
+        .ac-box { background: #fff8e1; border-left: 4px solid #f57c00; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #f57c00; text-decoration: none; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="max-width:1100px;margin:0 auto;padding:0 20px">
+            <h1>&#x1F6E1;&#xFE0F; Authorization</h1>
+            <p>CardDemo User Story Development Guide</p>
+            <div class="optional-badge">Optional Module - Requires IMS DB, DB2, MQ</div>
+        </div>
+    </div>
+    <div class="container">
+        <a class="back-link" href="../../index.html">&#x2190; Back to Index</a>
+
+        <div class="card">
+            <h2>&#x1F4CB; Module Overview</h2>
+            <p><strong>Purpose:</strong> Real-time credit card authorization processing. Receives authorization requests via MQ, validates them against account/customer data, stores results in IMS DB, supports fraud marking with DB2 integration, and provides CICS screens for viewing pending authorizations.</p>
+            <p><strong>Business Context:</strong> When a cardholder makes a purchase, the merchant POS system sends an authorization request via MQ. CardDemo processes this request in real time and returns an approve/decline decision. Fraud analysts can then review pending authorizations and flag suspicious ones for investigation.</p>
+            <p><strong>Transactions:</strong> <code>CP00</code> (process) | <code>CPVS</code> (summary) | <code>CPVD</code> (detail)<br>
+            <strong>Programs:</strong> <code>COPAUA0C</code> / <code>COPAUS0C</code> / <code>COPAUS1C</code> / <code>COPAUS2C</code></p>
+            <div>
+                <span class="badge">COBOL CICS</span>
+                <span class="badge">IMS DB</span>
+                <span class="badge">IBM DB2</span>
+                <span class="badge">IBM MQ</span>
+                <span class="badge">VSAM</span>
+                <span class="badge">Optional Module</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>&#x1F3AF; User Story Templates</h2>
+            <div class="us-box">
+                <strong>US-AUTH-001:</strong> As a cardholder, I want my credit card transactions to be authorized in real time so that fraudulent charges are prevented.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-002:</strong> As a fraud analyst, I want to view a summary of pending authorizations so that I can monitor authorization activity.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-003:</strong> As a fraud analyst, I want to view the details of a specific authorization so that I can evaluate its legitimacy.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-004:</strong> As a fraud analyst, I want to mark an authorization as fraudulent so that it is flagged for investigation in DB2.
+            </div>
+            <div class="us-box">
+                <strong>US-AUTH-005:</strong> As a batch operator, I want to run CBPAUP0J to purge expired authorizations so that IMS DB storage is managed.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>&#x2705; Acceptance Criteria Patterns</h2>
+            <div class="ac-box">
+                <strong>Authorization Processing (CP00):</strong><br>
+                GIVEN an MQ authorization request arrives in the request queue<br>
+                WHEN COPAUA0C processes the message<br>
+                THEN account and customer data is validated, approve/decline is determined, response is sent to reply queue, and result is stored in IMS DB
+            </div>
+            <div class="ac-box">
+                <strong>Authorization Summary (CPVS):</strong><br>
+                GIVEN an authenticated user with account access<br>
+                WHEN CPVS is executed<br>
+                THEN a summary list of pending authorizations is displayed from IMS DB
+            </div>
+            <div class="ac-box">
+                <strong>Fraud Mark (CPVD):</strong><br>
+                GIVEN a fraud analyst selects an authorization and marks it as fraud<br>
+                WHEN the action is submitted<br>
+                THEN IMS DB record is updated and a DB2 fraud record is inserted
+            </div>
+            <div class="ac-box">
+                <strong>Batch Purge (CBPAUP0J):</strong><br>
+                GIVEN expired authorization records exist in IMS DB<br>
+                WHEN CBPAUP0J runs CBPAUP0C<br>
+                THEN expired records are deleted, return code = 0
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>&#x1F4CA; Story Complexity Guidelines</h2>
+            <table>
+                <tr><th>Complexity</th><th>Points</th><th>Examples</th></tr>
+                <tr><td>Simple</td><td>1-2</td><td>View authorization summary list (CPVS)</td></tr>
+                <tr><td>Medium</td><td>3-5</td><td>View authorization detail (CPVD), mark as fraud, batch purge</td></tr>
+                <tr><td>Complex</td><td>5-8</td><td>Full MQ authorization pipeline (CP00), two-phase commit IMS+DB2, fraud analytics integration</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>New authorization rule engine, ML-based fraud scoring, real-time POS integration</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>&#x1F527; Technical Foundation</h2>
+            <h3>Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+                <tr><td><code>COPAUA0C</code></td><td>CICS/MQ Program</td><td>Authorization decision - MQ trigger, IMS/VSAM validation, response</td></tr>
+                <tr><td><code>COPAUS0C</code></td><td>CICS Program</td><td>Pending authorization summary - reads IMS DB + VSAM</td></tr>
+                <tr><td><code>COPAUS1C</code></td><td>CICS Program</td><td>Authorization detail - updates IMS DB, inserts DB2</td></tr>
+                <tr><td><code>COPAUS2C</code></td><td>CICS Program</td><td>Mark authorization as fraud - DB2 insert</td></tr>
+                <tr><td><code>CBPAUP0C</code></td><td>Batch IMS Program</td><td>Purge expired authorization records from IMS DB</td></tr>
+                <tr><td>IMS DB</td><td>Hierarchical Database</td><td>Authorization record storage (hierarchical structure)</td></tr>
+                <tr><td>IBM DB2</td><td>Relational Database</td><td>Fraud analytics records</td></tr>
+                <tr><td>IBM MQ</td><td>Message Queue</td><td>Authorization request queue, reply queue</td></tr>
+                <tr><td>VSAM CARDXREF</td><td>VSAM</td><td>Card-to-account cross-reference for validation</td></tr>
+            </table>
+
+            <h3>Authorization Processing Flow</h3>
+            <ol>
+                <li>External POS/cloud client sends authorization request to MQ request queue</li>
+                <li>MQ trigger activates CICS transaction <code>CP00</code> running <code>COPAUA0C</code></li>
+                <li>Program reads MQ message and extracts card number and amount</li>
+                <li>Looks up account via VSAM CARDXREF cross-reference</li>
+                <li>Validates: account active, balance within credit limit, card active</li>
+                <li>Stores authorization result (approve/decline) in IMS DB</li>
+                <li>Sends response message to MQ reply queue</li>
+                <li>Fraud analyst can view via <code>CPVS</code> (COPAUS0C) and <code>CPVD</code> (COPAUS1C)</li>
+                <li>Fraud marking via COPAUS2C inserts record into DB2</li>
+                <li>Batch <code>CBPAUP0J</code> periodically purges expired IMS DB records</li>
+            </ol>
+
+            <h3>Prerequisites for Installation</h3>
+            <ul>
+                <li>Base CardDemo application installed and operational</li>
+                <li>IBM MQ configured with request and reply queues</li>
+                <li>IMS DB configured with authorization segment definitions</li>
+                <li>DB2 fraud table created (DDL in <code>app/app-authorization-ims-db2-mq/ddl/</code>)</li>
+                <li>CICS resources defined for CP00, CPVS, CPVD transactions</li>
+                <li>IMS DB resources defined (PSB, DBD in <code>ims/</code> directory)</li>
+            </ul>
+
+            <h3>Dependencies</h3>
+            <ul>
+                <li><strong>authentication:</strong> CICS session required for CPVS/CPVD screens</li>
+                <li><strong>credit-cards:</strong> CARDXREF VSAM used for card-to-account lookup</li>
+                <li><strong>accounts:</strong> ACCTFILE used for balance and limit validation</li>
+                <li><strong>IBM MQ Infrastructure:</strong> External dependency - MQ must be running</li>
+                <li><strong>IMS DB Infrastructure:</strong> IMS DB must be configured</li>
+                <li><strong>DB2 Infrastructure:</strong> DB2 fraud table must exist</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>&#x26A1; Development Acceleration Factors</h2>
+            <ul>
+                <li><strong>MQ trigger pattern:</strong> COPAUA0C demonstrates MQ-triggered CICS execution - reuse for other event-driven patterns</li>
+                <li><strong>IMS DL/I calls:</strong> Established IMS hierarchical DB access patterns in COPAUS0C/1C/CBPAUP0C</li>
+                <li><strong>Two-phase commit pattern:</strong> COPAUS1C demonstrates IMS+DB2 coordinated updates</li>
+                <li><strong>CARDXREF lookup:</strong> Card-to-account cross-reference pattern reused across base app and this module</li>
+            </ul>
+        </div>
+    </div>
+    <div style="text-align:center;padding:20px;color:#888;font-size:0.85em">
+        <a href="../../index.html" style="color:#f57c00">&#x2190; Back to Index</a> | Last updated: 2025-03-06
+    </div>
+</body>
+</html>
