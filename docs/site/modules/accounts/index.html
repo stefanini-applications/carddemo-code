@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #276749 100%); color: white; padding: 36px 28px; border-radius: 12px; margin-bottom: 28px; }
+        .header h1 { font-size: 2rem; margin-bottom: 6px; }
+        .section { background: white; border-radius: 10px; padding: 26px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { color: #1a365d; font-size: 1.25rem; margin-bottom: 14px; border-bottom: 2px solid #e8f0fe; padding-bottom: 8px; }
+        .section h3 { color: #276749; font-size: 1rem; margin: 16px 0 8px; }
+        ul { padding-left: 20px; line-height: 1.8; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.87em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: #f0f4ff; padding: 10px 12px; text-align: left; font-weight: 600; color: #1a365d; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        .complexity { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .simple { background: #d4edda; color: #155724; }
+        .medium { background: #fff3cd; color: #856404; }
+        .complex { background: #f8d7da; color: #721c24; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        a { color: #276749; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>🏦 Accounts Module</h1>
+        <p>CardDemo — User Story Development Guide</p>
+    </header>
+
+    <section class="section">
+        <h2>📋 Overview</h2>
+        <p><strong>Purpose:</strong> Provides cardholders with the ability to view and update their credit card account information, including balances, limits, and account status.</p>
+        <p style="margin-top:8px;"><strong>Business Context:</strong> The account is the central entity in CardDemo — it links customers, cards, and transactions. Account balances and credit limits govern transaction approval and interest calculation.</p>
+        <p style="margin-top:8px;"><strong>CICS Transactions:</strong> <code>CAVW</code> (view), <code>CAUP</code> (update)</p>
+        <p><strong>Batch Jobs:</strong> INTCALC (CBACT04C), ACCTFILE, CBACT01C–CBACT03C</p>
+    </section>
+
+    <section class="section">
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>📝 US Templates</h3>
+        <ul>
+            <li>As a <em>cardholder</em>, I want to view my account balance and credit limit so that I can manage my spending</li>
+            <li>As a <em>cardholder</em>, I want to view my account open and expiration dates so that I know when my card will be reissued</li>
+            <li>As a <em>cardholder</em>, I want to update my billing ZIP code so that my address information is current</li>
+            <li>As a <em>batch operator</em>, I want to run INTCALC so that interest is applied to all active account balances each cycle</li>
+            <li>As a <em>financial analyst</em>, I want current-cycle credit and debit totals so that I can monitor spending patterns</li>
+        </ul>
+
+        <h3>⚡ Development Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVACT01Y copybook:</strong> Complete account record structure pre-defined</li>
+            <li><strong>COACTVWC pattern:</strong> Read-only view pattern with VSAM KSDS access established</li>
+            <li><strong>DISCGRP linkage:</strong> ACCT-GROUP-ID → DISCGRP rate lookup pattern available in CBACT04C</li>
+        </ul>
+
+        <h3>📊 Complexity Guidelines</h3>
+        <ul>
+            <li><span class="complexity simple">1–2 pts</span> Account View (CAVW) — display existing record from ACCTFILE</li>
+            <li><span class="complexity medium">3–5 pts</span> Account Update (CAUP) — validate and write back to ACCTFILE</li>
+            <li><span class="complexity complex">5–8 pts</span> Interest calculation batch integration; account group/rate rule changes</li>
+        </ul>
+    </section>
+
+    <section class="section">
+        <h2>🔧 Technical Foundation</h2>
+        <h3>🏗️ Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+            <tr><td><code>COACTVWC</code></td><td>CICS Program</td><td>Account View — reads ACCTFILE by ACCT-ID from COMMAREA</td></tr>
+            <tr><td><code>COACTUPC</code></td><td>CICS Program</td><td>Account Update — validates and rewrites ACCTFILE record</td></tr>
+            <tr><td><code>CBACT04C</code></td><td>Batch Program</td><td>Interest calculator — reads TCATBALF/DISCGRP, updates ACCTFILE</td></tr>
+            <tr><td><code>CVACT01Y</code></td><td>Copybook</td><td>ACCOUNT-RECORD structure (300-byte)</td></tr>
+            <tr><td>ACCTFILE</td><td>VSAM KSDS</td><td>Account master; keyed on ACCT-ID (9(11))</td></tr>
+            <tr><td>DISCGRP</td><td>VSAM KSDS</td><td>Interest rates by account group + transaction type/category</td></tr>
+        </table>
+
+        <h3>📊 Account Data Model</h3>
+        <pre>ACCT-ID                  PIC 9(11)      -- Primary key
+ACCT-ACTIVE-STATUS       PIC X(01)      -- 'Y' active / 'N' inactive
+ACCT-CURR-BAL            PIC S9(10)V99  -- Current balance
+ACCT-CREDIT-LIMIT        PIC S9(10)V99  -- Total credit line
+ACCT-CASH-CREDIT-LIMIT   PIC S9(10)V99  -- Cash advance sub-limit
+ACCT-OPEN-DATE           PIC X(10)      -- YYYY-MM-DD
+ACCT-EXPIRAION-DATE      PIC X(10)      -- YYYY-MM-DD
+ACCT-REISSUE-DATE        PIC X(10)      -- YYYY-MM-DD
+ACCT-CURR-CYC-CREDIT     PIC S9(10)V99  -- Cycle credits (payments)
+ACCT-CURR-CYC-DEBIT      PIC S9(10)V99  -- Cycle debits (purchases)
+ACCT-ADDR-ZIP            PIC X(10)      -- Billing ZIP
+ACCT-GROUP-ID            PIC X(10)      -- Links to DISCGRP rates</pre>
+
+        <h3>✅ Acceptance Criteria Examples</h3>
+        <ul>
+            <li>Given authenticated user with valid account ID in COMMAREA → CAVW displays all account fields within 2s</li>
+            <li>Given account update with valid ZIP code → ACCTFILE record updated, confirmation message displayed</li>
+            <li>Given account update with invalid field → Error message displayed, no VSAM write performed</li>
+            <li>Given inactive account (ACCT-ACTIVE-STATUS = 'N') → View shows status, update may be restricted</li>
+            <li>Given INTCALC batch runs → All active accounts have interest applied based on DISCGRP rates for their group</li>
+            <li>Given INTCALC completes → ACCT-CURR-BAL reflects accrued interest for each account</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-06</em></p>
+    </footer>
+</div>
+</body>
+</html>

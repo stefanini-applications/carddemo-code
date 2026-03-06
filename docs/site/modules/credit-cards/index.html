@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Cards - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #7b341e 100%); color: white; padding: 36px 28px; border-radius: 12px; margin-bottom: 28px; }
+        .header h1 { font-size: 2rem; margin-bottom: 6px; }
+        .section { background: white; border-radius: 10px; padding: 26px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { color: #1a365d; font-size: 1.25rem; margin-bottom: 14px; border-bottom: 2px solid #e8f0fe; padding-bottom: 8px; }
+        .section h3 { color: #7b341e; font-size: 1rem; margin: 16px 0 8px; }
+        ul { padding-left: 20px; line-height: 1.8; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.87em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: #f0f4ff; padding: 10px 12px; text-align: left; font-weight: 600; color: #1a365d; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        .complexity { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .simple { background: #d4edda; color: #155724; }
+        .medium { background: #fff3cd; color: #856404; }
+        .complex { background: #f8d7da; color: #721c24; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        a { color: #7b341e; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>💳 Credit Cards Module</h1>
+        <p>CardDemo — User Story Development Guide</p>
+    </header>
+
+    <section class="section">
+        <h2>📋 Overview</h2>
+        <p><strong>Purpose:</strong> Provides cardholders with the ability to list, view details, and update credit cards linked to their account.</p>
+        <p style="margin-top:8px;"><strong>Business Context:</strong> Each account can have one or more credit cards. The XREFFILE maintains the bi-directional relationship between cards, accounts, and customers. Card status controls whether transactions can be processed against it.</p>
+        <p style="margin-top:8px;"><strong>CICS Transactions:</strong> <code>CCLI</code> (list), <code>CCDL</code> (view), <code>CCUP</code> (update)</p>
+    </section>
+
+    <section class="section">
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>📝 US Templates</h3>
+        <ul>
+            <li>As a <em>cardholder</em>, I want to see all credit cards linked to my account so that I can manage them</li>
+            <li>As a <em>cardholder</em>, I want to view the details of a specific card (number, expiry, status) so that I can verify its validity</li>
+            <li>As a <em>cardholder</em>, I want to update the embossed name on my card so that it reflects my current name</li>
+            <li>As an <em>account manager</em>, I want to deactivate a card (set status to inactive) so that a lost or stolen card cannot be used</li>
+            <li>As a <em>cardholder</em>, I want to see my card expiration date so that I can request a replacement before it expires</li>
+        </ul>
+
+        <h3>⚡ Development Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVACT02Y copybook:</strong> CARD-RECORD structure (150-byte) pre-defined</li>
+            <li><strong>XREFFILE pattern:</strong> Card-to-account lookup via XREFFILE alternate index already implemented in transaction module</li>
+            <li><strong>BMS maps:</strong> COCRDLI, COCRDSL, COCRDUP all pre-defined</li>
+        </ul>
+
+        <h3>📊 Complexity Guidelines</h3>
+        <ul>
+            <li><span class="complexity simple">1–2 pts</span> Card List (CCLI), Card View (CCDL) — read from CARDFILE/XREFFILE</li>
+            <li><span class="complexity medium">3–5 pts</span> Card Update (CCUP) — validate and rewrite CARDFILE; activate/deactivate</li>
+            <li><span class="complexity complex">5–8 pts</span> New card issuance with XREFFILE linkage; multi-card account management</li>
+        </ul>
+    </section>
+
+    <section class="section">
+        <h2>🔧 Technical Foundation</h2>
+        <h3>🏗️ Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+            <tr><td><code>COCRDLIC</code></td><td>CICS Program</td><td>Lists all cards for an account using XREFFILE AIX by ACCT-ID</td></tr>
+            <tr><td><code>COCRDSLC</code></td><td>CICS Program</td><td>Shows full card detail from CARDFILE by CARD-NUM</td></tr>
+            <tr><td><code>COCRDUPC</code></td><td>CICS Program</td><td>Updates card fields (name, status) in CARDFILE</td></tr>
+            <tr><td><code>CVACT02Y</code></td><td>Copybook</td><td>CARD-RECORD structure and CC-WORK-AREAS (AID keys, navigation)</td></tr>
+            <tr><td>CARDFILE</td><td>VSAM KSDS</td><td>Card master; primary key: CARD-NUM (X(16))</td></tr>
+            <tr><td>XREFFILE</td><td>VSAM KSDS+AIX</td><td>Cross-reference: primary CARD-NUM; alternate ACCT-ID</td></tr>
+        </table>
+
+        <h3>📊 Card Data Model</h3>
+        <pre>CARD-NUM              PIC X(16)  -- Primary key (16-digit card number)
+CARD-ACCT-ID          PIC 9(11)  -- Linked account
+CARD-CVV-CD           PIC 9(03)  -- Verification code
+CARD-EMBOSSED-NAME    PIC X(50)  -- Name printed on card
+CARD-EXPIRAION-DATE   PIC X(10)  -- YYYY-MM-DD
+CARD-ACTIVE-STATUS    PIC X(01)  -- 'Y' active / 'N' inactive</pre>
+
+        <h3>✅ Acceptance Criteria Examples</h3>
+        <ul>
+            <li>Given authenticated user with account in COMMAREA → CCLI displays all cards for that account</li>
+            <li>Given card number selected on list → CCDL shows full card details (number masked except last 4)</li>
+            <li>Given valid update to CARD-EMBOSSED-NAME → CARDFILE updated, confirmation displayed</li>
+            <li>Given card deactivation (CARD-ACTIVE-STATUS = 'N') → Card cannot be used for new transactions (validated by POSTTRAN)</li>
+            <li>Given invalid card number format → Error message displayed, no CARDFILE write</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-06</em></p>
+    </footer>
+</div>
+</body>
+</html>

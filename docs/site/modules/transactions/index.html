@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - CardDemo User Story Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #553c9a 100%); color: white; padding: 36px 28px; border-radius: 12px; margin-bottom: 28px; }
+        .header h1 { font-size: 2rem; margin-bottom: 6px; }
+        .section { background: white; border-radius: 10px; padding: 26px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { color: #1a365d; font-size: 1.25rem; margin-bottom: 14px; border-bottom: 2px solid #e8f0fe; padding-bottom: 8px; }
+        .section h3 { color: #553c9a; font-size: 1rem; margin: 16px 0 8px; }
+        ul { padding-left: 20px; line-height: 1.8; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.87em; }
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: #f0f4ff; padding: 10px 12px; text-align: left; font-weight: 600; color: #1a365d; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        .complexity { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .simple { background: #d4edda; color: #155724; }
+        .medium { background: #fff3cd; color: #856404; }
+        .complex { background: #f8d7da; color: #721c24; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 0.85rem; }
+        a { color: #553c9a; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>💸 Transactions Module</h1>
+        <p>CardDemo — User Story Development Guide</p>
+    </header>
+
+    <section class="section">
+        <h2>📋 Overview</h2>
+        <p><strong>Purpose:</strong> Manages credit card transaction records — online list/view/add and batch posting (POSTTRAN) and reporting (TRANREPT).</p>
+        <p style="margin-top:8px;"><strong>Business Context:</strong> Transactions are the financial events that drive account balance changes, interest calculation, and statement generation. The daily transaction file (DALYTRAN) is the batch input; TRANFILE is the master record store with AIX on date for reporting.</p>
+        <p style="margin-top:8px;"><strong>CICS Transactions:</strong> <code>CT00</code> (list), <code>CT01</code> (view), <code>CT02</code> (add)</p>
+        <p><strong>Batch Jobs:</strong> POSTTRAN (CBTRN02C), TRANREPT (CBTRN03C)</p>
+    </section>
+
+    <section class="section">
+        <h2>🎯 User Story Development Guide</h2>
+        <h3>📝 US Templates</h3>
+        <ul>
+            <li>As a <em>cardholder</em>, I want to see a list of my recent transactions so that I can review my spending</li>
+            <li>As a <em>cardholder</em>, I want to view the full details of a specific transaction (merchant, amount, date) so that I can verify charges</li>
+            <li>As a <em>cardholder</em>, I want to add a new transaction online so that I can record a purchase immediately</li>
+            <li>As a <em>batch operator</em>, I want POSTTRAN to process DALYTRAN daily so that all cardholder purchases are reflected in account balances</li>
+            <li>As a <em>batch operator</em>, I want rejected transactions written to DALYREJS so that invalid records can be reviewed and corrected</li>
+            <li>As a <em>financial analyst</em>, I want transaction category balances in TCATBALF so that spending by type/category can be tracked for interest</li>
+        </ul>
+
+        <h3>⚡ Development Acceleration Factors</h3>
+        <ul>
+            <li><strong>CVTRA01Y–CVTRA07Y:</strong> Comprehensive transaction data structure copybooks</li>
+            <li><strong>XREFFILE lookup pattern:</strong> Card-to-account resolution established in CBTRN02C</li>
+            <li><strong>TCATBALF accumulation pattern:</strong> Type/category balance update logic in CBTRN02C</li>
+            <li><strong>AIX on TRANFILE:</strong> Date-range queries for reporting already supported</li>
+        </ul>
+
+        <h3>📊 Complexity Guidelines</h3>
+        <ul>
+            <li><span class="complexity simple">1–2 pts</span> Transaction List (CT00), Transaction View (CT01) — read from TRANFILE</li>
+            <li><span class="complexity medium">3–5 pts</span> Transaction Add (CT02) — validate card/account, write to TRANFILE, update ACCTFILE</li>
+            <li><span class="complexity complex">5–8 pts</span> POSTTRAN batch with full validation, category balance updates, rejection handling</li>
+        </ul>
+    </section>
+
+    <section class="section">
+        <h2>🔧 Technical Foundation</h2>
+        <h3>🏗️ Key Components</h3>
+        <table>
+            <tr><th>Component</th><th>Type</th><th>Responsibility</th></tr>
+            <tr><td><code>COTRN00C</code></td><td>CICS Program</td><td>Transaction list for account/card using TRANFILE AIX by date</td></tr>
+            <tr><td><code>COTRN01C</code></td><td>CICS Program</td><td>Full transaction detail view from TRANFILE</td></tr>
+            <tr><td><code>COTRN02C</code></td><td>CICS Program</td><td>Add new transaction — validates card/account, writes TRANFILE, updates ACCTFILE</td></tr>
+            <tr><td><code>CBTRN02C</code></td><td>Batch Program</td><td>POSTTRAN — sequential read of DALYTRAN, VSAM updates for accepted records</td></tr>
+            <tr><td><code>CBTRN03C</code></td><td>Batch Program</td><td>TRANREPT — generates transaction report (submitted from CORPT00C via TDQ)</td></tr>
+            <tr><td>TRANFILE</td><td>VSAM KSDS+AIX</td><td>Transaction master; primary key: transaction ID; AIX: transaction date</td></tr>
+            <tr><td>DALYTRAN</td><td>Sequential</td><td>Daily transaction input file for POSTTRAN</td></tr>
+            <tr><td>DALYREJS</td><td>Sequential</td><td>Rejected transactions output from POSTTRAN</td></tr>
+            <tr><td>TCATBALF</td><td>VSAM KSDS</td><td>Transaction category balances keyed by ACCT-ID + type + category</td></tr>
+        </table>
+
+        <h3>📊 Transaction Category Balance Key</h3>
+        <pre>TRANCAT-ACCT-ID   PIC 9(11)  -- Account ID
+TRANCAT-TYPE-CD   PIC X(02)  -- 2-char transaction type code
+TRANCAT-CD        PIC 9(04)  -- 4-digit category code
+TRAN-CAT-BAL      PIC S9(09)V99  -- Accumulated balance</pre>
+
+        <h3>📊 POSTTRAN Processing Logic (CBTRN02C)</h3>
+        <pre>FOR EACH record in DALYTRAN (sequential):
+  1. Lookup CARD-NUM in XREFFILE → get ACCT-ID
+  2. Read ACCTFILE by ACCT-ID → check ACCT-ACTIVE-STATUS
+  3. Validate credit limit not exceeded
+  4. IF valid:
+       WRITE record to TRANFILE (VSAM KSDS)
+       UPDATE ACCTFILE balance (ACCT-CURR-BAL, cycle accumulators)
+       UPDATE TCATBALF category balance
+  5. IF invalid:
+       WRITE record to DALYREJS sequential</pre>
+
+        <h3>✅ Acceptance Criteria Examples</h3>
+        <ul>
+            <li>Given account with transactions → CT00 displays transaction list in date order</li>
+            <li>Given transaction ID selected → CT01 shows all transaction fields</li>
+            <li>Given valid card/account/amount on CT02 → Transaction written to TRANFILE, ACCTFILE balance updated</li>
+            <li>Given POSTTRAN runs with N records in DALYTRAN → Valid records in TRANFILE, invalid in DALYREJS, counts reconcile to N</li>
+            <li>Given transaction for inactive account → Record rejected to DALYREJS with appropriate rejection code</li>
+            <li>Given POSTTRAN → TCATBALF balances updated for each transaction type/category per account</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-06</em></p>
+    </footer>
+</div>
+</body>
+</html>

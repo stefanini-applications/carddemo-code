@@ -1,0 +1,141 @@
+# Module File Map
+
+<!-- MODULE_FILE_MAP_START -->
+app/cbl/COSGN00C.cbl = authentication
+app/cpy/COCOM01Y.cpy = authentication, accounts, credit-cards, transactions, bill-payment, reports, user-management
+app/cpy/CSUSR01Y.cpy = authentication, user-management
+app/cpy-bms/COSGN00.CPY = authentication
+app/bms/COSGN00.bms = authentication
+app/jcl/DUSRSECJ.jcl = authentication
+
+app/cbl/COACTVWC.cbl = accounts
+app/cbl/COACTUPC.cbl = accounts
+app/cbl/CBACT01C.cbl = accounts, batch-processing
+app/cbl/CBACT02C.cbl = accounts, batch-processing
+app/cbl/CBACT03C.cbl = accounts, batch-processing
+app/cbl/CBACT04C.cbl = accounts, batch-processing
+app/cpy/CVACT01Y.cpy = accounts
+app/cpy/CVACT02Y.cpy = accounts, credit-cards
+app/cpy/CVACT03Y.cpy = accounts
+app/cpy-bms/COACTVW.CPY = accounts
+app/cpy-bms/COACTUP.CPY = accounts
+app/bms/COACTVW.bms = accounts
+app/bms/COACTUP.bms = accounts
+app/jcl/ACCTFILE.jcl = accounts, batch-processing
+app/jcl/INTCALC.jcl = accounts, batch-processing
+
+app/cbl/COCRDLIC.cbl = credit-cards
+app/cbl/COCRDSLC.cbl = credit-cards
+app/cbl/COCRDUPC.cbl = credit-cards
+app/cpy/CVCRD01Y.cpy = credit-cards
+app/cpy-bms/COCRDLI.CPY = credit-cards
+app/cpy-bms/COCRDSL.CPY = credit-cards
+app/cpy-bms/COCRDUP.CPY = credit-cards
+app/bms/COCRDLI.bms = credit-cards
+app/bms/COCRDSL.bms = credit-cards
+app/bms/COCRDUP.bms = credit-cards
+app/jcl/CARDFILE.jcl = credit-cards, batch-processing
+app/jcl/XREFFILE.jcl = credit-cards, batch-processing
+
+app/cbl/COTRN00C.cbl = transactions
+app/cbl/COTRN01C.cbl = transactions
+app/cbl/COTRN02C.cbl = transactions
+app/cbl/CBTRN01C.cbl = transactions, batch-processing
+app/cbl/CBTRN02C.cbl = transactions, batch-processing
+app/cbl/CBTRN03C.cbl = transactions, reports, batch-processing
+app/cpy/CVTRA01Y.cpy = transactions
+app/cpy/CVTRA02Y.cpy = transactions, accounts
+app/cpy/CVTRA03Y.cpy = transactions
+app/cpy/CVTRA04Y.cpy = transactions
+app/cpy/CVTRA05Y.cpy = transactions
+app/cpy/CVTRA06Y.cpy = transactions
+app/cpy/CVTRA07Y.cpy = transactions
+app/cpy-bms/COTRN00.CPY = transactions
+app/cpy-bms/COTRN01.CPY = transactions
+app/cpy-bms/COTRN02.CPY = transactions
+app/bms/COTRN00.bms = transactions
+app/bms/COTRN01.bms = transactions
+app/bms/COTRN02.bms = transactions
+app/jcl/POSTTRAN.jcl = transactions, batch-processing
+app/jcl/TRANFILE.jcl = transactions, batch-processing
+app/jcl/TRANBKP.jcl = transactions, batch-processing
+app/jcl/TRANCATG.jcl = transactions, batch-processing
+app/jcl/TRANTYPE.jcl = transactions, batch-processing
+app/jcl/TRANIDX.jcl = transactions, batch-processing
+app/jcl/COMBTRAN.jcl = transactions, batch-processing
+app/jcl/DALYREJS.jcl = transactions, batch-processing
+
+app/cbl/COBIL00C.cbl = bill-payment
+app/cpy-bms/COBIL00.CPY = bill-payment
+app/bms/COBIL00.bms = bill-payment
+
+app/cbl/CORPT00C.cbl = reports
+app/cbl/CBSTM03A.CBL = reports, batch-processing
+app/cbl/CBSTM03B.CBL = reports, batch-processing
+app/cpy/COSTM01.CPY = reports, batch-processing
+app/cpy-bms/CORPT00.CPY = reports
+app/bms/CORPT00.bms = reports
+app/jcl/CREASTMT.JCL = reports, batch-processing
+app/jcl/TRANREPT.jcl = reports, batch-processing
+app/proc/TRANREPT.prc = reports, batch-processing
+
+app/cbl/COADM01C.cbl = user-management
+app/cbl/COUSR00C.cbl = user-management
+app/cbl/COUSR01C.cbl = user-management
+app/cbl/COUSR02C.cbl = user-management
+app/cbl/COUSR03C.cbl = user-management
+app/cpy-bms/COADM01.CPY = user-management
+app/cpy-bms/COUSR00.CPY = user-management
+app/cpy-bms/COUSR01.CPY = user-management
+app/cpy-bms/COUSR02.CPY = user-management
+app/cpy-bms/COUSR03.CPY = user-management
+app/bms/COADM01.bms = user-management
+app/bms/COUSR00.bms = user-management
+app/bms/COUSR01.bms = user-management
+app/bms/COUSR02.bms = user-management
+app/bms/COUSR03.bms = user-management
+
+app/cbl/CBCUS01C.cbl = batch-processing
+app/cbl/CBEXPORT.cbl = batch-processing
+app/cbl/CBIMPORT.cbl = batch-processing
+app/cbl/COBSWAIT.cbl = batch-processing
+app/cpy/CVEXPORT.cpy = batch-processing
+app/cpy/CVCUS01Y.cpy = accounts, batch-processing
+app/asm/MVSWAIT.asm = batch-processing
+app/asm/COBDATFT.asm = batch-processing
+app/maclib/ASMWAIT.mac = batch-processing
+app/maclib/COCDATFT.mac = batch-processing
+app/jcl/CLOSEFIL.jcl = batch-processing
+app/jcl/OPENFIL.jcl = batch-processing
+app/jcl/CUSTFILE.jcl = batch-processing
+app/jcl/DISCGRP.jcl = batch-processing, accounts
+app/jcl/TCATBALF.jcl = batch-processing, transactions
+app/jcl/DEFGDGB.jcl = batch-processing
+app/jcl/DEFGDGD.jcl = batch-processing
+app/jcl/WAITSTEP.jcl = batch-processing
+app/jcl/CBEXPORT.jcl = batch-processing
+app/jcl/CBIMPORT.jcl = batch-processing
+app/jcl/ESDSRRDS.jcl = batch-processing
+app/scheduler/CardDemo.ca7 = batch-processing
+app/scheduler/CardDemo.controlm = batch-processing
+app/proc/REPROC.prc = batch-processing
+
+app/cbl/CSUTLDTC.cbl = batch-processing, transactions, accounts
+app/cpy/CSUTLDPY.cpy = batch-processing
+app/cpy/CSUTLDWY.cpy = batch-processing
+app/cpy/CSDAT01Y.cpy = authentication, accounts, transactions
+app/cpy/CSMSG01Y.cpy = authentication, accounts, credit-cards, transactions
+app/cpy/CSMSG02Y.cpy = authentication, accounts, credit-cards, transactions
+app/cpy/COTTL01Y.cpy = authentication, accounts, user-management
+app/cpy/CODATECN.cpy = accounts, transactions, batch-processing
+app/cpy/COADM02Y.cpy = user-management
+app/cpy/COMEN02Y.cpy = transactions, accounts, credit-cards
+app/cpy/CSLKPCDY.cpy = transactions
+app/cpy/CSSETATY.cpy = accounts, transactions
+app/cpy/CSSTRPFY.cpy = accounts, transactions
+app/cpy/CUSTREC.cpy = accounts
+
+app/app-authorization-ims-db2-mq/** = authorization
+app/app-transaction-type-db2/** = transaction-type-db2
+app/app-vsam-mq/** = mq-integration
+<!-- MODULE_FILE_MAP_END -->
