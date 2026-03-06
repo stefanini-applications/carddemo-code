@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Processing - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #065f46 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #065f46; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💰 Transaction Processing</h1>
+    <p>User Story Development Guide — Online Entry, View &amp; Batch Posting</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>transaction-processing</code></p>
+        <p><strong>Purpose:</strong> Provides online viewing and entry of transactions (CT00–CT02) and batch daily transaction posting (CBTRN01C/02C) that updates account balances, category balances, and writes rejects for invalid records.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>List Transactions:</strong> As a <em>card holder</em>, I want to view a paginated list of my recent transactions so that I can review my spending history.</li>
+        <li><strong>View Transaction:</strong> As a <em>card holder</em>, I want to view transaction details so that I can verify merchant name, amount, and timestamp.</li>
+        <li><strong>Add Transaction:</strong> As a <em>card holder</em>, I want to add a transaction so that I can record a purchase against my card.</li>
+        <li><strong>Filter Transactions:</strong> As a <em>card holder</em>, I want to filter transactions by date range so that I can find transactions from a specific period.</li>
+        <li><strong>Batch Post:</strong> As a <em>batch system</em>, I want to post all daily transactions so that account balances are updated with the day's activity.</li>
+        <li><strong>Reject Invalid:</strong> As a <em>batch system</em>, I want to write invalid transactions to a rejects file so that errors can be reviewed and reprocessed.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CVTRA05Y copybook:</strong> Complete transaction record layout shared by online and batch programs</li>
+        <li><strong>COTRN00C pagination:</strong> Forward-page navigation already implemented; extend for backward paging</li>
+        <li><strong>CBTRN01C validation logic:</strong> Card, account, and cross-reference validation reusable for new transaction types</li>
+        <li><strong>TRANCATG / TRANTYPE reference files:</strong> Pre-loaded; lookup pattern established in existing programs</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add additional transaction fields to detail view</li><li>Add transaction type description display</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add backward paging to transaction list</li><li>Add transaction search by merchant name</li><li>Add new transaction type validation</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Implement transaction reversal workflow</li><li>Add multi-currency transaction support</li><li>Extend batch posting to handle new transaction categories</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COTRN00C</strong> — Transaction list with forward pagination; reads TRANSACT VSAM sequentially from a start key</li>
+        <li><strong>COTRN01C</strong> — Transaction detail view; direct KSDS read by TRAN-ID</li>
+        <li><strong>COTRN02C</strong> — Transaction add; generates TRAN-ID, writes to TRANSACT KSDS</li>
+        <li><strong>CBTRN01C</strong> (batch) — Reads DALYTRAN; validates vs CARDFILE, CUSTFILE, XREFFILE, ACCTFILE; posts to TRANSACT + updates ACCTDAT + TCATBALF; rejects to DALYREJS</li>
+        <li><strong>CBTRN02C</strong> (batch) — Alternate transaction posting with different validation path</li>
+        <li><strong>CBTRN03C</strong> (batch) — Transaction file maintenance / combine operations</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>TRANSACT (KSDS):</strong> Online transaction file; primary store for CT-series programs</li>
+        <li><strong>DALYTRAN (Sequential):</strong> Daily transaction input for batch posting</li>
+        <li><strong>DALYREJS (Sequential):</strong> Batch reject output file</li>
+        <li><strong>ACCTDAT (KSDS):</strong> Account balances updated during batch posting</li>
+        <li><strong>TCATBALF (KSDS):</strong> Transaction category balances updated during batch posting</li>
+        <li><strong>TRANCATG / TRANTYPE (KSDS):</strong> Reference data for category/type descriptions</li>
+        <li><strong>DISCGRP (KSDS):</strong> Disclosure groups used for interest rate calculation</li>
+        <li><strong>Card Management module:</strong> CARDXREF required to resolve card → account</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CT00  → COTRN00C  — Transaction list (paginated, forward)
+CT01  → COTRN01C  — Transaction detail view
+CT02  → COTRN02C  — Add new transaction</code></pre>
+
+    <h3>📋 Transaction Data Model (CVTRA05Y, 350 bytes)</h3>
+    <pre><code>TRAN-RECORD:
+  TRAN-ID           PIC X(16)       — Transaction ID (KSDS key)
+  TRAN-TYPE-CD      PIC X(02)       — Transaction type (e.g., 'PU'=Purchase)
+  TRAN-CAT-CD       PIC 9(04)       — Category code (e.g., 0001=Retail)
+  TRAN-SOURCE       PIC X(10)       — Source system identifier
+  TRAN-DESC         PIC X(100)      — Transaction description
+  TRAN-AMT          PIC S9(09)V99   — Amount (+debit, -credit)
+  TRAN-MERCHANT-ID  PIC 9(09)       — Merchant identifier
+  TRAN-MERCHANT-NAME PIC X(50)      — Merchant name
+  TRAN-MERCHANT-CITY PIC X(50)      — Merchant city
+  TRAN-MERCHANT-ZIP  PIC X(10)      — Merchant ZIP
+  TRAN-CARD-NUM     PIC X(16)       — Card used
+  TRAN-ORIG-TS      PIC X(26)       — Origination timestamp
+  TRAN-PROC-TS      PIC X(26)       — Processing timestamp</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-TRAN-01:</strong> Every transaction must have a unique 16-char TRAN-ID</li>
+        <li><strong>BR-TRAN-02:</strong> TRAN-TYPE-CD (2 chars) must exist in TRANTYPE reference file</li>
+        <li><strong>BR-TRAN-03:</strong> TRAN-CAT-CD must exist in TRANCATG for the given type</li>
+        <li><strong>BR-TRAN-04:</strong> Transactions that fail validation during batch posting go to DALYREJS</li>
+        <li><strong>BR-TRAN-05:</strong> TCATBALF is updated per category for running balance totals</li>
+        <li><strong>BR-TRAN-06:</strong> Transaction amounts are signed: positive = debit (charge), negative = credit (payment)</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>List Display:</strong> Given an authenticated user, when CT00 is accessed, then transactions for the user's account are displayed in reverse chronological order with paging</li>
+        <li><strong>Add Transaction:</strong> Given a valid card number, type, category, and amount, when CT02 is submitted, then the transaction is written to TRANSACT with a generated TRAN-ID and displayed in the list</li>
+        <li><strong>Batch Rejection:</strong> Given a transaction with an unknown card number in DALYTRAN, when POSTTRAN runs, then the record is written to DALYREJS with an error code</li>
+        <li><strong>Balance Update:</strong> Given POSTTRAN completes, when account balance is viewed, then ACCT-CURR-BAL reflects all posted transactions</li>
+        <li><strong>Performance:</strong> Transaction list must display first page within 3 seconds; batch POSTTRAN must complete within the nightly batch window</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporting - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #1e3a5f 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #1e3a5f; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📊 Reporting</h1>
+    <p>User Story Development Guide — Transaction Reports &amp; Account Statements</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>reporting</code></p>
+        <p><strong>Purpose:</strong> Provides online report request submission (CORPT00C) which writes JCL to an extra-partition TDQ for batch execution. Batch programs (CBSTM03A/B) generate transaction statements and account summaries.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>Request Report:</strong> As a <em>card holder</em>, I want to request a transaction report for a date range so that I can review my spending period.</li>
+        <li><strong>Monthly Statement:</strong> As a <em>card holder</em>, I want to receive a monthly statement so that I have a consolidated record of all activity.</li>
+        <li><strong>Export Data:</strong> As an <em>admin</em>, I want to export account data so that it can be used for analysis or migration.</li>
+        <li><strong>Report Status:</strong> As a <em>card holder</em>, I want to know when my report is being generated so that I can expect it in the output queue.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CORPT00C TDQ pattern:</strong> JCL submission via extra-partition TDQ already implemented — new report types just need new JCL written to the queue</li>
+        <li><strong>TRANREPT.prc JCL procedure:</strong> Parameterized report procedure; add new steps for new report formats</li>
+        <li><strong>CBSTM03A/B sort-merge pattern:</strong> Statement generation uses two-pass sort/merge; reuse for new statement formats</li>
+        <li><strong>CVEXPORT copybook:</strong> Export record structure available for data extraction</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add new report type parameter to existing CORPT00 screen</li><li>Change report output format (column order)</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add transaction category summary report</li><li>Add date range validation on report request screen</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Implement PDF report generation (TXT2PDF integration)</li><li>Add FTP delivery of reports to external system</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>CORPT00C</strong> (CICS) — Report request screen; accepts date range and report type; writes JCL to extra-partition TDQ (CICS WRITEQ TD)</li>
+        <li><strong>CORPT00</strong> (BMS map) — Report request 3270 screen</li>
+        <li><strong>CBSTM03A</strong> (batch) — Statement generation first pass (sort/select)</li>
+        <li><strong>CBSTM03B</strong> (batch) — Statement generation second pass (merge/format)</li>
+        <li><strong>CBEXPORT / CBIMPORT</strong> (batch) — Data export and import between VSAM and sequential files</li>
+        <li><strong>TRANREPT.prc</strong> — JCL procedure for transaction reports</li>
+        <li><strong>TXT2PDF1.JCL</strong> — Optional: converts text reports to PDF format</li>
+        <li><strong>FTPJCL.JCL</strong> — Optional: FTP delivery of report output</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>TRANSACT (KSDS):</strong> Source data for all transaction reports</li>
+        <li><strong>ACCTDAT (KSDS):</strong> Account data for statement header information</li>
+        <li><strong>Extra-partition TDQ:</strong> CICS queue used to submit JCL to internal reader</li>
+        <li><strong>Batch Processing module:</strong> Report JCL jobs run in the batch environment</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions &amp; JCL Jobs</h3>
+    <pre><code>CR00  → CORPT00C  — Online report request (submits JCL via TDQ)
+
+JCL Jobs:
+  CREASTMT  — Create account statement (CBSTM03A/B)
+  TRANREPT  — Transaction report (TRANREPT.prc)
+  REPTFILE  — Report file utility
+  CBADMCDJ  — Admin report JCL</code></pre>
+
+    <h3>📋 Statement Record Structure (COSTM01)</h3>
+    <pre><code>Statement records produced by CBSTM03A/B include:
+  - Account header (account ID, customer name, statement date)
+  - Transaction detail lines (date, description, amount)
+  - Summary totals (by category, by type)
+  - Balance summary (previous balance, payments, charges, new balance)</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-RPT-01:</strong> Reports are submitted via extra-partition TDQ — CICS writes JCL records that the internal reader picks up</li>
+        <li><strong>BR-RPT-02:</strong> Report date range must be in YYYY-MM-DD format</li>
+        <li><strong>BR-RPT-03:</strong> Report output is written to SYSOUT dataset; available via JES spool</li>
+        <li><strong>BR-RPT-04:</strong> Statement totals must reconcile with TCATBALF running balances</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Report Request:</strong> Given dates in YYYY-MM-DD format, when user submits CR00, then JCL is written to the TDQ and the report is queued for batch execution</li>
+        <li><strong>Date Validation:</strong> Given an invalid date format, when user submits, then an error message is displayed and the request is not submitted</li>
+        <li><strong>Statement Accuracy:</strong> Given CREASTMT runs, then statement totals match the sum of TRANSACT records for the statement period</li>
+        <li><strong>Export:</strong> Given CBEXPORT runs, then all ACCTDAT records are written to the sequential output file in the CVEXPORT format</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

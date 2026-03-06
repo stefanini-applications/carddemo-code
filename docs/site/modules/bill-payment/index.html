@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Payment - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #7f1d1d 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #7f1d1d; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💵 Bill Payment</h1>
+    <p>User Story Development Guide — Account Balance Payment</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>bill-payment</code></p>
+        <p><strong>Purpose:</strong> Enables card holders to pay their credit card bill. The payment reduces the current account balance and records a payment transaction in the TRANSACT VSAM file.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>View Balance:</strong> As a <em>card holder</em>, I want to see my current balance before paying so that I know the amount due.</li>
+        <li><strong>Pay Bill:</strong> As a <em>card holder</em>, I want to pay my full outstanding balance so that I avoid interest charges.</li>
+        <li><strong>Confirm Payment:</strong> As a <em>card holder</em>, I want to confirm my payment before it is processed so that I can avoid mistakes.</li>
+        <li><strong>Payment Receipt:</strong> As a <em>card holder</em>, I want a transaction ID generated for my payment so that I have a record of the transaction.</li>
+        <li><strong>Balance Update:</strong> As a <em>system</em>, I want to update the account balance immediately after payment so that the balance reflects the payment.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>COBIL00C payment flow:</strong> Two-step confirmation pattern (enter → confirm → post) already implemented</li>
+        <li><strong>CVACT01Y + CVACT03Y:</strong> Account lookup via card number using existing CXACAIX AIX pattern</li>
+        <li><strong>CVTRA05Y:</strong> Transaction record structure reused — payment is written as a standard TRAN-RECORD</li>
+        <li><strong>Timestamp-based TRAN-ID:</strong> Transaction ID generation from system time established in COBIL00C</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Display payment history on bill payment screen</li><li>Add minimum payment amount display</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Allow partial payment (custom amount entry)</li><li>Add EFT account lookup for payment source display</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Implement scheduled payment (future date)</li><li>Add autopay enrollment workflow</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COBIL00C</strong> — Bill payment program; reads account via CXACAIX, generates TRAN-ID, posts to TRANSACT, updates ACCTDAT</li>
+        <li><strong>COBIL00</strong> (BMS map) — Bill payment 3270 screen; displays account balance, confirmation prompt</li>
+        <li><strong>CVACT01Y</strong> (copybook) — Account record (reads ACCTDAT for current balance)</li>
+        <li><strong>CVACT03Y</strong> (copybook) — Card-account XREF (resolves card → account)</li>
+        <li><strong>CVTRA05Y</strong> (copybook) — Transaction record (payment written as TRAN-RECORD)</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>TRANSACT (KSDS):</strong> Payment transaction written here</li>
+        <li><strong>ACCTDAT (KSDS):</strong> ACCT-CURR-BAL decremented by payment amount</li>
+        <li><strong>CXACAIX (AIX):</strong> Resolves card number → account ID for balance lookup</li>
+        <li><strong>Transaction Processing module:</strong> Same TRANSACT file and TRAN-RECORD structure</li>
+        <li><strong>Account Management module:</strong> Account record structure and balance field</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CB00  → COBIL00C  — Bill payment (two-step: display → confirm → post)</code></pre>
+
+    <h3>📋 Payment Flow</h3>
+    <pre><code>1. User navigates to CB00
+2. COBIL00C reads account via CXACAIX (card→account lookup)
+3. Current balance displayed on COBIL00 screen
+4. User confirms payment (ENTER key on confirmation prompt)
+5. COBIL00C generates TRAN-ID from ABSTIME timestamp
+6. Payment TRAN-RECORD written to TRANSACT
+7. ACCTDAT updated: ACCT-CURR-BAL reduced by payment amount
+8. Confirmation message displayed to user</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-BILL-01:</strong> Bill payment posts a full-balance payment transaction to TRANSACT</li>
+        <li><strong>BR-BILL-02:</strong> Payment requires user confirmation before being written (two-step: display → confirm)</li>
+        <li><strong>BR-BILL-03:</strong> TRAN-ID is generated from the CICS ABSTIME clock ensuring uniqueness</li>
+        <li><strong>BR-BILL-04:</strong> Payment reduces ACCT-CURR-BAL in ACCTDAT immediately upon confirmation</li>
+        <li><strong>BR-BILL-05:</strong> Payment transaction uses a specific TRAN-TYPE-CD to identify it as a payment</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Balance Display:</strong> Given an authenticated user navigates to CB00, then the current outstanding balance is displayed on the payment screen</li>
+        <li><strong>Confirmation Required:</strong> Given the payment screen is displayed, when the user presses ENTER without confirming, then a confirmation prompt is shown before the payment is posted</li>
+        <li><strong>Payment Posted:</strong> Given payment is confirmed, then a payment TRAN-RECORD is written to TRANSACT and ACCT-CURR-BAL is reduced to zero (full payment)</li>
+        <li><strong>Transaction ID:</strong> Given payment is completed, then a unique 16-character TRAN-ID is assigned and displayed</li>
+        <li><strong>Performance:</strong> Payment confirmation and posting must complete within 3 seconds</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

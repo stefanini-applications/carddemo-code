@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #0f3460; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        .tag { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+        .tag-cics { background: #dbeafe; color: #1e40af; }
+        .tag-vsam { background: #d1fae5; color: #065f46; }
+        .tag-batch { background: #fef3c7; color: #92400e; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🔐 Authentication</h1>
+    <p>User Story Development Guide — CardDemo Signon &amp; Session Management</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>authentication</code></p>
+        <p><strong>Purpose:</strong> Handles user signon and session initialization for the CardDemo CICS application. Validates credentials against the USRSEC VSAM file and routes users to the appropriate menu (regular or admin) based on user type.</p>
+        <p><strong>Tags:</strong>
+            <span class="tag tag-cics">CICS</span>
+            <span class="tag tag-vsam">VSAM</span>
+        </p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>Login:</strong> As a <em>regular user</em>, I want to log in with my user ID and password so that I can access card management functions.</li>
+        <li><strong>Admin Login:</strong> As an <em>admin user</em>, I want to log in with admin credentials so that I can manage users and transaction types.</li>
+        <li><strong>Invalid Credentials:</strong> As a <em>user</em>, I want to see a clear error message when my credentials are invalid so that I know I need to retry.</li>
+        <li><strong>Exit:</strong> As a <em>user</em>, I want to press PF3 to exit the signon screen so that I can close the session.</li>
+        <li><strong>Session State:</strong> As a <em>system</em>, I want to carry user identity in the COMMAREA so that all subsequent transactions know the authenticated user.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>COCOM01Y:</strong> Common COMMAREA copybook — user ID, type, and session flags shared across all programs</li>
+        <li><strong>CSUSR01Y:</strong> User security record structure — reused in user management module</li>
+        <li><strong>CSDAT01Y / CSMSG01Y / COTTL01Y:</strong> Shared date, message, and title copybooks — consistent screen layout across the application</li>
+        <li><strong>COSGN00 (BMS map):</strong> Pre-built 3270 signon screen layout</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add a new error message for specific credential errors</li><li>Change signon screen field labels</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add account lockout after N failed attempts</li><li>Add password expiration enforcement</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Replace plain-text password with hashed storage</li><li>Integrate with external LDAP/SSO for authentication</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COSGN00C</strong> (CICS program) — Signon screen logic; reads USRSEC VSAM file using CICS READ command</li>
+        <li><strong>COSGN00</strong> (BMS mapset) — 3270 terminal layout; fields: USERID, PASSWORD, ERRMSG</li>
+        <li><strong>COMEN01C</strong> (CICS program) — Main menu for regular users; routed to after successful signon</li>
+        <li><strong>COADM01C</strong> (CICS program) — Admin menu; routed to for admin users (SEC-USR-TYPE = 'A')</li>
+        <li><strong>CSUSR01Y</strong> (copybook) — User security data structure</li>
+        <li><strong>COCOM01Y</strong> (copybook) — Common COMMAREA with CDEMO-* fields</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>USRSEC VSAM file:</strong> Stores all user records (SEC-USR-ID as KSDS key)</li>
+        <li><strong>RACF:</strong> Platform-level security; CICS must be authorized to read USRSEC</li>
+        <li><strong>CICS COMMAREA:</strong> 32KB max; carries session state through pseudo-conversational transactions</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CC00  → COSGN00C  — Signon screen (entry point for all users)
+CM00  → COMEN01C  — Regular user main menu (post-signon for 'R' type users)
+CA00  → COADM01C  — Admin menu (post-signon for 'A' type users)</code></pre>
+
+    <h3>📋 Data Model</h3>
+    <pre><code>SEC-USER-DATA (CSUSR01Y, 80 bytes, USRSEC KSDS):
+  SEC-USR-ID      PIC X(08)   — User ID (primary key)
+  SEC-USR-FNAME   PIC X(20)   — First name
+  SEC-USR-LNAME   PIC X(20)   — Last name
+  SEC-USR-PWD     PIC X(08)   — Password (plain text)
+  SEC-USR-TYPE    PIC X(01)   — 'R'=Regular, 'A'=Admin
+  SEC-USR-FILLER  PIC X(23)</code></pre>
+
+    <h3>⚙️ Key CICS Commands Used</h3>
+    <pre><code>EXEC CICS READ FILE('USRSEC')
+    INTO(SEC-USER-DATA)
+    RIDFLD(WS-USER-ID)
+    RESP(WS-RESP-CD)
+END-EXEC
+
+EXEC CICS RETURN
+    TRANSID(WS-TRANID)
+    COMMAREA(CARDDEMO-COMMAREA)
+END-EXEC</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-AUTH-01:</strong> Users must enter a valid User ID (8 chars) and Password (8 chars) to gain access</li>
+        <li><strong>BR-AUTH-02:</strong> User type ('R' = Regular, 'A' = Admin) determines menu routing</li>
+        <li><strong>BR-AUTH-03:</strong> Invalid credentials display an error on the signon screen; screen is re-presented</li>
+        <li><strong>BR-AUTH-04:</strong> PF3 displays "Thank You" message and exits the application</li>
+        <li><strong>BR-AUTH-05:</strong> ENTER key triggers credential validation</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Successful Login:</strong> Given valid user ID and password, when user presses ENTER, then the user is routed to the main menu appropriate for their user type</li>
+        <li><strong>Invalid Login:</strong> Given invalid credentials, when user presses ENTER, then the signon screen is redisplayed with an error message, and the user ID field retains the entered value</li>
+        <li><strong>Admin Routing:</strong> Given user type = 'A', when signon succeeds, then the admin menu (CA00) is displayed</li>
+        <li><strong>Regular User Routing:</strong> Given user type = 'R', when signon succeeds, then the regular menu (CM00) is displayed</li>
+        <li><strong>PF3 Exit:</strong> Given the signon screen is displayed, when user presses PF3, then "Thank You" message is shown and session ends</li>
+        <li><strong>Performance:</strong> Signon must complete within 3 seconds from Enter key</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

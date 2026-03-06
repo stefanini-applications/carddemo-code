@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #533483 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #533483; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💳 Card Management</h1>
+    <p>User Story Development Guide — Credit Card List, View &amp; Update</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>card-management</code></p>
+        <p><strong>Purpose:</strong> Enables users to list all credit cards linked to their account, view card details (number, CVV, expiry, status), and update card status or embossed name.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>List Cards:</strong> As a <em>card holder</em>, I want to see all credit cards on my account so that I can choose which card to manage.</li>
+        <li><strong>View Card:</strong> As a <em>card holder</em>, I want to view card details including CVV and expiration so that I can use it for purchases.</li>
+        <li><strong>Deactivate Card:</strong> As a <em>card holder</em>, I want to mark my card as inactive so that a lost or stolen card cannot be used.</li>
+        <li><strong>Card Expiry:</strong> As a <em>card holder</em>, I want to see my card expiration date so that I know when to request renewal.</li>
+        <li><strong>Cross-Reference:</strong> As a <em>system</em>, I want to resolve card-to-account via the CARDXREF file so that transactions can be linked to the correct account.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CVACT02Y copybook:</strong> Card record layout shared across all card operations and batch programs</li>
+        <li><strong>CVACT03Y (CARDXREF):</strong> Single cross-reference record links card → customer → account — one read resolves the full relationship</li>
+        <li><strong>CARDAIX (AIX):</strong> Alternate index on CARDDAT enables account-based card lookup</li>
+        <li><strong>COCRDLIC pagination:</strong> Existing list program supports scrolling through multiple cards</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Display card type/embossed name on list screen</li><li>Add read-only CVV display to detail screen</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Implement card status toggle with confirmation dialog</li><li>Add card expiration date update with validation</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add new card issuance flow (create card + XREF records)</li><li>Implement card replacement workflow (deactivate old, issue new)</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COCRDLIC</strong> — Credit card list; paginates cards for an account using CARDAIX alternate index</li>
+        <li><strong>COCRDSLC</strong> — Card detail view; reads by CARD-NUM KSDS key</li>
+        <li><strong>COCRDUPC</strong> — Card update; CICS READ UPDATE / REWRITE on CARDDAT</li>
+        <li><strong>COCRDLI / COCRDSL / COCRDUP</strong> (BMS maps) — 3270 screen layouts</li>
+        <li><strong>CVACT02Y</strong> (copybook) — Card record (150 bytes)</li>
+        <li><strong>CVACT03Y</strong> (copybook) — Card cross-reference record (50 bytes)</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>CARDDAT (KSDS):</strong> Card master file, keyed on CARD-NUM (16 chars)</li>
+        <li><strong>CARDAIX (AIX):</strong> Alternate index enabling account-based lookups</li>
+        <li><strong>CARDXREF (KSDS):</strong> Card-to-account-to-customer cross-reference</li>
+        <li><strong>ACCTDAT (KSDS):</strong> Account status checked when displaying card validity</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CCLI  → COCRDLIC  — Credit card list (paginated)
+CCDL  → COCRDSLC  — Credit card detail view
+CCUP  → COCRDUPC  — Credit card update</code></pre>
+
+    <h3>📋 Card Data Models</h3>
+    <pre><code>CARD-RECORD (CVACT02Y, 150 bytes, CARDDAT KSDS):
+  CARD-NUM              PIC X(16)   — Card number (KSDS key)
+  CARD-ACCT-ID          PIC 9(11)   — Linked account ID
+  CARD-CVV-CD           PIC 9(03)   — CVV security code
+  CARD-EMBOSSED-NAME    PIC X(50)   — Name on card
+  CARD-EXPIRAION-DATE   PIC X(10)   — YYYY-MM-DD
+  CARD-ACTIVE-STATUS    PIC X(01)   — 'Y'=Active, 'N'=Inactive
+
+CARD-XREF-RECORD (CVACT03Y, 50 bytes, CARDXREF KSDS):
+  XREF-CARD-NUM         PIC X(16)   — Card number (KSDS key)
+  XREF-CUST-ID          PIC 9(09)   — Customer ID
+  XREF-ACCT-ID          PIC 9(11)   — Account ID</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-CARD-01:</strong> Each card links to exactly one account (CARD-ACCT-ID)</li>
+        <li><strong>BR-CARD-02:</strong> Card status 'Y' = active; inactive cards cannot be used for transactions</li>
+        <li><strong>BR-CARD-03:</strong> CARD-EMBOSSED-NAME reflects the cardholder name as it appears on the physical card</li>
+        <li><strong>BR-CARD-04:</strong> CARDXREF is required to resolve card → customer → account in batch transaction posting</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>List Cards:</strong> Given an authenticated user, when navigating to CCLI, then all cards linked to the user's account are listed with card number (masked), status, and expiration</li>
+        <li><strong>View Details:</strong> Given a card is selected from the list, when CCDL is displayed, then full card details including CVV and embossed name are shown</li>
+        <li><strong>Deactivate:</strong> Given an active card, when the user updates status to 'N' and confirms, then CARDDAT is updated and the card appears as inactive in the list</li>
+        <li><strong>Performance:</strong> Card list and detail views must display within 3 seconds</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>
