@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); color: white; padding: 40px 32px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .header .breadcrumb { font-size: 0.85rem; opacity: 0.7; margin-bottom: 12px; }
+        .header .breadcrumb a { color: rgba(255,255,255,0.8); text-decoration: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+        .card { background: white; border-radius: 12px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .card h2 { font-size: 1.3rem; color: #1a1a2e; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .card h3 { font-size: 1.05rem; color: #0f3460; margin: 20px 0 10px; }
+        .card p { color: #555; line-height: 1.6; margin-bottom: 10px; }
+        .card ul { padding-left: 20px; color: #555; line-height: 1.8; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { background: #1a1a2e; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f8f9fa; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; font-family: 'Courier New', monospace; }
+        pre { background: #1a1a2e; color: #a8ff78; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        .story-box { background: #e8f4fd; border-left: 4px solid #0f3460; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; font-style: italic; }
+        .ac-box { background: #f0faf0; border-left: 4px solid #27ae60; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; }
+        .complexity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px; }
+        .complexity-item { background: #f8f9fa; border-radius: 8px; padding: 14px; border-top: 4px solid #ccc; }
+        .complexity-item.simple { border-top-color: #27ae60; }
+        .complexity-item.medium { border-top-color: #f39c12; }
+        .complexity-item.complex { border-top-color: #e74c3c; }
+        .complexity-item h4 { font-size: 0.9rem; margin-bottom: 8px; }
+        .complexity-item ul { font-size: 0.82rem; padding-left: 16px; color: #555; }
+        .warn-box { background: #fff8e1; border-left: 4px solid #f39c12; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+        footer { text-align: center; padding: 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e0e0e0; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="breadcrumb"><a href="../../index.html">← Documentation Index</a></div>
+        <h1>👥 User Management</h1>
+        <p>User Story Development Guide — Admin User CRUD Operations</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>user-management</code></p>
+            <p><strong>Purpose:</strong> Provides full CRUD (Create, Read, Update, Delete) operations for CardDemo application users. Accessible only to admin users (SEC-USR-TYPE = 'A').</p>
+            <p><strong>Business Context:</strong> Admin users manage the user directory for CardDemo. User records control who can log in and what role they have (Regular vs Admin). The USRSEC VSAM file is the authoritative source for application-level credentials.</p>
+            <div class="warn-box">⚠️ <strong>Security Note:</strong> This module is accessible only from the Admin Menu (CA00), which is only available after login as an admin user (SEC-USR-TYPE = 'A'). Regular users cannot navigate to these transactions.</div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Templates</h2>
+
+            <h3>List Users</h3>
+            <div class="story-box">As an admin, I want to see a list of all users so that I can review who has access to the CardDemo system.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CU00 (COUSR00C) displays all records from USRSEC VSAM</li>
+                    <li>List shows: SEC-USR-ID, SEC-USR-FNAME, SEC-USR-LNAME, SEC-USR-TYPE</li>
+                    <li>Password (SEC-USR-PWD) is NOT displayed in the list</li>
+                    <li>Paging supported for large user lists</li>
+                    <li>Admin can select a user to view/update details</li>
+                </ul>
+            </div>
+
+            <h3>Add User</h3>
+            <div class="story-box">As an admin, I want to add a new user so that new employees can log into CardDemo.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CU01 (COUSR01C) provides add user form</li>
+                    <li>Required fields: SEC-USR-ID, SEC-USR-FNAME, SEC-USR-LNAME, SEC-USR-PWD, SEC-USR-TYPE</li>
+                    <li>SEC-USR-ID must be unique — duplicate rejected with "User ID already exists"</li>
+                    <li>SEC-USR-TYPE must be 'U' (Regular) or 'A' (Admin)</li>
+                    <li>On success, record written to USRSEC VSAM; success message displayed</li>
+                    <li>On error, screen redisplays with entered data and error message</li>
+                </ul>
+            </div>
+
+            <h3>Update User</h3>
+            <div class="story-box">As an admin, I want to update a user's name or password so that their account information is current.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CU02 (COUSR02C) shows current user data for editing</li>
+                    <li>All fields except SEC-USR-ID are editable</li>
+                    <li>After submit, USRSEC VSAM record rewritten</li>
+                    <li>Admin can change SEC-USR-TYPE to promote/demote user privileges</li>
+                    <li>Validation: password 1–8 chars; type must be 'U' or 'A'</li>
+                </ul>
+            </div>
+
+            <h3>Delete User</h3>
+            <div class="story-box">As an admin, I want to delete a user so that terminated employees lose access to the system.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CU03 (COUSR03C) shows user to be deleted with confirmation prompt</li>
+                    <li>Admin must confirm deletion (e.g., press PF key) before record is deleted</li>
+                    <li>After confirmation, record deleted from USRSEC VSAM</li>
+                    <li>Deleting a user does not affect account/transaction records linked to that user's activity</li>
+                    <li>Admin cannot delete their own user ID (to prevent lockout)</li>
+                    <li>Deletion of non-existent user displays "User not found" error</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Complexity Guidelines</h2>
+            <div class="complexity-grid">
+                <div class="complexity-item simple">
+                    <h4>✅ Simple (1-2 pts)</h4>
+                    <ul>
+                        <li>Add user search by last name on list screen</li>
+                        <li>Display user count on list header</li>
+                        <li>Mask password field on add/update screen</li>
+                    </ul>
+                </div>
+                <div class="complexity-item medium">
+                    <h4>⚠️ Medium (3-5 pts)</h4>
+                    <ul>
+                        <li>Add password complexity validation (min length, mixed case)</li>
+                        <li>User status flag (active/suspended) separate from delete</li>
+                        <li>Audit log for user additions and deletions</li>
+                    </ul>
+                </div>
+                <div class="complexity-item complex">
+                    <h4>🔴 Complex (5-8 pts)</h4>
+                    <ul>
+                        <li>Batch user load from external file (IEBGENER pattern)</li>
+                        <li>Role-based access control with granular permissions</li>
+                        <li>User activity report — last login, transaction count</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>CICS Transactions</h3>
+            <table>
+                <tr><th>Transaction</th><th>Program</th><th>BMS Map</th><th>Function</th></tr>
+                <tr><td><code>CA00</code></td><td>COADM01C</td><td>COADM01</td><td>Admin menu — access control gateway</td></tr>
+                <tr><td><code>CU00</code></td><td>COUSR00C</td><td>COUSR00</td><td>List all users</td></tr>
+                <tr><td><code>CU01</code></td><td>COUSR01C</td><td>COUSR01</td><td>Add new user</td></tr>
+                <tr><td><code>CU02</code></td><td>COUSR02C</td><td>COUSR02</td><td>Update existing user</td></tr>
+                <tr><td><code>CU03</code></td><td>COUSR03C</td><td>COUSR03</td><td>Delete user (with confirmation)</td></tr>
+            </table>
+
+            <h3>SEC-USER-DATA (CSUSR01Y, 80 bytes)</h3>
+            <pre>SEC-USR-ID      PIC X(08)  -- User ID (VSAM key, max 8 chars)
+SEC-USR-FNAME   PIC X(20)  -- First name
+SEC-USR-LNAME   PIC X(20)  -- Last name
+SEC-USR-PWD     PIC X(08)  -- Password (plain text, max 8 chars)
+SEC-USR-TYPE    PIC X(01)  -- 'U'=Regular user, 'A'=Admin
+SEC-USR-FILLER  PIC X(23)</pre>
+
+            <h3>Initial Setup</h3>
+            <ul>
+                <li><code>DUSRSECJ</code> — JCL job to initially load USRSEC from sample data file using IEBGENER</li>
+                <li>Sample data includes ADMIN001 (admin) and USER0001 (regular) as default users</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | CardDemo v1.0 | Last updated: 2025-03-06</p>
+    </footer>
+</body>
+</html>

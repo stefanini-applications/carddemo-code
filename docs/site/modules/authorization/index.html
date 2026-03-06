@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); color: white; padding: 40px 32px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .header .breadcrumb { font-size: 0.85rem; opacity: 0.7; margin-bottom: 12px; }
+        .header .breadcrumb a { color: rgba(255,255,255,0.8); text-decoration: none; }
+        .header .optional-badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; margin-left: 12px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+        .card { background: white; border-radius: 12px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .card h2 { font-size: 1.3rem; color: #1a1a2e; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .card h3 { font-size: 1.05rem; color: #4a148c; margin: 20px 0 10px; }
+        .card p { color: #555; line-height: 1.6; margin-bottom: 10px; }
+        .card ul { padding-left: 20px; color: #555; line-height: 1.8; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { background: #4a148c; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f8f9fa; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; font-family: 'Courier New', monospace; }
+        pre { background: #1a1a2e; color: #a8ff78; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        .story-box { background: #f3e5f5; border-left: 4px solid #7b1fa2; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; font-style: italic; }
+        .ac-box { background: #f0faf0; border-left: 4px solid #27ae60; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; }
+        .complexity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px; }
+        .complexity-item { background: #f8f9fa; border-radius: 8px; padding: 14px; border-top: 4px solid #ccc; }
+        .complexity-item.simple { border-top-color: #27ae60; }
+        .complexity-item.medium { border-top-color: #f39c12; }
+        .complexity-item.complex { border-top-color: #e74c3c; }
+        .complexity-item h4 { font-size: 0.9rem; margin-bottom: 8px; }
+        .complexity-item ul { font-size: 0.82rem; padding-left: 16px; color: #555; }
+        .prereq-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+        footer { text-align: center; padding: 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e0e0e0; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="breadcrumb"><a href="../../index.html">← Documentation Index</a></div>
+        <h1>🛡️ Authorization <span class="optional-badge">Optional Module</span></h1>
+        <p>User Story Development Guide — Real-Time Credit Card Authorization with IMS, DB2, and MQ</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>authorization</code></p>
+            <p><strong>Purpose:</strong> Provides real-time credit card authorization processing via IBM MQ. Authorization requests from external POS/merchant systems are received via MQ, processed by CICS, stored in IMS DB, and fraud analytics tracked in DB2.</p>
+            <p><strong>Business Context:</strong> This optional module simulates the authorization leg of credit card payment processing. It demonstrates multi-technology integration (CICS + IMS + DB2 + MQ) and is designed for testing modernization scenarios involving authorization services.</p>
+            <div class="prereq-box">📦 <strong>Prerequisites:</strong> Requires base CardDemo installed plus: IBM MQ configured and accessible from CICS, IMS DB setup and loaded, DB2 database with fraud analytics tables created via CREADB21/DEFGDGD JCL.</div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Templates</h2>
+
+            <h3>Process Authorization Request</h3>
+            <div class="story-box">As a merchant POS system, I want to send an authorization request via MQ so that a credit card transaction can be approved or declined before processing.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>MQ-compatible client sends authorization request to configured MQ request queue</li>
+                    <li>CP00 (COPAUA0C) triggered by MQ message arrival</li>
+                    <li>CICS validates card number via CARDXREF VSAM → finds account → checks credit limit</li>
+                    <li>Business rules applied: amount ≤ available credit, account active, no fraud flags</li>
+                    <li>Authorization record stored in IMS DB hierarchical structure</li>
+                    <li>Approve/Decline response written to MQ reply queue within SLA</li>
+                </ul>
+            </div>
+
+            <h3>View Pending Authorizations</h3>
+            <div class="story-box">As a cardholder, I want to view my pending authorizations so that I can see charges that are approved but not yet posted.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CPVS (COPAUS0C) displays summary of pending authorizations from IMS DB</li>
+                    <li>List shows: authorization ID, amount, merchant, timestamp, status</li>
+                    <li>Cardholder can select authorization to view details (CPVD)</li>
+                </ul>
+            </div>
+
+            <h3>View Authorization Details</h3>
+            <div class="story-box">As a fraud analyst, I want to view and process authorization details so that I can investigate suspicious activity and update authorization status.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Transaction CPVD (COPAUS1C) shows full authorization record from IMS DB</li>
+                    <li>Analyst can update authorization status; change written back to IMS</li>
+                    <li>Fraud-related details inserted to DB2 fraud analytics table</li>
+                    <li>Status changes logged with timestamp and user ID</li>
+                </ul>
+            </div>
+
+            <h3>Purge Expired Authorizations</h3>
+            <div class="story-box">As a batch operations analyst, I want to run the authorization purge job so that expired authorization records are removed from IMS DB.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>CBPAUP0J (CBPAUP0C) reads IMS DB for authorizations past expiry threshold</li>
+                    <li>Expired records deleted from IMS DB</li>
+                    <li>Purge count written to SYSOUT for audit trail</li>
+                    <li>RC=0 for clean run; RC=4 if some records could not be purged (logged)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Complexity Guidelines</h2>
+            <div class="complexity-grid">
+                <div class="complexity-item simple">
+                    <h4>✅ Simple (1-2 pts)</h4>
+                    <ul>
+                        <li>Add authorization count display to CPVS summary screen</li>
+                        <li>Add status filter to pending authorization list</li>
+                        <li>Format authorization amount display</li>
+                    </ul>
+                </div>
+                <div class="complexity-item medium">
+                    <h4>⚠️ Medium (3-5 pts)</h4>
+                    <ul>
+                        <li>Add new fraud rule to authorization business logic</li>
+                        <li>Add authorization expiry configuration parameter</li>
+                        <li>Add secondary DB2 analytics query to CPVD details screen</li>
+                    </ul>
+                </div>
+                <div class="complexity-item complex">
+                    <h4>🔴 Complex (5-8 pts)</h4>
+                    <ul>
+                        <li>Add authorization reversal flow (new MQ message type)</li>
+                        <li>Batch posting of approved authorizations to TRANSACT VSAM</li>
+                        <li>IMS DB structure extension (new segment type for new data)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>CICS Transactions</h3>
+            <table>
+                <tr><th>Transaction</th><th>Program</th><th>Trigger</th><th>Function</th></tr>
+                <tr><td><code>CP00</code></td><td>COPAUA0C</td><td>MQ Message</td><td>Process incoming authorization request</td></tr>
+                <tr><td><code>CPVS</code></td><td>COPAUS0C</td><td>User</td><td>Pending authorization summary (IMS DB read)</td></tr>
+                <tr><td><code>CPVD</code></td><td>COPAUS1C</td><td>User</td><td>Authorization details — update IMS, insert DB2</td></tr>
+            </table>
+
+            <h3>Authorization Flow</h3>
+            <pre>MQ Request Queue
+        ↓
+CP00 (COPAUA0C) — MQ-triggered CICS transaction
+        ↓
+CARDXREF VSAM → ACCTFILE VSAM (credit limit check)
+        ↓
+Business rules (amount, status, fraud checks)
+        ↓
+IMS DB — Store authorization record (Customer→Account→Auth hierarchy)
+        ↓
+DB2 — Log fraud analytics data
+        ↓
+MQ Reply Queue — Send APPROVE/DECLINE response</pre>
+
+            <h3>Batch Component</h3>
+            <table>
+                <tr><th>Job</th><th>Program</th><th>Function</th></tr>
+                <tr><td><code>CBPAUP0J</code></td><td>CBPAUP0C</td><td>Purge expired authorizations from IMS DB</td></tr>
+            </table>
+
+            <h3>Source Location</h3>
+            <p>All authorization module files located in: <code>app/app-authorization-ims-db2-mq/</code></p>
+        </div>
+    </div>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | CardDemo v1.0 (Optional Module) | Last updated: 2025-03-06</p>
+    </footer>
+</body>
+</html>

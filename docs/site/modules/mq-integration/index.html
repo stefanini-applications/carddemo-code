@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQ Integration - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #00695c 0%, #004d40 100%); color: white; padding: 40px 32px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .header .breadcrumb { font-size: 0.85rem; opacity: 0.7; margin-bottom: 12px; }
+        .header .breadcrumb a { color: rgba(255,255,255,0.8); text-decoration: none; }
+        .header .optional-badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 12px; font-size: 0.8rem; margin-left: 12px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+        .card { background: white; border-radius: 12px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .card h2 { font-size: 1.3rem; color: #1a1a2e; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .card h3 { font-size: 1.05rem; color: #004d40; margin: 20px 0 10px; }
+        .card p { color: #555; line-height: 1.6; margin-bottom: 10px; }
+        .card ul { padding-left: 20px; color: #555; line-height: 1.8; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { background: #004d40; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f8f9fa; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; font-family: 'Courier New', monospace; }
+        pre { background: #1a1a2e; color: #a8ff78; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        .story-box { background: #e0f2f1; border-left: 4px solid #00695c; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; font-style: italic; }
+        .ac-box { background: #f0faf0; border-left: 4px solid #27ae60; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 8px 0; }
+        .complexity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px; }
+        .complexity-item { background: #f8f9fa; border-radius: 8px; padding: 14px; border-top: 4px solid #ccc; }
+        .complexity-item.simple { border-top-color: #27ae60; }
+        .complexity-item.medium { border-top-color: #f39c12; }
+        .complexity-item.complex { border-top-color: #e74c3c; }
+        .complexity-item h4 { font-size: 0.9rem; margin-bottom: 8px; }
+        .complexity-item ul { font-size: 0.82rem; padding-left: 16px; color: #555; }
+        .prereq-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+        footer { text-align: center; padding: 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e0e0e0; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="breadcrumb"><a href="../../index.html">← Documentation Index</a></div>
+        <h1>📨 MQ Integration <span class="optional-badge">Optional Module</span></h1>
+        <p>User Story Development Guide — Asynchronous MQ Request/Response Patterns</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>mq-integration</code></p>
+            <p><strong>Purpose:</strong> Demonstrates asynchronous IBM MQ request/response integration patterns for two use cases: system date inquiry (CDRD) and account details extraction (CDRA). Shows how to decouple external systems from CICS using MQ.</p>
+            <p><strong>Business Context:</strong> This optional module is primarily a technical demonstration for modernization scenarios. It shows how CICS applications can expose services asynchronously via MQ, enabling integration with distributed or cloud-based systems without synchronous CICS coupling.</p>
+            <div class="prereq-box">📦 <strong>Prerequisites:</strong> Base CardDemo installed plus: IBM MQ configured and accessible from CICS, MQ queues defined (request and reply queues for CDRD and CDRA transactions).</div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Templates</h2>
+
+            <h3>System Date Inquiry via MQ</h3>
+            <div class="story-box">As an external system, I want to query the current system date from CardDemo via MQ so that my timestamps are synchronized with the mainframe.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>External client sends date inquiry request to configured MQ request queue</li>
+                    <li>CDRD (CODATE01) triggered by MQ message in CICS</li>
+                    <li>CODATE01 retrieves current system date/time</li>
+                    <li>Response message written to MQ reply queue in expected format</li>
+                    <li>External client reads response and obtains mainframe system date</li>
+                    <li>Round-trip latency meets SLA (configurable timeout)</li>
+                </ul>
+            </div>
+
+            <h3>Account Details via MQ</h3>
+            <div class="story-box">As an external system, I want to retrieve account details from CardDemo via MQ so that I can display account information in a distributed application.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>External client sends account inquiry request (with account ID) to MQ request queue</li>
+                    <li>CDRA (COACCT01) triggered by MQ message in CICS</li>
+                    <li>COACCT01 reads ACCOUNT-RECORD from ACCTFILE VSAM using provided account ID</li>
+                    <li>Account data formatted and written to MQ reply queue</li>
+                    <li>If account not found, error response written to reply queue</li>
+                    <li>Response includes: ACCT-ID, ACCT-CURR-BAL, ACCT-CREDIT-LIMIT, ACCT-ACTIVE-STATUS</li>
+                </ul>
+            </div>
+
+            <h3>MQ Pattern Documentation for Architects</h3>
+            <div class="story-box">As a modernization architect, I want documentation of the MQ request/response pattern used in CardDemo so I can design equivalent services for cloud migration.</div>
+            <div class="ac-box">
+                <strong>Acceptance Criteria:</strong>
+                <ul>
+                    <li>Pattern documented: client sends to request queue, CICS program triggered, reads VSAM, writes to reply queue</li>
+                    <li>Message formats documented for request and response for both CDRD and CDRA</li>
+                    <li>Equivalent REST API design documented as migration target pattern</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Complexity Guidelines</h2>
+            <div class="complexity-grid">
+                <div class="complexity-item simple">
+                    <h4>✅ Simple (1-2 pts)</h4>
+                    <ul>
+                        <li>Add additional date format to CODATE01 response</li>
+                        <li>Add account status field to COACCT01 response</li>
+                        <li>Add MQ message ID logging</li>
+                    </ul>
+                </div>
+                <div class="complexity-item medium">
+                    <h4>⚠️ Medium (3-5 pts)</h4>
+                    <ul>
+                        <li>Add customer inquiry via MQ (new COCU01 MQ program)</li>
+                        <li>Add request validation and error response codes</li>
+                        <li>Add MQ dead-letter queue handling for failed requests</li>
+                    </ul>
+                </div>
+                <div class="complexity-item complex">
+                    <h4>🔴 Complex (5-8 pts)</h4>
+                    <ul>
+                        <li>New MQ-based transaction submission service (write to TRANSACT)</li>
+                        <li>MQ-to-REST API bridge for cloud integration demonstration</li>
+                        <li>Correlation ID tracking across multiple MQ round-trips</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>CICS Transactions</h3>
+            <table>
+                <tr><th>Transaction</th><th>Program</th><th>Trigger</th><th>Function</th></tr>
+                <tr><td><code>CDRD</code></td><td>CODATE01</td><td>MQ Message</td><td>System date inquiry — returns current mainframe date/time</td></tr>
+                <tr><td><code>CDRA</code></td><td>COACCT01</td><td>MQ Message</td><td>Account details inquiry — reads ACCTFILE, returns account data</td></tr>
+            </table>
+
+            <h3>MQ Request/Response Pattern</h3>
+            <pre>External Client
+     |
+     |── PUT → [MQ Request Queue]
+                      |
+              CICS MQ Trigger
+                      |
+              CDRD/CDRA CICS Transaction
+                      |
+              Process request (read VSAM)
+                      |
+              PUT → [MQ Reply Queue]
+                      |
+     |← GET ──────────┘
+     |
+External Client reads response</pre>
+
+            <h3>VSAM Dependencies</h3>
+            <table>
+                <tr><th>Transaction</th><th>VSAM File</th><th>Access</th></tr>
+                <tr><td><code>CDRD</code></td><td>None (system date)</td><td>System call only</td></tr>
+                <tr><td><code>CDRA</code></td><td>ACCTFILE</td><td>Read (by ACCT-ID)</td></tr>
+            </table>
+
+            <h3>Source Location</h3>
+            <p>All MQ integration module files: <code>app/app-vsam-mq/</code></p>
+
+            <h3>MQ Configuration</h3>
+            <ul>
+                <li>MQ queue manager must be accessible from CICS region</li>
+                <li>Request and reply queues defined in MQ and CICS CSD (app-vsam-mq/csd/)</li>
+                <li>CICS MQ bridge or trigger program configured for automatic CICS transaction start</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p><a href="../../index.html">← Back to Index</a> | CardDemo v1.0 (Optional Module) | Last updated: 2025-03-06</p>
+    </footer>
+</body>
+</html>
