@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSAM/MQ Integration - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a1942 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #4a1942; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        .optional-badge { background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 6px; padding: 8px 14px; font-size: 0.9rem; margin-bottom: 16px; display: inline-block; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📨 VSAM/MQ Integration</h1>
+    <p>User Story Development Guide — Account &amp; Date Inquiry via IBM MQ</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="optional-badge">⚠️ Optional Module — Requires IBM MQ infrastructure</div>
+
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>vsam-mq-integration</code></p>
+        <p><strong>Purpose:</strong> Demonstrates asynchronous MQ request/response patterns for external system access to CardDemo data. Provides account data inquiry (CDRA) and system date inquiry (CDRD) via MQ messages, reading VSAM data and returning results on reply queues.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>Account Inquiry via MQ:</strong> As an <em>external system</em>, I want to query account details via MQ so that I can access account data without direct VSAM access.</li>
+        <li><strong>Date Inquiry via MQ:</strong> As an <em>external system</em>, I want to query the mainframe system date via MQ so that I have an authoritative timestamp.</li>
+        <li><strong>Async Integration:</strong> As a <em>system integrator</em>, I want to use MQ request/response so that downstream systems can access CardDemo data asynchronously.</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add additional account field to MQ reply message</li><li>Change MQ queue name configuration</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add card inquiry via MQ (new CDRC transaction)</li><li>Add error reply message for account not found</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add transaction history inquiry via MQ</li><li>Implement MQ-based account update (write path)</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COACCT01</strong> (CICS) — Account details inquiry via MQ (CDRA transaction); reads ACCTDAT VSAM, formats reply message, puts to MQ reply-to queue</li>
+        <li><strong>CODATE01</strong> (CICS) — System date inquiry via MQ (CDRD transaction); retrieves CICS date/time, puts to MQ reply-to queue</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>IBM MQ:</strong> Request and reply queues must be defined; CICS must be configured with MQ connection</li>
+        <li><strong>ACCTDAT (VSAM KSDS):</strong> COACCT01 reads account record by account ID from MQ request message</li>
+        <li><strong>CICS ABSTIME:</strong> CODATE01 uses CICS time services for authoritative system date</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CDRD  → CODATE01  — System date inquiry via MQ (request/response)
+CDRA  → COACCT01  — Account details inquiry via MQ (request/response)</code></pre>
+
+    <h3>📋 MQ Message Flow</h3>
+    <pre><code>Date Inquiry (CODATE01 / CDRD):
+  1. MQ message arrives on CDRD request queue
+  2. CODATE01 triggered by CICS MQ trigger mechanism
+  3. CICS ABSTIME called for current date/time
+  4. Reply message put to MQ reply-to queue (from MQMD)
+
+Account Inquiry (COACCT01 / CDRA):
+  1. MQ message arrives with account ID on CDRA queue
+  2. COACCT01 triggered by CICS MQ trigger
+  3. ACCTDAT read using account ID from message
+  4. Account details formatted into reply message
+  5. Reply put to MQ reply-to queue</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-MQ-01:</strong> MQ correlation ID from request message must be copied to reply message</li>
+        <li><strong>BR-MQ-02:</strong> Reply-to queue name is taken from MQMD (MQ Message Descriptor) of the incoming request</li>
+        <li><strong>BR-MQ-03:</strong> If account is not found, an appropriate error code is returned in the reply</li>
+        <li><strong>BR-MQ-04:</strong> Date format in reply uses CICS standard date format</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Date Inquiry:</strong> Given a properly formatted MQ message on the CDRD queue, when CODATE01 processes it, then the current mainframe date/time is returned on the reply-to queue with the original correlation ID</li>
+        <li><strong>Account Inquiry:</strong> Given a valid account ID in the MQ request message, when COACCT01 processes it, then account details (balance, limits, status) are returned on the reply-to queue</li>
+        <li><strong>Account Not Found:</strong> Given an unknown account ID in the request, when COACCT01 processes it, then an error code is returned in the reply message</li>
+        <li><strong>Performance:</strong> MQ request/response round trip must complete within 5 seconds</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

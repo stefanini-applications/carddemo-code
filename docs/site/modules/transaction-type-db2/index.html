@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Type DB2 - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #1e3a5f 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #1e3a5f; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        .optional-badge { background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 6px; padding: 8px 14px; font-size: 0.9rem; margin-bottom: 16px; display: inline-block; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🗄️ Transaction Type DB2</h1>
+    <p>User Story Development Guide — Admin Transaction Type Management with Db2</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="optional-badge">⚠️ Optional Module — Requires IBM Db2 infrastructure</div>
+
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>transaction-type-db2</code></p>
+        <p><strong>Purpose:</strong> Admin module for managing transaction type and category reference data stored in IBM Db2 tables. Demonstrates CICS-Db2 integration patterns including cursor operations, inserts, updates, and deletes.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>List Types:</strong> As an <em>admin</em>, I want to list all transaction types so that I can review available charge categories.</li>
+        <li><strong>Add Type:</strong> As an <em>admin</em>, I want to add a new transaction type so that new charge categories are available for transactions.</li>
+        <li><strong>Update Type:</strong> As an <em>admin</em>, I want to update a transaction type description so that it accurately reflects the charge category.</li>
+        <li><strong>Delete Type:</strong> As an <em>admin</em>, I want to delete an obsolete transaction type so that it is no longer available for new transactions.</li>
+        <li><strong>Sync to VSAM:</strong> As a <em>batch system</em>, I want to extract Db2 transaction types to VSAM so that the online COBOL programs can access them.</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add display of active/inactive flag to type list</li><li>Add sort order to type list</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add transaction category management (sub-types)</li><li>Add bulk import of transaction types from file</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add Db2 audit trail for type changes</li><li>Add referential integrity check before delete</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COTRTLIC</strong> (CICS) — List/update/delete transaction types; uses Db2 cursor for paginated list; demonstrates DELETE with WHERE clause</li>
+        <li><strong>COTRTUPC</strong> (CICS) — Add/edit transaction types; demonstrates INSERT and UPDATE on Db2</li>
+        <li><strong>COBTUPDT</strong> (batch) — Batch update of transaction types in Db2 from sequential input</li>
+        <li><strong>COTRTLI / COTRTUP</strong> (BMS maps) — Transaction type list and update screens</li>
+        <li><strong>CSDB2RPY / CSDB2RWY</strong> (copybooks) — Db2 communication area for read and write</li>
+        <li><strong>DCLTRTYP.dcl / DCLTRCAT.dcl</strong> (DCLGEN) — Db2 table column declarations</li>
+        <li><strong>TRNTYPE.ddl / TRNTYCAT.ddl</strong> (DDL) — Db2 table definitions</li>
+        <li><strong>XTRNTYPE.ddl / XTRNTYCAT.ddl</strong> — Extended index definitions</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>IBM Db2:</strong> TRNTYPE and TRNTYCAT tables; CICS RCT (Resource Control Table) must be configured for Db2 access</li>
+        <li><strong>TRANEXTR JCL:</strong> Extracts Db2 data to sequential file for VSAM load</li>
+        <li><strong>TRANCATG / TRANTYPE (VSAM):</strong> VSAM counterparts loaded from Db2 via TRANEXTR</li>
+        <li><strong>Transaction Processing module:</strong> TRAN-TYPE-CD and TRAN-CAT-CD validated against these tables</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CTTU  → COTRTUPC  — Transaction type add/edit (INSERT/UPDATE on Db2)
+CTLI  → COTRTLIC  — Transaction type list/update/delete (cursor, DELETE on Db2)</code></pre>
+
+    <h3>📋 Db2 Table Structures</h3>
+    <pre><code>TRNTYPE (Transaction Type):
+  TRAN-TYPE       CHAR(2)         — Transaction type code (PK)
+  TRAN-TYPE-DESC  CHAR(50)        — Description
+
+TRNTYCAT (Transaction Category):
+  TRAN-TYPE-CD    CHAR(2)         — Transaction type (composite PK)
+  TRAN-CAT-CD     DECIMAL(4)      — Category code (composite PK)
+  TRAN-CAT-DESC   CHAR(50)        — Category description</code></pre>
+
+    <h3>📋 VSAM Sync Pattern</h3>
+    <pre><code>1. Admin updates type/category via CTTU/CTLI (Db2 updated)
+2. Nightly TRANEXTR JCL extracts Db2 → sequential file
+3. TRANCATG/TRANTYPE JCL loads sequential file → VSAM
+4. Online COBOL programs read from VSAM for lookups</code></pre>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>List Types:</strong> Given Db2 TRNTYPE table has records, when admin navigates to CTLI, then all transaction types are listed with code and description</li>
+        <li><strong>Add Type:</strong> Given a unique 2-char type code and description, when admin submits CTTU, then the record is inserted into Db2 TRNTYPE</li>
+        <li><strong>Delete Type:</strong> Given an existing type code, when admin deletes via CTLI, then the Db2 record is removed and no longer appears in the list</li>
+        <li><strong>VSAM Sync:</strong> Given Db2 types are updated and TRANEXTR runs, then VSAM TRANTYPE file reflects the current Db2 data</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

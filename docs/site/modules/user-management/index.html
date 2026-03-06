@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4c1d95 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #4c1d95; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>👥 User Management</h1>
+    <p>User Story Development Guide — Admin User CRUD</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>user-management</code></p>
+        <p><strong>Purpose:</strong> Admin-only module providing full CRUD operations on application users stored in the USRSEC VSAM file. Controls who can access the CardDemo application and with what level of privilege.</p>
+        <p><strong>⚠️ Admin Only:</strong> Only users with SEC-USR-TYPE = 'A' can access these functions.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>List Users:</strong> As an <em>admin</em>, I want to list all users so that I can review who has access to the system.</li>
+        <li><strong>Add User:</strong> As an <em>admin</em>, I want to add a new user so that new employees can access the application.</li>
+        <li><strong>Update User:</strong> As an <em>admin</em>, I want to update a user's password or name so that user information stays current.</li>
+        <li><strong>Delete User:</strong> As an <em>admin</em>, I want to delete a user so that terminated employees lose system access.</li>
+        <li><strong>User Type:</strong> As an <em>admin</em>, I want to set a user's type (Regular/Admin) so that the correct menu is presented at login.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CSUSR01Y copybook:</strong> User record structure shared with authentication module — same 80-byte record layout</li>
+        <li><strong>COUSR00C–COUSR03C pattern:</strong> Consistent CICS pseudo-conversational CRUD pattern across all four programs</li>
+        <li><strong>USRSEC KSDS:</strong> Simple indexed file with SEC-USR-ID as key — straightforward CICS READ/WRITE/REWRITE/DELETE</li>
+        <li><strong>COADM01C routing:</strong> Admin menu already routes to all user management transactions</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add user email field to user record (uses FILLER)</li><li>Add user count display to list screen</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add password complexity validation on add/update</li><li>Add user search/filter by name on list screen</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Implement password hashing (currently plain text)</li><li>Add audit log for user management operations</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COADM01C</strong> — Admin menu; routes to CU00–CU03 and optional DB2 transaction type management</li>
+        <li><strong>COUSR00C</strong> — List users; sequential browse of USRSEC KSDS</li>
+        <li><strong>COUSR01C</strong> — Add user; CICS WRITE to USRSEC</li>
+        <li><strong>COUSR02C</strong> — Update user; CICS READ UPDATE / REWRITE</li>
+        <li><strong>COUSR03C</strong> — Delete user; CICS DELETE from USRSEC</li>
+        <li><strong>COADM01 / COUSR00–COUSR03</strong> (BMS maps) — Admin and user management 3270 screens</li>
+        <li><strong>CSUSR01Y</strong> (copybook) — User security record (80 bytes)</li>
+        <li><strong>COADM02Y</strong> (copybook) — Admin screen common area</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>USRSEC (KSDS):</strong> User security file; SEC-USR-ID (8 chars) is the KSDS key</li>
+        <li><strong>Authentication module:</strong> Same USRSEC file used for signon validation</li>
+        <li><strong>DUSRSECJ (JCL):</strong> Initial load/reset of USRSEC file using IEBGENER</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CA00  → COADM01C  — Admin menu (entry point for admin users)
+CU00  → COUSR00C  — List users (sequential browse)
+CU01  → COUSR01C  — Add user
+CU02  → COUSR02C  — Update user
+CU03  → COUSR03C  — Delete user</code></pre>
+
+    <h3>📋 User Security Data Model (CSUSR01Y, 80 bytes)</h3>
+    <pre><code>SEC-USER-DATA (USRSEC KSDS):
+  SEC-USR-ID      PIC X(08)   — User ID (KSDS key, 8 chars max)
+  SEC-USR-FNAME   PIC X(20)   — First name
+  SEC-USR-LNAME   PIC X(20)   — Last name
+  SEC-USR-PWD     PIC X(08)   — Password (plain text, 8 chars max)
+  SEC-USR-TYPE    PIC X(01)   — 'R'=Regular, 'A'=Admin
+  SEC-USR-FILLER  PIC X(23)   — Available for extension
+
+Default Users:
+  ADMIN001 / PASSWORD / Admin
+  USER0001 / PASSWORD / Regular</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-USR-01:</strong> Only Admin users (SEC-USR-TYPE = 'A') can access the CA00 admin menu and CU-series transactions</li>
+        <li><strong>BR-USR-02:</strong> User IDs are 8 characters maximum; must be unique in USRSEC</li>
+        <li><strong>BR-USR-03:</strong> Passwords are stored in plain text in USRSEC (8 chars max) — security consideration for migration</li>
+        <li><strong>BR-USR-04:</strong> User type must be 'R' (Regular) or 'A' (Admin)</li>
+        <li><strong>BR-USR-05:</strong> Deleting a user removes their USRSEC record; they can no longer log in</li>
+        <li><strong>BR-USR-06:</strong> The DUSRSECJ job resets the USRSEC file to initial sample data</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Access Control:</strong> Given a regular user (type 'R'), when they attempt to navigate to CA00, then they are denied access with an appropriate message</li>
+        <li><strong>Add User:</strong> Given valid user ID, names, password, and type, when admin submits CU01, then the new user record is written to USRSEC and the user can log in via CC00</li>
+        <li><strong>Delete User:</strong> Given an existing user, when admin confirms deletion in CU03, then the USRSEC record is deleted and the user can no longer log in</li>
+        <li><strong>Unique ID:</strong> Given an attempt to add a user with an existing user ID, when CU01 is submitted, then an error is displayed and the duplicate is rejected</li>
+        <li><strong>Performance:</strong> User list must display within 3 seconds; all CRUD operations must complete within 3 seconds</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

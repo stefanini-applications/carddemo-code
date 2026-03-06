@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #0f3460; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        .tag { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+        .tag-cics { background: #dbeafe; color: #1e40af; }
+        .tag-vsam { background: #d1fae5; color: #065f46; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🏦 Account Management</h1>
+    <p>User Story Development Guide — Account View &amp; Update</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>account-management</code></p>
+        <p><strong>Purpose:</strong> Enables regular users to view and update credit account information: balance, credit limits, status, open/expiration dates, and account group ID.</p>
+        <p><strong>Tags:</strong> <span class="tag tag-cics">CICS</span> <span class="tag tag-vsam">VSAM</span></p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>View Account:</strong> As a <em>card holder</em>, I want to view my account details so that I can see my current balance, credit limit, and account status.</li>
+        <li><strong>Update Account:</strong> As a <em>card holder</em>, I want to update my account ZIP code so that my statement is mailed to the correct address.</li>
+        <li><strong>Credit Limit Display:</strong> As a <em>card holder</em>, I want to see my available credit so that I can plan my purchases.</li>
+        <li><strong>Account Status:</strong> As a <em>card holder</em>, I want to view my account active status so that I know whether my account can accept new charges.</li>
+        <li><strong>Account Group:</strong> As an <em>admin</em>, I want to assign an account to a disclosure group so that the correct interest rates are applied.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CVACT01Y copybook:</strong> Account record layout is shared — used in view, update, and all batch programs</li>
+        <li><strong>CXACAIX (AIX):</strong> Alternate index on ACCTDAT enables lookup by card number; reused in bill payment</li>
+        <li><strong>COCOM01Y COMMAREA:</strong> Account number passed from prior screen; no re-entry needed</li>
+        <li><strong>CSDAT01Y / CSMSG01Y:</strong> Shared date and message handling utilities</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add display of cash credit limit to view screen</li><li>Add read-only field for reissue date</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add validation for credit limit update (must be ≥ current balance)</li><li>Add account status toggle with confirmation</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add credit limit increase request workflow (approval required)</li><li>Implement multi-account display with pagination</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COACTVWC</strong> — Account view; reads ACCTDAT via account ID from COMMAREA; resolves customer via CXACAIX</li>
+        <li><strong>COACTUPC</strong> — Account update; reads for update (CICS READ UPDATE) then rewrites record</li>
+        <li><strong>COACTVW / COACTUP</strong> (BMS maps) — View and update 3270 screen layouts</li>
+        <li><strong>CVACT01Y</strong> (copybook) — Account record structure (300 bytes)</li>
+        <li><strong>CBACT01C–CBACT04C</strong> (batch) — Account file sequential reads and reporting utilities</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>ACCTDAT (VSAM KSDS):</strong> Account master file, keyed on ACCT-ID (11-digit)</li>
+        <li><strong>CXACAIX (VSAM AIX):</strong> Alternate index on ACCTDAT for card number lookups</li>
+        <li><strong>CARDXREF (VSAM KSDS):</strong> Maps card number → customer ID → account ID</li>
+        <li><strong>Authentication module:</strong> Account ID is passed via COMMAREA from signon</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CAVW  → COACTVWC  — Account view (read-only)
+CAUP  → COACTUPC  — Account update (read/write)</code></pre>
+
+    <h3>📋 Account Data Model (CVACT01Y, 300 bytes)</h3>
+    <pre><code>ACCOUNT-RECORD:
+  ACCT-ID               PIC 9(11)       — Account ID (KSDS key)
+  ACCT-ACTIVE-STATUS    PIC X(01)       — 'Y'=Active, 'N'=Inactive
+  ACCT-CURR-BAL         PIC S9(10)V99   — Current balance
+  ACCT-CREDIT-LIMIT     PIC S9(10)V99   — Total credit limit
+  ACCT-CASH-CREDIT-LIMIT PIC S9(10)V99  — Cash advance limit
+  ACCT-OPEN-DATE        PIC X(10)       — YYYY-MM-DD
+  ACCT-EXPIRAION-DATE   PIC X(10)       — YYYY-MM-DD
+  ACCT-REISSUE-DATE     PIC X(10)       — YYYY-MM-DD
+  ACCT-CURR-CYC-CREDIT  PIC S9(10)V99   — Cycle credits
+  ACCT-CURR-CYC-DEBIT   PIC S9(10)V99   — Cycle debits
+  ACCT-ADDR-ZIP         PIC X(10)       — ZIP code
+  ACCT-GROUP-ID         PIC X(10)       — Disclosure group ID</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-ACCT-01:</strong> Account status 'Y' = active; only active accounts accept new transactions</li>
+        <li><strong>BR-ACCT-02:</strong> Current balance must not exceed the credit limit</li>
+        <li><strong>BR-ACCT-03:</strong> Cash credit limit is separate from purchase credit limit</li>
+        <li><strong>BR-ACCT-04:</strong> ACCT-GROUP-ID links to DISCGRP VSAM file for interest rate determination</li>
+        <li><strong>BR-ACCT-05:</strong> Available credit = ACCT-CREDIT-LIMIT - ACCT-CURR-BAL</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>View Account:</strong> Given a valid account ID, when the user accesses CAVW, then all account fields are displayed including balance, credit limit, open date, and group ID</li>
+        <li><strong>Update ZIP:</strong> Given the account update screen (CAUP), when a valid ZIP code is entered and confirmed, then the ZIP is updated in ACCTDAT</li>
+        <li><strong>Validation:</strong> Given an update attempt to set credit limit below current balance, when the user submits, then an error message is displayed and the update is rejected</li>
+        <li><strong>Performance:</strong> Account view must display within 3 seconds of navigating to CAVW</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

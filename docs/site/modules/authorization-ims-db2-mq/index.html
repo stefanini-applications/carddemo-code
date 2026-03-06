@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization IMS/DB2/MQ - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #7f4f00 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #7f4f00; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        .optional-badge { background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 6px; padding: 8px 14px; font-size: 0.9rem; margin-bottom: 16px; display: inline-block; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🔒 Authorization IMS/DB2/MQ</h1>
+    <p>User Story Development Guide — Credit Card Authorization with IMS, Db2, and MQ</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="optional-badge">⚠️ Optional Module — Requires IMS DB, IBM Db2, and IBM MQ infrastructure</div>
+
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>authorization-ims-db2-mq</code></p>
+        <p><strong>Purpose:</strong> Simulates credit card authorization processing using IBM MQ for request/response messaging, IMS DB for pending authorization records, and IBM Db2 for transaction logging. Includes a batch purge job for expired authorizations.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>View Pending Authorizations:</strong> As a <em>card holder</em>, I want to view a list of pending authorizations so that I can see charges awaiting approval.</li>
+        <li><strong>Authorization Details:</strong> As a <em>card holder</em>, I want to view authorization details so that I can verify or dispute a specific charge.</li>
+        <li><strong>Process Authorization:</strong> As a <em>system</em>, I want to process incoming authorization requests via MQ so that purchase approvals are handled in real-time.</li>
+        <li><strong>Purge Expired:</strong> As a <em>batch system</em>, I want to purge expired authorization records so that IMS DB and Db2 stay clean.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CCPAURQY / CCPAURLY copybooks:</strong> Authorization request and reply message structures already defined</li>
+        <li><strong>IMSFUNCS copybook:</strong> IMS function codes and PCB patterns — reusable for any IMS operation</li>
+        <li><strong>CIPAUDTY / CIPAUSMY:</strong> IMS segment definitions for authorization records</li>
+        <li><strong>COPAUA0C MQ pattern:</strong> Complete MQ trigger → receive → process → reply pattern implemented</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add new display field to authorization summary screen</li><li>Change MQ queue name configuration</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add authorization amount limit validation</li><li>Add merchant category filtering to summary view</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add fraud detection rule to authorization processing</li><li>Add Db2 reporting query for authorization history</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Components</h3>
+    <ul>
+        <li><strong>COPAUA0C</strong> (CICS) — MQ-triggered authorization processor; receives request, reads/writes IMS DB, logs to Db2, sends MQ reply</li>
+        <li><strong>COPAUS0C</strong> (CICS) — Pending authorization summary; reads IMS DB via PCB</li>
+        <li><strong>COPAUS1C</strong> (CICS) — Authorization detail; reads IMS and updates Db2 on approve/reject</li>
+        <li><strong>COPAUS2C</strong> (CICS) — Supplemental authorization view</li>
+        <li><strong>CBPAUP0C</strong> (batch) — Purge expired authorizations from IMS DB and Db2</li>
+        <li><strong>COPAU00 / COPAU01</strong> (BMS maps) — Authorization summary and detail screens</li>
+        <li><strong>DBPAUTP0.dbd / DBPAUTX0.dbd</strong> (IMS DBD) — Authorization pending database</li>
+        <li><strong>PSBPAUTB.psb / PSBPAUTL.psb</strong> (IMS PSB) — Program specification blocks</li>
+        <li><strong>AUTHFRDS.ddl / AUTHFRDS.dcl</strong> — Db2 table for authorization records</li>
+    </ul>
+
+    <h3>🔗 Dependencies</h3>
+    <ul>
+        <li><strong>IBM MQ:</strong> Authorization requests arrive on defined queues; replies sent to reply-to queue</li>
+        <li><strong>IMS DB:</strong> DBPAUTP0 database stores pending authorization records; accessed via DLI calls</li>
+        <li><strong>IBM Db2:</strong> AUTHFRDS table logs processed authorizations</li>
+        <li><strong>VSAM CARDDAT:</strong> Card validation during authorization processing</li>
+    </ul>
+
+    <h3>🌐 CICS Transactions</h3>
+    <pre><code>CPVS  → COPAUS0C  — Pending authorization summary (reads IMS + VSAM)
+CPVD  → COPAUS1C  — Authorization detail (updates IMS + inserts Db2)
+CP00  → COPAUA0C  — Process auth requests (MQ trigger, IMS insert/update)</code></pre>
+
+    <h3>📋 Authorization Message Structures</h3>
+    <pre><code>CCPAURQY — Authorization Request:
+  - Card number, merchant ID, amount, timestamp
+  - Request type, source system
+
+CCPAURLY — Authorization Reply:
+  - Approval/decline code
+  - Authorization ID, response timestamp
+
+CCPAUERY — Authorization Enquiry:
+  - Query parameters for pending auth lookup</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-AUTH-EXT-01:</strong> Authorization requests arrive via MQ and trigger COPAUA0C processing</li>
+        <li><strong>BR-AUTH-EXT-02:</strong> Pending authorizations are stored in IMS DB (DBPAUTP0)</li>
+        <li><strong>BR-AUTH-EXT-03:</strong> Processed authorizations are logged to Db2 AUTHFRDS table</li>
+        <li><strong>BR-AUTH-EXT-04:</strong> Expired authorizations are purged by CBPAUP0J batch job</li>
+        <li><strong>BR-AUTH-EXT-05:</strong> MQ correlation ID links requests to replies</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>View Pending:</strong> Given pending authorizations exist in IMS DB, when card holder navigates to CPVS, then all pending authorizations for their account are listed</li>
+        <li><strong>Authorization Detail:</strong> Given an authorization is selected, when CPVD is displayed, then merchant, amount, and timestamp are shown; user can approve or dispute</li>
+        <li><strong>MQ Processing:</strong> Given an authorization request arrives on the MQ queue, when COPAUA0C triggers, then the authorization is stored in IMS and a reply is sent on the reply-to queue</li>
+        <li><strong>Purge Job:</strong> Given CBPAUP0J runs, then authorizations older than the expiry threshold are removed from IMS DB and Db2</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

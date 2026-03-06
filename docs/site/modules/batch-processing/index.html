@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Processing - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #1e3a2f 100%); color: white; padding: 40px 24px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.85; }
+        .nav { background: white; padding: 12px 24px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .nav a { color: #0f3460; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        h2 { font-size: 1.4rem; color: #1a1a2e; margin: 32px 0 14px; border-left: 4px solid #1e3a2f; padding-left: 12px; }
+        h3 { font-size: 1.1rem; color: #16213e; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 12px; }
+        li { line-height: 1.8; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 18px; border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+        pre code { background: none; padding: 0; color: inherit; font-size: 0.85rem; }
+        .complexity { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .complexity-item { flex: 1; min-width: 160px; background: white; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-top: 3px solid; }
+        .simple { border-color: #22c55e; }
+        .medium { border-color: #f59e0b; }
+        .complex { border-color: #ef4444; }
+        .complexity-item .pts { font-weight: 700; font-size: 1.1rem; }
+        .sequence { counter-reset: seq; }
+        .sequence li { counter-increment: seq; }
+        .sequence li::marker { content: counter(seq) ". "; font-weight: 700; color: #0f3460; }
+        footer { text-align: center; padding: 32px 24px; color: #888; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>⚙️ Batch Processing</h1>
+    <p>User Story Development Guide — Nightly Batch Cycle &amp; Data Maintenance</p>
+</div>
+<div class="nav"><a href="../../index.html">← Back to Documentation Index</a></div>
+
+<div class="container">
+    <div class="card">
+        <p><strong>Module ID:</strong> <code>batch-processing</code></p>
+        <p><strong>Purpose:</strong> End-of-day and periodic batch jobs responsible for transaction posting, interest calculation, statement generation, file initialization, reference data loading, and data maintenance. Runs during the nightly batch window when CICS files are closed.</p>
+    </div>
+
+    <h2>🎯 User Story Development Guide</h2>
+
+    <h3>📝 US Templates</h3>
+    <ul>
+        <li><strong>Nightly Cycle:</strong> As a <em>batch operator</em>, I want to run the full nightly batch cycle so that all daily activity is processed before the next business day.</li>
+        <li><strong>Post Transactions:</strong> As a <em>batch system</em>, I want to post daily transactions to account balances so that accounts reflect the day's charges.</li>
+        <li><strong>Interest Calculation:</strong> As a <em>batch system</em>, I want to calculate interest charges so that finance charges are applied on schedule.</li>
+        <li><strong>Reject Handling:</strong> As a <em>batch operator</em>, I want to review rejected transactions so that errors can be corrected and reprocessed.</li>
+        <li><strong>File Initialize:</strong> As a <em>batch operator</em>, I want to initialize VSAM files with sample data so that the system is ready for testing or a new environment.</li>
+        <li><strong>File Management:</strong> As a <em>batch system</em>, I want CLOSEFIL to run before batch and OPENFIL after so that VSAM files are properly managed between batch and online.</li>
+    </ul>
+
+    <h3>⚡ Development Acceleration Factors</h3>
+    <ul>
+        <li><strong>CLOSEFIL/OPENFIL pattern:</strong> Standard CICS file management JCL — required bookend for all batch cycles</li>
+        <li><strong>CBTRN01C validation:</strong> Multi-file cross-reference validation reusable for new transaction types</li>
+        <li><strong>CSUTLDTC date utility:</strong> Date conversion/comparison utility available to all batch programs</li>
+        <li><strong>COBSWAIT/MVSWAIT:</strong> Timer control for batch step sequencing</li>
+        <li><strong>REPROC.prc JCL procedure:</strong> Parameterized batch procedure for REPRO operations</li>
+        <li><strong>CA7/Control-M schedulers:</strong> Job scheduling definitions already provided</li>
+    </ul>
+
+    <h3>📊 Complexity Guidelines</h3>
+    <div class="complexity">
+        <div class="complexity-item simple">
+            <div class="pts">1–2 pts</div>
+            <strong>Simple</strong>
+            <ul><li>Add new field to reject file report</li><li>Add record count logging to existing batch program</li></ul>
+        </div>
+        <div class="complexity-item medium">
+            <div class="pts">3–5 pts</div>
+            <strong>Medium</strong>
+            <ul><li>Add new transaction validation rule to CBTRN01C</li><li>Add reprocessing job for DALYREJS records</li></ul>
+        </div>
+        <div class="complexity-item complex">
+            <div class="pts">5–8 pts</div>
+            <strong>Complex</strong>
+            <ul><li>Add parallel transaction posting with checkpointing</li><li>Implement GDG-based backup rotation for TRANSACT file</li><li>Add new interest calculation method (tiered rates)</li></ul>
+        </div>
+    </div>
+
+    <h2>🔧 Technical Foundation</h2>
+
+    <h3>🏗️ Key Batch Programs</h3>
+    <ul>
+        <li><strong>CBTRN01C</strong> — Daily transaction posting: reads DALYTRAN, validates vs CARDFILE/CUSTFILE/XREFFILE/ACCTFILE, posts to TRANSACT, updates ACCTDAT + TCATBALF, rejects to DALYREJS</li>
+        <li><strong>CBTRN02C</strong> — Alternate posting path (same files, different validation flow)</li>
+        <li><strong>CBTRN03C</strong> — Transaction file maintenance</li>
+        <li><strong>CBACT01C–CBACT04C</strong> — Account file sequential reads and reporting; demonstrate COMP/COMP-3 data formats</li>
+        <li><strong>CBCUS01C</strong> — Customer file sequential processing</li>
+        <li><strong>CBSTM03A/B</strong> — Statement generation (two-pass sort/merge)</li>
+        <li><strong>CBEXPORT / CBIMPORT</strong> — Data migration utilities</li>
+        <li><strong>COBSWAIT</strong> (CICS) — Wraps MVSWAIT assembler timer routine</li>
+        <li><strong>CSUTLDTC</strong> — Date conversion utility using COBDATFT assembler</li>
+        <li><strong>MVSWAIT.asm</strong> — Assembler timer control for WAITSTEP JCL step</li>
+        <li><strong>COBDATFT.asm</strong> — Date format conversion (called by CSUTLDTC)</li>
+    </ul>
+
+    <h3>🔗 VSAM Files Used by Batch</h3>
+    <ul>
+        <li><strong>DALYTRAN (Sequential):</strong> Input for POSTTRAN — daily transaction records from external systems</li>
+        <li><strong>DALYREJS (Sequential):</strong> Output for rejected transactions — reviewed and reprocessed manually</li>
+        <li><strong>ACCTDAT (KSDS):</strong> Account balances updated during posting</li>
+        <li><strong>CARDDAT (KSDS):</strong> Card validation during posting</li>
+        <li><strong>CUSTDAT (KSDS):</strong> Customer validation during posting</li>
+        <li><strong>CARDXREF (KSDS):</strong> Card-to-account resolution during posting</li>
+        <li><strong>TRANSACT (KSDS):</strong> Target for posted transactions</li>
+        <li><strong>TCATBALF (KSDS):</strong> Transaction category balances updated per post</li>
+    </ul>
+
+    <h3>📋 Full Batch Sequence</h3>
+    <pre><code>Nightly Batch Execution Order:
+  1.  CLOSEFIL   — Close VSAM files in CICS
+  2.  ACCTFILE   — Reload account data from sample (or backup)
+  3.  CARDFILE   — Reload card data
+  4.  XREFFILE   — Reload card-account cross-reference
+  5.  CUSTFILE   — Reload customer data
+  6.  TRANBKP    — Backup transaction file
+  7.  TRANEXTR   — Extract Db2 transaction types (optional)
+  8.  TRANCATG   — Update transaction category VSAM from extract
+  9.  TRANTYPE   — Update transaction type VSAM from extract
+  10. DISCGRP    — Update disclosure group VSAM
+  11. TCATBALF   — Initialize category balance file
+  12. DUSRSECJ   — Reset user security file
+  13. POSTTRAN   — Core transaction posting (CBTRN01C)
+  14. INTCALC    — Interest calculation
+  15. TRANBKP    — Post-processing backup
+  16. COMBTRAN   — Combine system + daily transactions
+  17. CREASTMT   — Generate account statements (CBSTM03A/B)
+  18. TRANIDX    — Define alternate index on transaction file
+  19. OPENFIL    — Reopen VSAM files for CICS
+  20. WAITSTEP   — Optional: pause before next job step</code></pre>
+
+    <h2>📋 Business Rules</h2>
+    <ul>
+        <li><strong>BR-BATCH-01:</strong> CLOSEFIL must run before any batch update jobs; OPENFIL must run after</li>
+        <li><strong>BR-BATCH-02:</strong> Batch sequence must be executed in the defined order to maintain data integrity</li>
+        <li><strong>BR-BATCH-03:</strong> POSTTRAN validates card, account, and customer existence before posting each transaction</li>
+        <li><strong>BR-BATCH-04:</strong> Rejected transactions in DALYREJS include an error code indicating the rejection reason</li>
+        <li><strong>BR-BATCH-05:</strong> TCATBALF is reset and rebuilt each batch cycle</li>
+        <li><strong>BR-BATCH-06:</strong> GDG datasets used for versioned backups of key files</li>
+    </ul>
+
+    <h2>✅ Acceptance Criteria Examples</h2>
+    <ul>
+        <li><strong>Full Cycle:</strong> Given the batch sequence runs successfully, then CICS files are reopened and available for online access before the start of business</li>
+        <li><strong>Transaction Posting:</strong> Given 1,000 records in DALYTRAN, when POSTTRAN runs, then all valid records are written to TRANSACT and ACCTDAT balances are updated; invalid records are in DALYREJS</li>
+        <li><strong>Interest Calculation:</strong> Given accounts with balances > 0 after POSTTRAN, when INTCALC runs, then interest charges are computed using the DISCGRP rates for each account group</li>
+        <li><strong>Performance:</strong> Full batch cycle must complete within 6 hours; POSTTRAN must process 10,000 transactions within 4 hours</li>
+        <li><strong>File Safety:</strong> Given CLOSEFIL has not run, when an update batch job is attempted, then the job must not run (JCL prerequisite check)</li>
+    </ul>
+</div>
+
+<footer>
+    <p><a href="../../index.html">← Documentation Index</a> | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>

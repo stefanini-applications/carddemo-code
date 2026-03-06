@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo - User Story Documentation</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 48px 24px; text-align: center; }
+        .header h1 { font-size: 2.4rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.85; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+        .section-title { font-size: 1.5rem; font-weight: 700; margin: 40px 0 20px; color: #1a1a2e; border-left: 4px solid #0f3460; padding-left: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.13); }
+        .card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .card h3 a { color: #0f3460; text-decoration: none; }
+        .card h3 a:hover { text-decoration: underline; }
+        .card p { font-size: 0.9rem; color: #555; line-height: 1.5; }
+        .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-bottom: 8px; }
+        .badge-online { background: #d4edda; color: #155724; }
+        .badge-batch { background: #cce5ff; color: #004085; }
+        .badge-optional { background: #fff3cd; color: #856404; }
+        .badge-shared { background: #f8d7da; color: #721c24; }
+        .stats { display: flex; gap: 24px; flex-wrap: wrap; margin: 24px 0; }
+        .stat { background: white; border-radius: 10px; padding: 20px 28px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); flex: 1; min-width: 140px; }
+        .stat .num { font-size: 2rem; font-weight: 700; color: #0f3460; }
+        .stat .lbl { font-size: 0.85rem; color: #777; margin-top: 4px; }
+        footer { text-align: center; padding: 32px; color: #888; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🏦 CardDemo</h1>
+    <p>User Story Documentation Framework — Mainframe Credit Card Management System</p>
+</div>
+
+<div class="container">
+    <div class="stats">
+        <div class="stat"><div class="num">11</div><div class="lbl">Modules</div></div>
+        <div class="stat"><div class="num">22+</div><div class="lbl">CICS Transactions</div></div>
+        <div class="stat"><div class="num">12+</div><div class="lbl">Batch Jobs</div></div>
+        <div class="stat"><div class="num">13</div><div class="lbl">VSAM Files</div></div>
+        <div class="stat"><div class="num">COBOL</div><div class="lbl">Primary Language</div></div>
+    </div>
+
+    <div class="section-title">📚 Core Modules</div>
+    <div class="grid">
+        <div class="card">
+            <span class="badge badge-online">🔐 Online</span>
+            <h3><a href="modules/authentication/index.html">Authentication</a></h3>
+            <p>CICS signon (CC00) with RACF-backed VSAM user security file. Routes users to Regular or Admin menus.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-online">🏦 Online</span>
+            <h3><a href="modules/account-management/index.html">Account Management</a></h3>
+            <p>View (CAVW) and update (CAUP) credit account records — balance, credit limit, status, and group assignment.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-online">💳 Online</span>
+            <h3><a href="modules/card-management/index.html">Card Management</a></h3>
+            <p>List (CCLI), view (CCDL), and update (CCUP) credit cards. Manages card status, embossed name, and expiration.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-online">💰 Online + Batch</span>
+            <h3><a href="modules/transaction-processing/index.html">Transaction Processing</a></h3>
+            <p>Online transaction list/view/add (CT00–CT02) and batch daily posting (POSTTRAN/CBTRN01C) to account balances.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-online">💵 Online</span>
+            <h3><a href="modules/bill-payment/index.html">Bill Payment</a></h3>
+            <p>Full-balance bill payment (CB00). Posts a payment transaction and reduces the account balance in ACCTDAT.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-batch">📊 Reporting</span>
+            <h3><a href="modules/reporting/index.html">Reporting</a></h3>
+            <p>Online report request (CR00) that submits batch JCL via TDQ. Statement generation (CBSTM03A/B) and data export.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-online">👥 Admin</span>
+            <h3><a href="modules/user-management/index.html">User Management</a></h3>
+            <p>Admin-only CRUD for application users (CU00–CU03). Manages USRSEC VSAM file for authentication.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-batch">⚙️ Batch</span>
+            <h3><a href="modules/batch-processing/index.html">Batch Processing</a></h3>
+            <p>Full nightly batch cycle: file init, transaction posting (POSTTRAN), interest calculation (INTCALC), statement generation, file open/close.</p>
+        </div>
+    </div>
+
+    <div class="section-title">🔌 Optional Extension Modules</div>
+    <div class="grid">
+        <div class="card">
+            <span class="badge badge-optional">🔒 IMS/DB2/MQ</span>
+            <h3><a href="modules/authorization-ims-db2-mq/index.html">Authorization IMS/DB2/MQ</a></h3>
+            <p>Credit card authorization via MQ messaging, IMS DB for pending auth records, Db2 for transaction logging. Includes purge batch job.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-optional">🗄️ DB2</span>
+            <h3><a href="modules/transaction-type-db2/index.html">Transaction Type DB2</a></h3>
+            <p>Admin management of transaction types and categories stored in Db2 (CTTU/CTLI). Demonstrates cursor, insert, update, delete on Db2.</p>
+        </div>
+        <div class="card">
+            <span class="badge badge-optional">📨 MQ</span>
+            <h3><a href="modules/vsam-mq-integration/index.html">VSAM/MQ Integration</a></h3>
+            <p>MQ request/response patterns for account inquiry (CDRA) and system date inquiry (CDRD) — enables asynchronous external access.</p>
+        </div>
+    </div>
+
+    <div class="section-title">📖 Documentation</div>
+    <div class="grid">
+        <div class="card">
+            <h3><a href="../system-overview.md">📋 System Overview (Markdown)</a></h3>
+            <p>Single source of truth for User Story creation: all modules, data models, business rules, architecture diagrams, and US patterns.</p>
+        </div>
+        <div class="card">
+            <h3><a href="../module-file-map.md">🗺️ Module File Map</a></h3>
+            <p>Machine-readable map of source files to module names for code coverage attribution.</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>CardDemo Documentation | Last updated: 2025-03-06</p>
+</footer>
+</body>
+</html>
