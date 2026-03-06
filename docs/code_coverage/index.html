@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Coverage Report</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 24px; background: #f8fafc; color: #1e293b; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 4px; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin: 0 0 24px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: #fff; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    .table-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.07); overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+    thead th:nth-child(2), thead th:nth-child(3) { text-align: right; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:hover { background: #f0f9ff; }
+    td { border-bottom: 1px solid #f1f5f9; }
+    .footer { margin-top: 24px; font-size: 0.78rem; color: #94a3b8; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Code Coverage Report</h1>
+    <p class="subtitle">Percentage of lines in source files analysed by the AI agent to generate documentation &bull; Last updated: 2026-03-06 17:59 UTC</p>
+
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color:#dc2626">0.9%</div>
+        <div class="stat-label">Overall Coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">783</div>
+        <div class="stat-label">Lines Covered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">82,918</div>
+        <div class="stat-label">Total Lines</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Files Analyzed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">329</div>
+        <div class="stat-label">Total Files</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">Covered Files (4)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Module</th>
+            <th>Lines Covered</th>
+            <th>Coverage</th>
+            <th>Doc Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all">app/app-authorization-ims-db2-mq/README.md</td><td style="padding:6px 10px;white-space:nowrap"><span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:0.78rem;white-space:nowrap">authorization</span></td><td style="padding:6px 10px;text-align:right;white-space:nowrap">269 / 269</td><td style="padding:6px 10px;text-align:right;white-space:nowrap;font-weight:600;color:#16a34a">100.0%</td><td style="padding:6px 10px;font-size:0.82rem;color:#475569">system-overview.md - full system overview, module catalog, batch job sequence, application inventory, data models</td></tr>
+<tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all">app/app-transaction-type-db2/README.md</td><td style="padding:6px 10px;white-space:nowrap"><span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:0.78rem;white-space:nowrap">transaction-type-db2</span></td><td style="padding:6px 10px;text-align:right;white-space:nowrap">108 / 108</td><td style="padding:6px 10px;text-align:right;white-space:nowrap;font-weight:600;color:#16a34a">100.0%</td><td style="padding:6px 10px;font-size:0.82rem;color:#475569">system-overview.md - full system overview, module catalog, batch job sequence, application inventory, data models</td></tr>
+<tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all">app/app-vsam-mq/README.md</td><td style="padding:6px 10px;white-space:nowrap"><span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:0.78rem;white-space:nowrap">mq-integration</span></td><td style="padding:6px 10px;text-align:right;white-space:nowrap">106 / 106</td><td style="padding:6px 10px;text-align:right;white-space:nowrap;font-weight:600;color:#16a34a">100.0%</td><td style="padding:6px 10px;font-size:0.82rem;color:#475569">system-overview.md - full system overview, module catalog, batch job sequence, application inventory, data models</td></tr>
+<tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all">README.md</td><td style="padding:6px 10px;white-space:nowrap"><span style="color:#94a3b8">—</span></td><td style="padding:6px 10px;text-align:right;white-space:nowrap">300 / 318</td><td style="padding:6px 10px;text-align:right;white-space:nowrap;font-weight:600;color:#16a34a">94.3%</td><td style="padding:6px 10px;font-size:0.82rem;color:#475569">system-overview.md - full system overview, module catalog, batch job sequence, application inventory, data models</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+
+        <details style="margin-top:24px">
+      <summary style="cursor:pointer;font-weight:600;font-size:0.95rem;color:#475569;user-select:none;padding:10px 4px">Not Covered Files (325)</summary>
+      <div class="table-card" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr><th>File</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">.gitignore</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">CODE_OF_CONDUCT.md</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">CONTRIBUTING.md</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">LICENSE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">NOTICE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/bms/COPAU00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/bms/COPAU01.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy-bms/COPAU00.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy-bms/COPAU01.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/CCPAUERY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/CCPAURLY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/CCPAURQY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/CIPAUDTY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/CIPAUSMY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/IMSFUNCS.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/PADFLPCB.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/PASFLPCB.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/cpy/PAUTBPCB.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/data/EBCDIC/AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0.dat</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/dcl/AUTHFRDS.dcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ddl/AUTHFRDS.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/DBPAUTX0.dbd</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/PAUTBUNL.PSB</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/ims/PSBPAUTL.psb</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/bms/COTRTLI.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/bms/COTRTUP.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cbl/COBTUPDT.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cbl/COTRTLIC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cbl/COTRTUPC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cpy-bms/COTRTLI.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cpy-bms/COTRTUP.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cpy/CSDB2RPY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/cpy/CSDB2RWY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/csd/CRDDEMOD.csd</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2CREAT.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2FREE.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2LTCAT.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2LTTYP.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2TEP41.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/DB2TIAD1.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ctl/REPROCT.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/dcl/DCLTRCAT.dcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/dcl/DCLTRTYP.dcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ddl/TRNTYCAT.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ddl/TRNTYPE.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ddl/XTRNTYCAT.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/ddl/XTRNTYPE.ddl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/jcl/CREADB21.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/jcl/MNTTRDB2.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-transaction-type-db2/jcl/TRANEXTR.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-vsam-mq/cbl/COACCT01.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-vsam-mq/cbl/CODATE01.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/app-vsam-mq/csd/CRDDEMOM.csd</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/asm/COBDATFT.asm</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/asm/MVSWAIT.asm</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COACTUP.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COACTVW.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COADM01.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COBIL00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COCRDLI.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COCRDSL.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COCRDUP.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COMEN01.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/CORPT00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COSGN00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COTRN00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COTRN01.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COTRN02.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COUSR00.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COUSR01.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COUSR02.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/bms/COUSR03.bms</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/catlg/LISTCAT.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBACT01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBACT02C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBACT03C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBACT04C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBCUS01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBEXPORT.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBIMPORT.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBSTM03A.CBL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBSTM03B.CBL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBTRN01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBTRN02C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CBTRN03C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COACTUPC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COACTVWC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COADM01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COBIL00C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COBSWAIT.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COCRDLIC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COCRDSLC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COCRDUPC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COMEN01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CORPT00C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COSGN00C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COTRN00C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COTRN01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COTRN02C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COUSR00C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COUSR01C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COUSR02C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/COUSR03C.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cbl/CSUTLDTC.cbl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/.gitkeep</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COACTUP.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COACTVW.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COADM01.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COBIL00.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COCRDLI.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COCRDSL.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COCRDUP.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COMEN01.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/CORPT00.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COSGN00.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COTRN00.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COTRN01.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COTRN02.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COUSR00.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COUSR01.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COUSR02.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy-bms/COUSR03.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/COADM02Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/COCOM01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CODATECN.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/COMEN02Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/COSTM01.CPY</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/COTTL01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSDAT01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSLKPCDY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSMSG01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSMSG02Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSSETATY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSSTRPFY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSUSR01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSUTLDPY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CSUTLDWY.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CUSTREC.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVACT01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVACT02Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVACT03Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVCRD01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVCUS01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVEXPORT.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA01Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA02Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA03Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA04Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA05Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA06Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/CVTRA07Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/cpy/UNUSED1Y.cpy</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/csd/.gitkeep</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/csd/CARDDEMO.CSD</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/ctl/REPROCT.ctl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/acctdata.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/carddata.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/cardxref.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/custdata.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/dailytran.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/discgrp.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/tcatbal.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/trancatg.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/ASCII/trantype.txt</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/.gitkeep</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.ACCDATA.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.ACCTDATA.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.CARDDATA.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.CARDXREF.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.CUSTDATA.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.DALYTRAN.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.DALYTRAN.PS.INIT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.DISCGRP.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.EXPORT.DATA.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.TCATBALF.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.TRANCATG.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.TRANTYPE.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/data/EBCDIC/AWS.M2.CARDDEMO.USRSEC.PS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/ACCTFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CARDFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CBADMCDJ.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CBEXPORT.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CBIMPORT.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CLOSEFIL.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/COMBTRAN.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CREASTMT.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/CUSTFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DALYREJS.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DEFCUST.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DEFGDGB.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DEFGDGD.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DISCGRP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/DUSRSECJ.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/ESDSRRDS.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/FTPJCL.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/INTCALC.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/INTRDRJ1.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/INTRDRJ2.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/OPENFIL.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/POSTTRAN.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/PRTCATBL.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/READACCT.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/READCARD.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/READCUST.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/READXREF.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/REPTFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TCATBALF.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANBKP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANCATG.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANIDX.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANREPT.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TRANTYPE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/TXT2PDF1.JCL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/WAITSTEP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/jcl/XREFFILE.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/maclib/ASMWAIT.mac</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/maclib/COCDATFT.mac</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/proc/REPROC.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/proc/TRANREPT.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/scheduler/CardDemo.ca7</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">app/scheduler/CardDemo.controlm</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/Admin-Menu.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/Application-Flow-Admin.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/Application-Flow-User.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/CARDDEMO-DataModel.drawio</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/Main-Menu.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/Signon-Screen.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/auth_details.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/auth_flow.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/auth_fraud.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/auth_summary.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/db2_model.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">diagrams/ims_model.png</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/BATCMP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/BMSCMP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/CICCMP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/CICDBCMP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/IMSMQCMP.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/LISTCAT.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/RACFCMDS.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/REPRTEST.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/jcl/SORTTEST.jcl</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/m2/mf/CardDemo_runtime.zip</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/m2/unikix/UniKix_CardDemo_runtime_v1.zip</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/proc/BLDCIDB2.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/proc/BUILDBAT.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/proc/BUILDBMS.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">samples/proc/BUILDONL.prc</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/compile_batch.jcl.template</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/git-addSrcVersionInfo.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/local_compile.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/ACCTFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CARDFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBACT01C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBACT02C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBACT03C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBACT04C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBCUS01C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBTRN01C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBTRN02C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CBTRN03C</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CUSTFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVACT01Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVACT02Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVACT03Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVCUS01Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA01Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA02Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA03Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA04Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA05Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA06Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/CVTRA07Y</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/DALYREJS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/DEFGDGB</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/DISCGRP</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/LISTCAT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/POSTTRAN</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/RACFCMDS</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/READACCT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/READCARD</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/READCUST</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/READXREF</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/REPRO</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/REPROC</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/REPROCT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/REPRTEST</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/REPTFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TCATBAL</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TCATBALF</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TRANCAT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TRANCATG</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TRANFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TRANREPT</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/TRANTYPE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/markers/XREFFILE</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/pad.awk</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/remote_compile.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/remote_refresh.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/remote_submit.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/run_full_batch.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/run_interest_calc.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/run_posting.sh</td></tr>
+            <tr><td style="padding:6px 10px;font-family:monospace;font-size:0.82rem;word-break:break-all;color:#64748b">scripts/upld_module.sh</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <p class="footer">Generated automatically from <a href="https://github.com/stefanini-applications/code-coverage-mcp" style="color:#3b82f6">code-coverage-mcp</a> tracking data.</p>
+  </div>
+</body>
+</html>
