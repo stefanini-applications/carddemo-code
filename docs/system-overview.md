@@ -77,12 +77,34 @@
 
 ### 4. Account Extractions
 **ID:** `account-extractions`  
-**Purpose:** Showcase MQ+VSAM integration for asynchronous data extraction, allowing external systems to request the system date (`CDRD`) or detailed account data (`CDRA`).  
-**Key Components:** CICS programs `CODATE01`, `COACCT01`, MQCONN/queue definitions for `CARDDEMO.REQUEST.QUEUE` and `CARDDEMO.RESPONSE.QUEUE`, BMS definitions for `CDRD`/`CDRA`, and COBOL data structures for MQ message formats (`DATE-REQUEST-MSG`, `ACCT-RESPONSE-MSG`).  
+**Purpose:** Provide an MQ-driven extraction boundary over legacy account data so non-CICS clients can request operational data without navigating 3270 maps. The module exposes asynchronous request/reply interactions for date synchronization (`CDRD`) and account retrieval (`CDRA`), while keeping account master data in VSAM as the system of record.  
+**Business Context:** This extension is intended for modernization pilots where distributed services (batch coordinators, API adapters, mobile middleware) need deterministic and correlatable responses from CardDemo without direct dataset access.  
+**Key Components:**
+- `app/app-vsam-mq/cbl/CODATE01.cbl` (`CDRD`) – MQ consumer/producer loop that receives requests, runs `EXEC CICS ASKTIME/FORMATTIME`, and returns a formatted date/time payload.
+- `app/app-vsam-mq/cbl/COACCT01.cbl` (`CDRA`) – MQ consumer/producer loop that validates request shape (`WS-FUNC = 'INQA'` and account key > zero), reads `ACCTDAT` via `EXEC CICS READ`, and returns either a formatted account payload or an invalid-parameter message.
+- `app/app-vsam-mq/csd/CRDDEMOM.csd` – CICS resource definitions binding `TRANSACTION(CDRD)` to `PROGRAM(CODATE01)` and `TRANSACTION(CDRA)` to `PROGRAM(COACCT01)`.
+- `app/cpy/CVACT01Y.cpy` – canonical `ACCOUNT-RECORD` layout (300-byte record) used by `COACCT01` when populating reply content.
+- Queue/error handling pattern in both programs – open input/output/error queues, `MQGET` with 5000 ms wait, `MQPUT` reply/error, `EXEC CICS SYNCPOINT`, and graceful queue close on termination.
 **Public APIs:**
-- `CDRD` – system-date MQ request/response loop (request type `DATE`, response carries `SYSTEM-DATE`).  
-- `CDRA` – account-data MQ request that replies with a 300-byte account payload from VSAM.  
-- MQ queue definitions (`CARDDEMO.REQUEST.QUEUE` / `.RESPONSE.QUEUE`) and CICS-MQ resources in `app/app-vsam-mq/csd`.
+- `CDRD` – MQ-triggered date service backed by `CODATE01`; reads from startup queue context and writes to `CARD.DEMO.REPLY.DATE` with preserved message identity fields.
+- `CDRA` – MQ-triggered account extraction service backed by `COACCT01`; request copy interpreted as function + account key and mapped to account response text/payload.
+- Queue contracts documented in `app/app-vsam-mq/README.md`: `CARDDEMO.REQUEST.QUEUE`, `CARDDEMO.RESPONSE.QUEUE`, plus CICS aliases (`CARDREQ`, `CARDRES`) and `MQCONN(MQ01)`.
+- Error channel: both programs publish MQ operational errors to `CARD.DEMO.ERROR` with condition/reason code details.
+**Dependencies (Internal + External):**
+- Internal: `core-application` account master dataset and copybook (`CVACT01Y`), CICS runtime services (`RETRIEVE`, `READ`, `ASKTIME`, `FORMATTIME`, `SYNCPOINT`, `RETURN`).
+- External: IBM MQ runtime and COBOL copybooks (`CMQMDV`, `CMQODV`, `CMQGMOV`, `CMQPMOV`, `CMQV`, `CMQTML`), queue manager connectivity, and defined request/reply/error queues.
+**Data Models and Structures:**
+- MQ request interpretation in module code:
+  - `WS-FUNC` (`PIC X(04)`) expects `INQA` for account inquiries.
+  - `WS-KEY` (`PIC 9(11)`) represents account identifier for VSAM lookup.
+- VSAM account source record (`CVACT01Y`): account id, status, balances, limits, lifecycle dates, and group id in a fixed 300-byte structure.
+- Account reply composition (`COACCT01`): labeled text segments and extracted values moved into `WS-ACCT-RESPONSE`, then copied to MQ reply buffer.
+- Date reply composition (`CODATE01`): string built from formatted date/time (`MM-DD-YYYY` plus time) returned as MQ string payload.
+**Module-Specific Business Rules:**
+- Request validity: `CDRA` only processes requests when function is `INQA` and account key is numeric/non-zero; otherwise it responds with `"INVALID REQUEST PARAMETERS"` text.
+- Source of truth: account details are read directly from VSAM dataset `ACCTDAT`; no DB2/IMS fallback exists in this module.
+- Correlation behavior: message descriptors preserve/propagate IDs (`MQMD-MSGID`, `MQMD-CORRELID`) between request and reply flow to support caller-side matching.
+- Availability behavior: `MQGET` waits up to 5000 ms; `MQRC-NO-MSG-AVAILABLE` exits loop cleanly, while non-normal MQ and file-read errors are routed to `CARD.DEMO.ERROR`.
 **User Story Examples:**
 - As a distributed service, I want to issue `CDRA` MQ requests to fetch account data so I can populate a mobile dashboard.  
 - As a support engineer, I want `CDRD` to return the z/OS system date over MQ so downstream clients can stay in sync.
