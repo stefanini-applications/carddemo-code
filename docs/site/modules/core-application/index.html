@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Application - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f7f9fc; color:#102a43; margin:0; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
+        .header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
+        h1 { margin:0; font-size:2em; }
+        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.08); }
+        .subsection h3 { margin-top:0; }
+        ul { margin:0 0 12px 20px; }
+        code { background:#eef2ff; padding:2px 4px; border-radius:4px; }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
+        .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; background:#e0f2fe; color:#0369a1; font-size:0.9em; margin-right:8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="pill">Core Application</div>
+            <h1>📦 User Story Development Guide</h1>
+            <p>Modernization anchor for account, card, transaction, payment, and admin screens.</p>
+        </header>
+
+        <section class="overview">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Keep the legacy green-screen workflows airtight while enabling Product Owners to scope stories that exercise sign-on, account/card management, transaction history, statements, and admin CRUD.</p>
+            <p><strong>Business Context:</strong> This is the primary demo surface for finance operators and analysts exploring migration patterns—every modernization US touches these flows before optional extensions run.</p>
+        </section>
+
+        <section class="us-guide">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Account Visibility:</strong> As a cardholder, I want to scroll through `CT00` so I can reconcile purchases before a statement posts.</li>
+                <li><strong>Card Management:</strong> As an operations analyst, I want to deactivate a card via `CCUP` so we can prevent further usage immediately.</li>
+                <li><strong>Admin Workflow:</strong> As an admin, I want to provision a new user (`CU01`) with the right RACF role so they can run posting and reporting jobs.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>BMS + COBOL pairs:</strong> Maps and programs live in `app/bms/` and `app/cbl/`, so you can reuse `COACTVW` patterns.</li>
+                <li><strong>Copybooks:</strong> Shared data structures live under `app/cpy/` (e.g., `CUSTOMER-RECORD`, `DALYTRAN-RECORD`)—align new fields with those definitions.</li>
+                <li><strong>Sample data & jobs:</strong> The `app/jcl/` directory hosts refresh jobs (`ACCTFILE`, `TRANBKP`), and `scripts/run_full_batch.sh` chains them for quick smoke testing.</li>
+                <li><strong>Scheduler templates:</strong> CA-7/Control-M definitions in `app/scheduler/` show how to sequence nightly runs.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Adjust a BMS label, update validation text, or surface a new message via `COBIL00C` (no dataset change).</li>
+                <li><strong>Medium (3-5 pts):</strong> Add a new account field (update copybook + VSAM layout) or augment `CAUP` with additional validation logic.</li>
+                <li><strong>Complex (5-8 pts):</strong> Introduce a new transactional field that flows through `CT00`/`POSTTRAN` and requires a VSAM restructure plus JCL job update.</li>
+            </ul>
+        </section>
+
+        <section class="technical">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>Sign-on/Menu:</strong> `COSGN00C` (CC00) routes to `COMEN01C`, the hub for user navigation.</li>
+                <li><strong>Account/Card Layers:</strong> `COACTVW`/`COACTUP` and `COCRDLI`/`COCRDSLC` manage read/write access to VSAM accounts/cards.</li>
+                <li><strong>Transaction Views:</strong> `COTRN00C`-series, `CORPT00C`, `CBIL00C` tie to `DALYTRAN` datasets and statement logic.</li>
+                <li><strong>Admin CRUD:</strong> `CA00`, `CU00`-`CU03` for user maintenance and `CA00` menu gating.</li>
+                <li><strong>Batch Jobs:</strong> `POSTTRAN`, `CREASTMT`, `TRANIDX`, `OPENFIL` executed via `app/jcl/` and optionally through `scripts/run_full_batch.sh`.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>CICS region, BMS maps, and copybooks (`app/cpy`) provide the runtime plumbing.</li>
+                <li>VSAM datasets (`app/data/*`) store accounts, cards, customers, transactions, and security records.</li>
+                <li>JCL job streams (`app/jcl/`) refresh datasets and run batch programs.</li>
+                <li>RACF controls access, referencing the HLQ-named datasets defined in `README.md`.</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>CC00 (COSGN00C)       - Sign-on and menu routing
+CM00 (COMEN01C)       - Main menu
+CAVW/CAUP (COACTVW/C)  - Account view/update
+CCLI/CCDL/CCUP         - Card list/view/update flows
+CT00-CT02              - Transaction list/detail/add
+CB00                   - Bill payment
+CA00/CU00-CU03         - Admin menu, user CRUD
+POSTTRAN, CREASTMT, TRANIDX, OPENFIL (batch jobs)</code></pre>
+        </section>
+
+        <section>
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>Users reach `CM00` only after RACF validates credentials stored in `AWS.M2.CARDDEMO.USRSEC.PS`.</li>
+                <li>`CAUP` writes updated fields into `CVACT01Y`, maintaining field lengths from the existing copybook.</li>
+                <li>`POSTTRAN` finishes within the nightly budget, and `scripts/run_full_batch.sh` reports success for each individual JCL submission.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <a href="../../system-overview.md">← System Overview</a><br>
+            <em>Last updated: March 10, 2026</em>
+        </footer>
+    </div>
+</body>
+</html>
