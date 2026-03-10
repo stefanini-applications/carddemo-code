@@ -35,21 +35,67 @@
 
 ### 1. Core Application
 **ID:** `core-application`  
-**Purpose:** Provide the foundational credit-card management flows (sign-on, account/card/transaction screens, statements, bill payments, admin tasks) that modernization scenarios exercise.  
-**Key Components:** COSGN00C/CC00 signon routing to COMEN01C (main menu), `COACTVW`/`COACTUP` account view/update, `COCRDLI`/`COCRDUP` card catalog, `COTRN00C` series for transaction lists, `COBIL00C` bill payments, administrative screens (`CA00`, `CU00`-`CU03`) plus VSAM datasets (`app/data`), copybooks (`app/cpy`), and JCL jobs handling data refresh (`ACCTFILE`, `TRANBKP`, `CREASTMT`).  
+**Purpose:** Provide the foundational credit-card management flows (sign-on, account/card/transaction screens, statements, bill payments, admin tasks) that modernization scenarios exercise. This is the primary migration target — all optional extension modules depend on the VSAM datasets and CICS programs established here.
+
+**Business Context:** Serves as the anchor for every CardDemo modernization proof-of-concept. Interactive green-screen flows are implemented as CICS COBOL programs paired with BMS mapsets; persistent data lives in VSAM KSDS files; nightly batch jobs refresh datasets and generate statements.
+
+**Key Components:**
+- **Sign-on / Routing:** `COSGN00C` (CC00) validates credentials against `USRSEC` VSAM, populates `CARDDEMO-COMMAREA`, and routes to `COMEN01C` (regular user) or `COADM01C` (admin).
+- **Main Menu:** `COMEN01C` (CM00) is the navigation hub, branching to account, card, transaction, billing, and reporting flows.
+- **Account Management:** `COACTVWC` (CAVW) / `COACTUPC` (CAUP) — view and update `ACCOUNT-RECORD` in `ACCTDAT` VSAM KSDS (300-byte records keyed on 11-digit account ID). Alternate index `CXACAIX` resolves card-number-to-account lookups.
+- **Card Catalog:** `COCRDLIC` (CCLI) / `COCRDSLC` (CCSL) / `COCRDUPC` (CCUP) — paginated card list and update for `CARD-RECORD` in `CARDDAT` VSAM KSDS (150-byte records keyed on 16-digit card number).
+- **Transaction Management:** `COTRN00C` / `COTRN01C` / `COTRN02C` (CT00–CT02) — list, detail, and add transactions against `TRANSACT` VSAM KSDS using `DALYTRAN-RECORD` (350-byte records). CT02 validates card number via `CARDXREF` cross-reference.
+- **Bill Payment:** `COBIL00C` (CB00) — two-step payment confirmation; writes payment transaction to `TRANSACT` and decrements `ACCT-CURR-BAL` in `ACCTDAT`.
+- **Reports:** `CORPT00C` (CR00) — gateway to statement/reporting outputs from the batch tier.
+- **Admin Menu:** `COADM01C` (CA00) — admin-only entry point enforcing `CDEMO-USRTYP-ADMIN` from COMMAREA.
+- **User Management:** `COUSR00C`–`COUSR03C` (CU00–CU03) — list, create, update, delete user records in `USRSEC` VSAM.
+- **Batch Programs:** `CBTRN01C` / `CBTRN02C` (POSTTRAN), `CBSTM03A` (CREASTMT / statement writer in text + HTML), `CBACT01C–04C` (account utilities), `CBCUS01C` (customer utilities).
+- **Shared Copybooks** (`app/cpy/`): `COCOM01Y` (COMMAREA), `CVACT01Y` (ACCOUNT-RECORD), `CVACT02Y` (CARD-RECORD), `CVACT03Y` (CARD-XREF-RECORD), `CVCUS01Y` (CUSTOMER-RECORD), `CVTRA06Y` (DALYTRAN-RECORD), `CSUSR01Y` (SEC-USER-DATA).
+
 **Public APIs:**
-- `CC00 (COSGN00C)` – user sign-on and dispatch to online menus.  
-- `CM00 (COMEN01C)` – main menu that branches to account, card, transaction, and admin flows.  
-- `CAVW/CAUP` (COACTVW/COACTUP) – view and update account master data.  
-- `CCLI`/`CCDL`/`CCUP` – card list/view/update operations.  
-- `CT00-CT02` (COTRN00C/1C/2C) – transaction listing, detail, and add/update.  
-- `CB00 (COBIL00C)` – bill payment and statement generation.  
-- Admin CRUD (`CA00`, `CU00`-`CU03`) – user list/create/edit/delete.  
-- Batch jobs (`POSTTRAN`, `CREASTMT`, `TRANIDX`, `OPENFIL`) submitted via JES, some automated by `scripts/run_full_batch.sh`.
+- `CC00 (COSGN00C)` – user sign-on; validates ID+password against `USRSEC` VSAM; dispatches via `EXEC CICS XCTL` with populated `CARDDEMO-COMMAREA`.
+- `CM00 (COMEN01C)` – main menu branching to account (CAVW), card (CCLI), transaction (CT00), billing (CB00), and reports (CR00).
+- `CAVW / CAUP (COACTVWC / COACTUPC)` – view and update `ACCOUNT-RECORD` fields (balance, limits, ZIP, group ID, status, dates); ownership enforced for non-admin users.
+- `CCLI / CCSL / CCUP (COCRDLIC / COCRDSLC / COCRDUPC)` – card list (PF7/PF8 paging, S-selector), card select, and card update (embossed name, active status, expiration date).
+- `CT00 / CT01 / CT02 (COTRN00C / COTRN01C / COTRN02C)` – transaction list (10 rows/page), detail view, and add new transaction; CT02 generates 16-char TRAN-ID and validates card via `CARDXREF`.
+- `CB00 (COBIL00C)` – online bill payment with two-step confirmation; writes `PY`-type transaction and updates account balance.
+- `CA00 (COADM01C)` – admin menu; admin-only access enforced via COMMAREA user type.
+- `CU00–CU03 (COUSR00C–COUSR03C)` – user CRUD against `USRSEC` VSAM; supports types `A` (admin) and `U` (user).
+- `POSTTRAN (CBTRN02C via app/jcl/POSTTRAN.jcl)` – post `DALYTRAN.PS` records to `TRANSACT.VSAM.KSDS` and update `ACCTDATA` + `TCATBALF`.
+- `CREASTMT (CBSTM03A via app/jcl/CREASTMT.JCL)` – generate per-account statements in text and HTML format.
+- `TRANIDX` – rebuild VSAM alternate indexes after batch loads.
+- `OPENFIL / CLOSEFIL` – open/close CICS files around batch operations.
+
+**VSAM Datasets:**
+
+| Dataset HLQ | DDname | RECLN | Key |
+|---|---|---|---|
+| `AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS` | ACCTDAT | 300 | ACCT-ID (11 bytes) |
+| `AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS` | CARDDAT | 150 | CARD-NUM (16 bytes) |
+| `AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS` | CUSTFILE | 500 | CUST-ID (9 bytes) |
+| `AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS` | TRANSACT | 350 | TRAN-ID (16 bytes) |
+| `AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS` | XREFFILE | 50 | XREF-CARD-NUM (16 bytes) |
+| `AWS.M2.CARDDEMO.USRSEC.PS` | USRSEC | 80 | SEC-USR-ID (8 bytes) |
+| `AWS.M2.CARDDEMO.DALYTRAN.PS` | DALYTRAN | 350 | Sequential |
+| `AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS` | TCATBALF | — | Category balance key |
+
+**Dependencies (Internal):** `authorization`, `transaction-type`, and `account-extractions` modules all read from core-application VSAM files and extend its CICS menus.  
+**Dependencies (External):** IBM CICS region, VSAM on z/OS (or AWS M2 emulation), JES2/JES3; optionally CA-7/Control-M for scheduling.
+
+**Business Rules:**
+- RACF-authenticated IDs only; programs check `EIBCALEN` and redirect unauthenticated sessions to `CC00`.
+- Admin-only screens (`CA00`, `CU00–CU03`) verify `CDEMO-USRTYP-ADMIN` in COMMAREA.
+- `COACTUPC` enforces account ownership for non-admin users before VSAM REWRITE.
+- `POSTTRAN` must run after dataset refresh jobs (`ACCTFILE`, `TRANBKP`); `CREASTMT` depends on `POSTTRAN` completing.
+- CICS files must be closed via `CLOSEFIL` JCL before VSAM REPRO or DEFINE CLUSTER operations.
+
 **User Story Examples:**
 - As a cardholder, I want to scroll through `CT00` transactions so I can reconcile the latest activities before a statement post.  
 - As an account admin, I want to update the billing address via `CAUP` so the system mails statements to the correct location.  
+- As a cardholder, I want to deactivate my card via `CCUP` so no further purchases are authorized.  
 - As an operator, I want to run `POSTTRAN` and `CREASTMT` in sequence (via `scripts/run_full_batch.sh`) so nightly balances remain synchronized.
+
+**Detailed Documentation:** [`docs/site/modules/core-application/index.html`](site/modules/core-application/index.html)
 
 ### 2. Authorization
 **ID:** `authorization`  
