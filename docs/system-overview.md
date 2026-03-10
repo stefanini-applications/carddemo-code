@@ -35,8 +35,17 @@
 
 ### 1. Core Application
 **ID:** `core-application`  
-**Purpose:** Provide the foundational credit-card management flows (sign-on, account/card/transaction screens, statements, bill payments, admin tasks) that modernization scenarios exercise.  
-**Key Components:** COSGN00C/CC00 signon routing to COMEN01C (main menu), `COACTVW`/`COACTUP` account view/update, `COCRDLI`/`COCRDUP` card catalog, `COTRN00C` series for transaction lists, `COBIL00C` bill payments, administrative screens (`CA00`, `CU00`-`CU03`) plus VSAM datasets (`app/data`), copybooks (`app/cpy`), and JCL jobs handling data refresh (`ACCTFILE`, `TRANBKP`, `CREASTMT`).  
+**Purpose:** Own the end-to-end cardholder and operations backbone for CardDemo: sign-on/session control, account and card maintenance, transaction inquiry and maintenance, bill-payment capture, and user administration. This module is the canonical online CICS/BMS workflow that optional modules must integrate with, and it is the runtime surface most modernization stories target first.  
+**Business Context:** The module provides the production-like operational baseline for legacy green-screen journeys. It optimizes for deterministic, low-latency CICS interactions over VSAM, while nightly JCL cycles keep datasets consistent for next-day online use.  
+**Key Components:**  
+- `COSGN00C` (`CC00`) sign-on gate with credential checks against user-security records and role routing to menu flows.  
+- `COMEN01C` (`CM00`) main-menu dispatcher that routes users to account/card/transaction/admin transactions.  
+- Account flow: `COACTVWC` (`CAVW`) view and `COACTUPC` (`CAUP`) update, using account/customer/card cross-record reads and keyed rewrites.  
+- Card flow: `COCRDLIC` (`CCLI`) list/detail navigation and `COCRDUPC` (`CCUP`) update maintenance for card status/profile fields.  
+- Transaction flow: `COTRN00C` (`CT00`) list, `COTRN01C` (`CT01`) detail, and `COTRN02C` (`CT02`) add/update, including PF7/PF8-style paging semantics.  
+- Billing flow: `COBIL00C` (`CB00`) bill-payment entry and posting handoff semantics tied to daily transaction/state files.  
+- Admin flow: `COADM01C` (`CA00`) and user CRUD set `COUSR00C`/`COUSR01C`/`COUSR02C`/`COUSR03C` (`CU00`-`CU03`) for security record lifecycle.  
+- Shared contracts: copybooks `COCOM01Y`, `COMEN02Y`, `COADM02Y`, `CVACT01Y`, `CVACT03Y`, `CVCRD01Y`, `CVTRA05Y`, `CVTRA06Y`, `CVCUS01Y`, `CSUSR01Y`; BMS mapsets under `app/bms`; operational scripts in `scripts/`.  
 **Public APIs:**
 - `CC00 (COSGN00C)` – user sign-on and dispatch to online menus.  
 - `CM00 (COMEN01C)` – main menu that branches to account, card, transaction, and admin flows.  
@@ -45,7 +54,24 @@
 - `CT00-CT02` (COTRN00C/1C/2C) – transaction listing, detail, and add/update.  
 - `CB00 (COBIL00C)` – bill payment and statement generation.  
 - Admin CRUD (`CA00`, `CU00`-`CU03`) – user list/create/edit/delete.  
-- Batch jobs (`POSTTRAN`, `CREASTMT`, `TRANIDX`, `OPENFIL`) submitted via JES, some automated by `scripts/run_full_batch.sh`.
+- Batch interfaces (`OPENFIL`, `ACCTFILE`, `TRANBKP`, `POSTTRAN`, `CREASTMT`, `TRANIDX`, `CLOSEFIL`, `DUSRSECJ`) submitted via JES; orchestrated by `scripts/run_full_batch.sh` and `scripts/run_posting.sh`.
+**Dependencies:**
+- **Internal modules:** Acts as upstream source for optional `authorization`, `transaction-type`, and `account-extractions`; it provides base customer/account/card/transaction records and interactive operations those modules complement.  
+- **External platform:** CICS transaction server, BMS map support, VSAM KSDS datasets, JES/JCL batch execution, RACF dataset/user security, and z/OS utility programs invoked by JCL steps.  
+- **Data/runtime coupling:** `POSTTRAN` and statement cycles rely on refreshed account/transaction datasets opened and indexed through batch jobs before high-volume online access windows.
+**Data Models and Structures:**
+- `CUSTOMER-RECORD` (`CVCUS01Y`): customer identity, name/address, contact details, DOB, score, and ownership indicators.  
+- `ACCOUNT-RECORD` (`CVACT01Y`): account-level balances, status, and relationship keys to customer/card structures.  
+- `CARD-RECORD` (`CVCRD01Y`): card number-level attributes used by card maintenance and transaction attribution.  
+- `CURRENT-TRANSACTION` (`CVTRA05Y`) and `DALYTRAN-RECORD` (`CVTRA06Y`): online transaction row model with amount, merchant, category/type, and timestamps.  
+- `USER-SECURITY-RECORD` (`CSUSR01Y`): sign-on/admin user records used by `CC00` and admin CRUD flows.
+**Module-Specific Business Rules:**
+- **Authentication gating:** Users must authenticate through sign-on (`CC00`) before menu dispatch; failed checks keep control in sign-on with error messaging.  
+- **Menu authorization split:** Main menu options enforce role-dependent paths (regular vs admin) before routing to transactions.  
+- **Account and card maintenance validation:** Update flows apply field-level edits only after key/account-card ownership and data-presence checks; invalid edits return message-line errors and suppress rewrite.  
+- **Transaction lifecycle integrity:** `CT00` list and `CT01` detail paths depend on indexed DALYTRAN access; `CT02` writes only after required transaction fields are validated.  
+- **Batch sequencing contract:** `OPENFIL`/refresh/indexing steps must complete before posting and statement jobs (`POSTTRAN`, `CREASTMT`) to avoid stale lookup/index behavior in online transactions.  
+- **Operational recoverability:** Scripts execute ordered job chains and return early on failure to prevent partial nightly synchronization.
 **User Story Examples:**
 - As a cardholder, I want to scroll through `CT00` transactions so I can reconcile the latest activities before a statement post.  
 - As an account admin, I want to update the billing address via `CAUP` so the system mails statements to the correct location.  

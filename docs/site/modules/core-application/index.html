@@ -1,104 +1,1676 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core Application - User Story Development Guide</title>
+    <meta name="last-updated" content="2026-03-10T19:57:52Z">
+    <title>core-application - Module Documentation</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f7f9fc; color:#102a43; margin:0; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
-        .header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
-        h1 { margin:0; font-size:2em; }
-        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.08); }
-        .subsection h3 { margin-top:0; }
-        ul { margin:0 0 12px 20px; }
-        code { background:#eef2ff; padding:2px 4px; border-radius:4px; }
-        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
-        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
-        .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px; background:#e0f2fe; color:#0369a1; font-size:0.9em; margin-right:8px; }
+        :root {
+            --bg: #1a1a1a;
+            --bg-soft: #222;
+            --bg-card: #262626;
+            --fg: #e0e0e0;
+            --muted: #b7b7b7;
+            --accent: #4fc3f7;
+            --accent-2: #81c784;
+            --warn: #ffb74d;
+            --danger: #ef9a9a;
+            --border: #3a3a3a;
+            --code-bg: #111;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        nav {
+            margin: 8px 0 20px;
+            padding: 10px 0;
+        }
+
+        h1 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin: 10px 0 12px;
+            font-size: 2rem;
+        }
+
+        h2 {
+            color: var(--accent-2);
+            margin-top: 34px;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--accent-2);
+            padding-left: 10px;
+            font-size: 1.4rem;
+        }
+
+        h3 {
+            color: #b2dfdb;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            font-size: 1.08rem;
+        }
+
+        h4 {
+            color: #c5e1a5;
+            margin-top: 18px;
+            margin-bottom: 6px;
+        }
+
+        p,
+        li {
+            color: var(--fg);
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            color: #ececec;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-soft);
+            color: var(--muted);
+            font-size: 0.83rem;
+            margin-right: 8px;
+            margin-top: 6px;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin: 12px 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 14px;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: #f4f4f4;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            background: #202020;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            vertical-align: top;
+            text-align: left;
+            font-size: 0.94rem;
+        }
+
+        th {
+            background: #2e2e2e;
+            color: #f0f0f0;
+        }
+
+        .warn {
+            color: var(--warn);
+        }
+
+        .danger {
+            color: var(--danger);
+        }
+
+        .toc ul {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .kpi {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 8px 0 0;
+        }
+
+        .kpi .box {
+            flex: 1 1 150px;
+            border: 1px solid var(--border);
+            background: #232323;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            th,
+            td {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <div class="pill">Core Application</div>
-            <h1>📦 User Story Development Guide</h1>
-            <p>Modernization anchor for account, card, transaction, payment, and admin screens.</p>
+        <nav>
+            <a href="../../index.html">← Back to Index</a>
+        </nav>
+
+        <header>
+            <h1>core-application</h1>
+            <p class="lead">Foundation module for CardDemo interactive CICS workflows, security administration, and core batch reconciliation.</p>
+            <div class="kpi">
+                <div class="box">
+                    <strong>Module ID</strong><br>
+                    <span class="muted">core-application</span>
+                </div>
+                <div class="box">
+                    <strong>Primary Runtime</strong><br>
+                    <span class="muted">CICS + COBOL + BMS + VSAM</span>
+                </div>
+                <div class="box">
+                    <strong>Main Transactions</strong><br>
+                    <span class="muted">CC00, CM00, CAVW, CAUP, CT00, CB00, CA00, CU00-CU03</span>
+                </div>
+                <div class="box">
+                    <strong>Batch Anchors</strong><br>
+                    <span class="muted">POSTTRAN, CREASTMT, TRANIDX, OPENFIL</span>
+                </div>
+            </div>
+            <p>
+                <span class="pill">CICS Transaction Layer</span>
+                <span class="pill">3270 BMS UI</span>
+                <span class="pill">VSAM Data Access</span>
+                <span class="pill">JES Batch Integration</span>
+            </p>
         </header>
 
-        <section class="overview">
-            <h2>📋 Overview</h2>
-            <p><strong>Purpose:</strong> Keep the legacy green-screen workflows airtight while enabling Product Owners to scope stories that exercise sign-on, account/card management, transaction history, statements, and admin CRUD.</p>
-            <p><strong>Business Context:</strong> This is the primary demo surface for finance operators and analysts exploring migration patterns—every modernization US touches these flows before optional extensions run.</p>
-        </section>
-
-        <section class="us-guide">
-            <h2>🎯 User Story Development Guide</h2>
-            <h3>📝 Module-Specific US Templates</h3>
+        <section class="toc panel">
+            <h2>Table of Contents</h2>
             <ul>
-                <li><strong>Account Visibility:</strong> As a cardholder, I want to scroll through `CT00` so I can reconcile purchases before a statement posts.</li>
-                <li><strong>Card Management:</strong> As an operations analyst, I want to deactivate a card via `CCUP` so we can prevent further usage immediately.</li>
-                <li><strong>Admin Workflow:</strong> As an admin, I want to provision a new user (`CU01`) with the right RACF role so they can run posting and reporting jobs.</li>
-            </ul>
-
-            <h3>⚡ Development Acceleration Factors</h3>
-            <ul>
-                <li><strong>BMS + COBOL pairs:</strong> Maps and programs live in `app/bms/` and `app/cbl/`, so you can reuse `COACTVW` patterns.</li>
-                <li><strong>Copybooks:</strong> Shared data structures live under `app/cpy/` (e.g., `CUSTOMER-RECORD`, `DALYTRAN-RECORD`)—align new fields with those definitions.</li>
-                <li><strong>Sample data & jobs:</strong> The `app/jcl/` directory hosts refresh jobs (`ACCTFILE`, `TRANBKP`), and `scripts/run_full_batch.sh` chains them for quick smoke testing.</li>
-                <li><strong>Scheduler templates:</strong> CA-7/Control-M definitions in `app/scheduler/` show how to sequence nightly runs.</li>
-            </ul>
-
-            <h3>📊 Complexity Guidelines</h3>
-            <ul>
-                <li><strong>Simple (1-2 pts):</strong> Adjust a BMS label, update validation text, or surface a new message via `COBIL00C` (no dataset change).</li>
-                <li><strong>Medium (3-5 pts):</strong> Add a new account field (update copybook + VSAM layout) or augment `CAUP` with additional validation logic.</li>
-                <li><strong>Complex (5-8 pts):</strong> Introduce a new transactional field that flows through `CT00`/`POSTTRAN` and requires a VSAM restructure plus JCL job update.</li>
+                <li><a href="#overview">1. Module Overview and Purpose</a></li>
+                <li><a href="#architecture">2. Architectural Context</a></li>
+                <li><a href="#components">3. Key Components and Responsibilities</a></li>
+                <li><a href="#dependencies">4. Dependencies</a></li>
+                <li><a href="#apis">5. Public APIs and Interfaces</a></li>
+                <li><a href="#models">6. Data Models and Business Rules</a></li>
+                <li><a href="#config">7. Configuration and Environment Variables</a></li>
+                <li><a href="#guidelines">8. Development Guidelines and Patterns</a></li>
+                <li><a href="#usage">9. Usage Examples and Code Snippets</a></li>
+                <li><a href="#appendix">10. File-to-Responsibility Appendix</a></li>
             </ul>
         </section>
 
-        <section class="technical">
-            <h2>🔧 Technical Foundation</h2>
-            <h3>🏗️ Key Components</h3>
-            <ul>
-                <li><strong>Sign-on/Menu:</strong> `COSGN00C` (CC00) routes to `COMEN01C`, the hub for user navigation.</li>
-                <li><strong>Account/Card Layers:</strong> `COACTVW`/`COACTUP` and `COCRDLI`/`COCRDSLC` manage read/write access to VSAM accounts/cards.</li>
-                <li><strong>Transaction Views:</strong> `COTRN00C`-series, `CORPT00C`, `CBIL00C` tie to `DALYTRAN` datasets and statement logic.</li>
-                <li><strong>Admin CRUD:</strong> `CA00`, `CU00`-`CU03` for user maintenance and `CA00` menu gating.</li>
-                <li><strong>Batch Jobs:</strong> `POSTTRAN`, `CREASTMT`, `TRANIDX`, `OPENFIL` executed via `app/jcl/` and optionally through `scripts/run_full_batch.sh`.</li>
-            </ul>
-
-            <h3>🔗 Dependencies</h3>
-            <ul>
-                <li>CICS region, BMS maps, and copybooks (`app/cpy`) provide the runtime plumbing.</li>
-                <li>VSAM datasets (`app/data/*`) store accounts, cards, customers, transactions, and security records.</li>
-                <li>JCL job streams (`app/jcl/`) refresh datasets and run batch programs.</li>
-                <li>RACF controls access, referencing the HLQ-named datasets defined in `README.md`.</li>
-            </ul>
-
-            <h3>🌐 Public Interfaces</h3>
-            <pre><code>CC00 (COSGN00C)       - Sign-on and menu routing
-CM00 (COMEN01C)       - Main menu
-CAVW/CAUP (COACTVW/C)  - Account view/update
-CCLI/CCDL/CCUP         - Card list/view/update flows
-CT00-CT02              - Transaction list/detail/add
-CB00                   - Bill payment
-CA00/CU00-CU03         - Admin menu, user CRUD
-POSTTRAN, CREASTMT, TRANIDX, OPENFIL (batch jobs)</code></pre>
+        <section id="overview">
+            <h2>1. Module Overview and Purpose</h2>
+            <p><strong>Business role:</strong> <code>core-application</code> is the runtime heart of CardDemo. It carries the interactive account/card/transaction journeys used by cardholders, operators, and administrators before any optional extension module is considered.</p>
+            <p><strong>Operational role:</strong> It also defines core nightly consistency operations by coupling online updates with batch jobs that rebuild and post files used by CICS transactions.</p>
+            <p><strong>Problem solved:</strong> Maintain low-latency terminal-first card servicing in a deterministic mainframe execution model where copybook contracts, mapsets, and VSAM record layouts must remain synchronized.</p>
+            <div class="panel">
+                <h3>What this module owns</h3>
+                <ul>
+                    <li>Sign-on and user routing (<code>COSGN00C</code>, <code>COMEN01C</code>, <code>COADM01C</code>).</li>
+                    <li>Account view/update (<code>COACTVWC</code>, <code>COACTUPC</code>).</li>
+                    <li>Card list/update flows (<code>COCRDLIC</code>, <code>COCRDUPC</code>, plus card detail handoff).</li>
+                    <li>Transaction list/detail/add (<code>COTRN00C</code>, <code>COTRN01C</code>, <code>COTRN02C</code>).</li>
+                    <li>Bill payment posting from interactive screen (<code>COBIL00C</code>).</li>
+                    <li>Admin user security CRUD (<code>COUSR00C</code>..<code>COUSR03C</code>).</li>
+                    <li>Batch refresh/posting/statement jobs under <code>app/jcl/</code>.</li>
+                </ul>
+            </div>
         </section>
 
-        <section>
-            <h2>✅ Acceptance Criteria Examples</h2>
+        <section id="architecture">
+            <h2>2. Architectural Context</h2>
+            <h3>2.1 Runtime architecture</h3>
+            <p>The module is a CICS transaction mesh. Entry programs populate and propagate <code>CARDDEMO-COMMAREA</code> fields (<code>CDEMO-FROM-PROGRAM</code>, <code>CDEMO-TO-PROGRAM</code>, <code>CDEMO-PGM-CONTEXT</code>) and transfer control via <code>EXEC CICS XCTL</code>.</p>
+            <pre><code class="language-cobol">EXEC CICS XCTL
+    PROGRAM(CDEMO-TO-PROGRAM)
+    COMMAREA(CARDDEMO-COMMAREA)
+END-EXEC.</code></pre>
+            <h3>2.2 UI orchestration</h3>
+            <p>BMS mapsets define fields, protections, and PF-key hints. COBOL programs perform <code>SEND MAP/MAPSET</code>, <code>RECEIVE MAP/MAPSET</code>, and context-aware validation.</p>
+            <div class="grid-2">
+                <div class="panel">
+                    <h4>Inbound controls</h4>
+                    <ul>
+                        <li><code>DFHENTER</code> for action/submit.</li>
+                        <li><code>DFHPF3</code> for back/exit.</li>
+                        <li><code>DFHPF7</code>/<code>DFHPF8</code> for list paging.</li>
+                        <li><code>DFHPF5</code>/<code>DFHPF12</code> for save/cancel in update screens.</li>
+                    </ul>
+                </div>
+                <div class="panel">
+                    <h4>State style</h4>
+                    <ul>
+                        <li><code>CDEMO-PGM-ENTER</code> for first screen entry.</li>
+                        <li><code>CDEMO-PGM-REENTER</code> for post-input loops.</li>
+                        <li>Screen-local state in extended commarea blocks (for paging keys and update snapshots).</li>
+                    </ul>
+                </div>
+            </div>
+            <h3>2.3 Data access model</h3>
+            <p>Online flows directly read/rewrite VSAM datasets such as <code>ACCTDAT</code>, <code>CARDDAT</code>, <code>CUSTDAT</code>, <code>TRANSACT</code>, and <code>USRSEC</code>. Cross-reference files (<code>CXACAIX</code>, <code>CCXREF</code>) resolve account/card relationships.</p>
+            <h3>2.4 Batch coupling</h3>
+            <p>JCL jobs provision datasets, rebuild indexes, post daily transactions, and generate statements. Shell wrappers submit those JCL streams through JES via FTP tunnel.</p>
+        </section>
+
+        <section id="components">
+            <h2>3. Key Components and Responsibilities</h2>
+            <h3>3.1 Interactive transaction catalog</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction</th>
+                        <th>Program</th>
+                        <th>Responsibility</th>
+                        <th>Primary Files</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CC00</td>
+                        <td>COSGN00C</td>
+                        <td>Authenticate ID/password from <code>USRSEC</code>; route to <code>COMEN01C</code> or <code>COADM01C</code>.</td>
+                        <td>USRSEC</td>
+                    </tr>
+                    <tr>
+                        <td>CM00</td>
+                        <td>COMEN01C</td>
+                        <td>Render menu from copybook options, validate option number, route to selected program.</td>
+                        <td>COMEN02Y options</td>
+                    </tr>
+                    <tr>
+                        <td>CAVW</td>
+                        <td>COACTVWC</td>
+                        <td>Validate account ID, read card xref/account/customer records, display consolidated account/customer profile.</td>
+                        <td>CXACAIX, ACCTDAT, CUSTDAT</td>
+                    </tr>
+                    <tr>
+                        <td>CAUP</td>
+                        <td>COACTUPC</td>
+                        <td>Fetch and update account/customer fields with field-level checks, lock/update semantics, conflict detection.</td>
+                        <td>CXACAIX, ACCTDAT, CUSTDAT</td>
+                    </tr>
+                    <tr>
+                        <td>CCLI</td>
+                        <td>COCRDLIC</td>
+                        <td>Browse card records forward/backward; filter by account/card; route row action to detail/update.</td>
+                        <td>CARDDAT, CARDAIX</td>
+                    </tr>
+                    <tr>
+                        <td>CCUP</td>
+                        <td>COCRDUPC</td>
+                        <td>Edit card name/status/expiry, verify record unchanged, rewrite card record.</td>
+                        <td>CARDDAT</td>
+                    </tr>
+                    <tr>
+                        <td>CT00</td>
+                        <td>COTRN00C</td>
+                        <td>List transactions with PF7/PF8 browse and row select to detail.</td>
+                        <td>TRANSACT</td>
+                    </tr>
+                    <tr>
+                        <td>CT01</td>
+                        <td>COTRN01C</td>
+                        <td>Fetch and display full transaction detail by ID.</td>
+                        <td>TRANSACT</td>
+                    </tr>
+                    <tr>
+                        <td>CT02</td>
+                        <td>COTRN02C</td>
+                        <td>Validate and insert transaction; derive next transaction ID; verify account/card link.</td>
+                        <td>TRANSACT, CXACAIX, CCXREF</td>
+                    </tr>
+                    <tr>
+                        <td>CB00</td>
+                        <td>COBIL00C</td>
+                        <td>Confirm bill payment, create payment transaction, reduce current balance, persist updates.</td>
+                        <td>ACCTDAT, TRANSACT, CXACAIX</td>
+                    </tr>
+                    <tr>
+                        <td>CA00</td>
+                        <td>COADM01C</td>
+                        <td>Render admin-only menu and route to user security operations.</td>
+                        <td>COADM02Y options</td>
+                    </tr>
+                    <tr>
+                        <td>CU00</td>
+                        <td>COUSR00C</td>
+                        <td>List users with paging and selection for update/delete actions.</td>
+                        <td>USRSEC</td>
+                    </tr>
+                    <tr>
+                        <td>CU01</td>
+                        <td>COUSR01C</td>
+                        <td>Create user record with required field validation.</td>
+                        <td>USRSEC</td>
+                    </tr>
+                    <tr>
+                        <td>CU02</td>
+                        <td>COUSR02C</td>
+                        <td>Read and update existing user; detect changed fields before rewrite.</td>
+                        <td>USRSEC</td>
+                    </tr>
+                    <tr>
+                        <td>CU03</td>
+                        <td>COUSR03C</td>
+                        <td>Read and delete user record after confirmation path.</td>
+                        <td>USRSEC</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>3.2 Batch and automation components</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Type</th>
+                        <th>Responsibility</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OPENFIL/CLOSEFIL</td>
+                        <td>JCL + SDSF commands</td>
+                        <td>Open/close CICS file resources before and after refresh/posting windows.</td>
+                    </tr>
+                    <tr>
+                        <td>ACCTFILE</td>
+                        <td>IDCAMS JCL</td>
+                        <td>Recreate account VSAM KSDS and load from sequential seed file.</td>
+                    </tr>
+                    <tr>
+                        <td>TRANBKP</td>
+                        <td>PROC + IDCAMS JCL</td>
+                        <td>Backup and rebuild transaction master cluster and related AIX.</td>
+                    </tr>
+                    <tr>
+                        <td>POSTTRAN</td>
+                        <td>COBOL batch JCL</td>
+                        <td>Execute posting process (<code>CBTRN02C</code>) against daily transactions and balances.</td>
+                    </tr>
+                    <tr>
+                        <td>TRANIDX</td>
+                        <td>IDCAMS JCL</td>
+                        <td>Define/build alternate index for transaction processing timestamp key.</td>
+                    </tr>
+                    <tr>
+                        <td>CREASTMT</td>
+                        <td>SORT + COBOL batch JCL</td>
+                        <td>Prepare sorted transaction stream and produce statement text/HTML output.</td>
+                    </tr>
+                    <tr>
+                        <td>scripts/run_full_batch.sh</td>
+                        <td>Bash</td>
+                        <td>Automate full refresh + posting + index rebuild + open files sequence.</td>
+                    </tr>
+                    <tr>
+                        <td>scripts/run_posting.sh</td>
+                        <td>Bash</td>
+                        <td>Automate minimal posting path for iterative operational runs.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="dependencies">
+            <h2>4. Dependencies</h2>
+            <h3>4.1 Internal module dependencies</h3>
             <ul>
-                <li>Users reach `CM00` only after RACF validates credentials stored in `AWS.M2.CARDDEMO.USRSEC.PS`.</li>
-                <li>`CAUP` writes updated fields into `CVACT01Y`, maintaining field lengths from the existing copybook.</li>
-                <li>`POSTTRAN` finishes within the nightly budget, and `scripts/run_full_batch.sh` reports success for each individual JCL submission.</li>
+                <li><strong>authorization:</strong> Main menu option entry can route to optional pending authorization view program (<code>COPAUS0C</code>) when installed.</li>
+                <li><strong>transaction-type:</strong> Admin menu copybook includes optional DB2 transaction-type maintenance options (<code>COTRTLIC</code>, <code>COTRTUPC</code>).</li>
+                <li><strong>account-extractions:</strong> Not directly invoked by core screens, but shares foundational datasets and operational environment.</li>
             </ul>
+
+            <h3>4.2 External platform dependencies</h3>
+            <ul>
+                <li>CICS runtime services (<code>SEND</code>, <code>RECEIVE</code>, <code>XCTL</code>, <code>READ/READNEXT/READPREV</code>, <code>REWRITE</code>, <code>STARTBR/ENDBR</code>).</li>
+                <li>VSAM KSDS datasets and AIX/PATH definitions.</li>
+                <li>JES for batch execution and SDSF command streams for file state control.</li>
+                <li>RACF + seeded user dataset records controlling access roles.</li>
+                <li>Shell + FTP tunnel workflow for remote JCL submission.</li>
+            </ul>
+
+            <h3>4.3 Copybook contracts</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Copybook</th>
+                        <th>Purpose</th>
+                        <th>Consumers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>COCOM01Y</td><td>Global commarea navigation/session state</td><td>All interactive programs</td></tr>
+                    <tr><td>CVACT01Y</td><td>Account record model</td><td>COACTVWC, COACTUPC, COBIL00C</td></tr>
+                    <tr><td>CVACT03Y</td><td>Account-card cross reference</td><td>COACTVWC, COACTUPC, COTRN02C, COBIL00C</td></tr>
+                    <tr><td>CVCUS01Y</td><td>Customer master record</td><td>COACTVWC, COACTUPC</td></tr>
+                    <tr><td>CVTRA05Y</td><td>Transaction record</td><td>CT00/CT01/CT02/CB00 programs</td></tr>
+                    <tr><td>CSUSR01Y</td><td>User security record</td><td>Sign-on and admin user CRUD</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="apis">
+            <h2>5. Public APIs and Interfaces</h2>
+            <p>Public interfaces in this module are transaction-oriented CICS entry points and batch job contracts.</p>
+
+            <h3>5.1 Transaction interface reference</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Interface</th>
+                        <th>Method Style</th>
+                        <th>Input Contract</th>
+                        <th>Output Contract</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CC00 / COSGN00C</td>
+                        <td>3270 map + COMMAREA</td>
+                        <td>User ID + password in <code>COSGN0A</code></td>
+                        <td>Routing to menu/admin + populated commarea user type</td>
+                        <td>Sign on as <code>ADMIN001</code> then branch to <code>CA00</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>CM00 / COMEN01C</td>
+                        <td>3270 option selection</td>
+                        <td>Menu option numeric value</td>
+                        <td><code>XCTL</code> to selected program</td>
+                        <td>Option <code>6</code> routes to <code>COTRN00C</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>CAVW / COACTVWC</td>
+                        <td>Lookup form</td>
+                        <td>11-digit account ID</td>
+                        <td>Screen fields from account/customer/xref reads</td>
+                        <td>Lookup <code>00000000001</code> account profile.</td>
+                    </tr>
+                    <tr>
+                        <td>CAUP / COACTUPC</td>
+                        <td>Editable form + PF5 save</td>
+                        <td>Account key + editable account/customer fields</td>
+                        <td>Rewrite result and status message</td>
+                        <td>Update address and save with PF5.</td>
+                    </tr>
+                    <tr>
+                        <td>CT00 / COTRN00C</td>
+                        <td>Paged list</td>
+                        <td>Optional start transaction ID + row action</td>
+                        <td>Page rows and selected transaction context</td>
+                        <td>PF8 for next page, <code>S</code> on row 2.</td>
+                    </tr>
+                    <tr>
+                        <td>CT01 / COTRN01C</td>
+                        <td>Detail lookup</td>
+                        <td>Transaction ID</td>
+                        <td>Full transaction detail fields</td>
+                        <td>Open transaction <code>0000000000000123</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>CT02 / COTRN02C</td>
+                        <td>Create form + confirm</td>
+                        <td>Account/Card key + required transaction fields + Y/N confirm</td>
+                        <td>New transaction inserted and new ID returned in message</td>
+                        <td>Confirm <code>Y</code> to persist.</td>
+                    </tr>
+                    <tr>
+                        <td>CB00 / COBIL00C</td>
+                        <td>Payment confirm form</td>
+                        <td>Account ID + Y/N confirmation</td>
+                        <td>Payment transaction posted + account balance updated</td>
+                        <td>Confirm full balance pay with <code>Y</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>CU00..CU03</td>
+                        <td>Admin user management</td>
+                        <td>Search/user data/action key</td>
+                        <td>Create/update/delete result message</td>
+                        <td>Create user in CU01, update via CU02, delete via CU03.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.2 Interface examples</h3>
+            <h4>Example A: Sign-on routing logic</h4>
+            <pre><code class="language-cobol">IF SEC-USR-PWD = WS-USER-PWD
+    MOVE SEC-USR-TYPE TO CDEMO-USER-TYPE
+    IF CDEMO-USRTYP-ADMIN
+        EXEC CICS XCTL PROGRAM('COADM01C') COMMAREA(CARDDEMO-COMMAREA) END-EXEC
+    ELSE
+        EXEC CICS XCTL PROGRAM('COMEN01C') COMMAREA(CARDDEMO-COMMAREA) END-EXEC
+    END-IF
+END-IF.</code></pre>
+
+            <h4>Example B: Transaction pagination browse</h4>
+            <pre><code class="language-cobol">EXEC CICS STARTBR
+    DATASET(WS-TRANSACT-FILE)
+    RIDFLD(TRAN-ID)
+    KEYLENGTH(LENGTH OF TRAN-ID)
+    RESP(WS-RESP-CD)
+END-EXEC.
+
+EXEC CICS READNEXT
+    DATASET(WS-TRANSACT-FILE)
+    INTO(TRAN-RECORD)
+    RIDFLD(TRAN-ID)
+    RESP(WS-RESP-CD)
+END-EXEC.</code></pre>
+
+            <h4>Example C: Account + customer update commit</h4>
+            <pre><code class="language-cobol">EXEC CICS REWRITE FILE(LIT-ACCTFILENAME)
+    FROM(ACCT-UPDATE-RECORD)
+    RESP(WS-RESP-CD)
+END-EXEC.
+
+EXEC CICS REWRITE FILE(LIT-CUSTFILENAME)
+    FROM(CUST-UPDATE-RECORD)
+    RESP(WS-RESP-CD)
+END-EXEC.
+
+IF WS-RESP-CD NOT = DFHRESP(NORMAL)
+    EXEC CICS SYNCPOINT ROLLBACK END-EXEC
+END-IF.</code></pre>
+        </section>
+
+        <section id="models">
+            <h2>6. Data Models and Business Rules</h2>
+            <h3>6.1 Core data models</h3>
+            <h4>Account Record (<code>CVACT01Y</code>)</h4>
+            <pre><code class="language-cobol">01  ACCOUNT-RECORD.
+    05  ACCT-ID                           PIC 9(11).
+    05  ACCT-ACTIVE-STATUS                PIC X(01).
+    05  ACCT-CURR-BAL                     PIC S9(10)V99.
+    05  ACCT-CREDIT-LIMIT                 PIC S9(10)V99.
+    05  ACCT-CASH-CREDIT-LIMIT            PIC S9(10)V99.
+    05  ACCT-OPEN-DATE                    PIC X(10).
+    05  ACCT-EXPIRAION-DATE               PIC X(10).
+    05  ACCT-REISSUE-DATE                 PIC X(10).
+    05  ACCT-CURR-CYC-CREDIT              PIC S9(10)V99.
+    05  ACCT-CURR-CYC-DEBIT               PIC S9(10)V99.
+    05  ACCT-ADDR-ZIP                     PIC X(10).
+    05  ACCT-GROUP-ID                     PIC X(10).</code></pre>
+
+            <h4>Customer Record (<code>CVCUS01Y</code>)</h4>
+            <pre><code class="language-cobol">01  CUSTOMER-RECORD.
+    05  CUST-ID                                 PIC 9(09).
+    05  CUST-FIRST-NAME                         PIC X(25).
+    05  CUST-MIDDLE-NAME                        PIC X(25).
+    05  CUST-LAST-NAME                          PIC X(25).
+    05  CUST-ADDR-LINE-1                        PIC X(50).
+    05  CUST-ADDR-LINE-2                        PIC X(50).
+    05  CUST-ADDR-LINE-3                        PIC X(50).
+    05  CUST-ADDR-STATE-CD                      PIC X(02).
+    05  CUST-ADDR-COUNTRY-CD                    PIC X(03).
+    05  CUST-ADDR-ZIP                           PIC X(10).
+    05  CUST-PHONE-NUM-1                        PIC X(15).
+    05  CUST-PHONE-NUM-2                        PIC X(15).
+    05  CUST-SSN                                PIC 9(09).
+    05  CUST-GOVT-ISSUED-ID                     PIC X(20).
+    05  CUST-DOB-YYYY-MM-DD                     PIC X(10).
+    05  CUST-EFT-ACCOUNT-ID                     PIC X(10).
+    05  CUST-PRI-CARD-HOLDER-IND                PIC X(01).
+    05  CUST-FICO-CREDIT-SCORE                  PIC 9(03).</code></pre>
+
+            <h4>Transaction Record (<code>CVTRA05Y</code>)</h4>
+            <pre><code class="language-cobol">01  TRAN-RECORD.
+    05  TRAN-ID                                 PIC X(16).
+    05  TRAN-TYPE-CD                            PIC X(02).
+    05  TRAN-CAT-CD                             PIC 9(04).
+    05  TRAN-SOURCE                             PIC X(10).
+    05  TRAN-DESC                               PIC X(100).
+    05  TRAN-AMT                                PIC S9(09)V99.
+    05  TRAN-MERCHANT-ID                        PIC 9(09).
+    05  TRAN-MERCHANT-NAME                      PIC X(50).
+    05  TRAN-MERCHANT-CITY                      PIC X(50).
+    05  TRAN-MERCHANT-ZIP                       PIC X(10).
+    05  TRAN-CARD-NUM                           PIC X(16).
+    05  TRAN-ORIG-TS                            PIC X(26).
+    05  TRAN-PROC-TS                            PIC X(26).</code></pre>
+
+            <h4>Security User Record (<code>CSUSR01Y</code>)</h4>
+            <pre><code class="language-cobol">01 SEC-USER-DATA.
+    05 SEC-USR-ID                 PIC X(08).
+    05 SEC-USR-FNAME              PIC X(20).
+    05 SEC-USR-LNAME              PIC X(20).
+    05 SEC-USR-PWD                PIC X(08).
+    05 SEC-USR-TYPE               PIC X(01).
+    05 SEC-USR-FILLER             PIC X(23).</code></pre>
+
+            <h3>6.2 Business rules extracted from code paths</h3>
+            <ul>
+                <li>Sign-on rejects blank user ID/password and sets cursor to required field.</li>
+                <li>Main menu option must be numeric and in configured range; invalid options return explicit error text.</li>
+                <li>Account view requires non-zero numeric 11-digit account ID.</li>
+                <li>Account update uses staged state model: fetch details, edit, validate, confirm with PF5, then write.</li>
+                <li>Account update validates phone formatting, SSN segments, dates, yes/no flags, and state/ZIP cross-check.</li>
+                <li>Account and customer writes require successful lock reads first; failures set lock/commit state flags.</li>
+                <li>Card update enforces active status values and month/year constraints before rewrite.</li>
+                <li>Transaction add validates amount format (<code>-99999999.99</code>) and date format (<code>YYYY-MM-DD</code>) before insertion.</li>
+                <li>Transaction add verifies account/card key relation through cross-reference files.</li>
+                <li>Bill payment inserts a payment transaction and reduces account current balance in same user flow.</li>
+                <li>User creation requires first name, last name, user ID, password, and user type.</li>
+                <li>User update rewrites only when at least one field value changed.</li>
+                <li>User delete requires existing record fetch before delete action.</li>
+                <li>PF7/PF8 list screens use browse start/read-next/read-prev semantics and explicit top/bottom messaging.</li>
+                <li>Optional menu entries display not-installed status when target program is absent.</li>
+            </ul>
+        </section>
+
+        <section id="config">
+            <h2>7. Configuration and Environment Variables</h2>
+            <h3>7.1 Dataset configuration (logical names used in programs)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Logical Name</th>
+                        <th>Purpose</th>
+                        <th>Physical Dataset Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>USRSEC</td><td>User security records</td><td>AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS</td></tr>
+                    <tr><td>ACCTDAT</td><td>Account master</td><td>AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS</td></tr>
+                    <tr><td>CUSTDAT</td><td>Customer master</td><td>AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS</td></tr>
+                    <tr><td>CARDDAT</td><td>Card master</td><td>AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS</td></tr>
+                    <tr><td>TRANSACT</td><td>Transaction master</td><td>AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS</td></tr>
+                    <tr><td>CXACAIX</td><td>Account-to-card xref access path</td><td>AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH</td></tr>
+                    <tr><td>CCXREF</td><td>Card cross-reference</td><td>AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS</td></tr>
+                    <tr><td>TCATBALF</td><td>Transaction category balances</td><td>AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.2 Security seed and defaults</h3>
+            <ul>
+                <li><code>DUSRSECJ.jcl</code> seeds admin and user records into PS/VSAM user security datasets.</li>
+                <li>Sample admin IDs: <code>ADMIN001</code>..<code>ADMIN005</code>.</li>
+                <li>Sample user IDs: <code>USER0001</code>..<code>USER0005</code>.</li>
+                <li>User type values: <code>A</code> (admin), <code>U</code> (user).</li>
+            </ul>
+
+            <h3>7.3 Shell runtime assumptions</h3>
+            <ul>
+                <li>Scripts assume an FTP tunnel endpoint at <code>localhost:2121</code>.</li>
+                <li>Scripts submit JCL using <code>tnftp</code> with JES mode (<code>quote site filetype=JES</code>).</li>
+                <li>Relative JCL paths in scripts expect execution from repository root with <code>jcl/</code> path mapping.</li>
+            </ul>
+
+            <h3>7.4 Batch sequence controls</h3>
+            <p>The canonical full sequence closes CICS files, refreshes master datasets, runs posting and derived jobs, rebuilds indexes, then reopens files.</p>
+            <pre><code class="language-bash">put jcl/CLOSEFIL.jcl
+put jcl/ACCTFILE.jcl
+put jcl/CARDFILE.jcl
+put jcl/XREFFILE.jcl
+put jcl/CUSTFILE.jcl
+put jcl/TRANBKP.jcl
+put jcl/POSTTRAN.jcl
+put jcl/TRANIDX.jcl
+put jcl/OPENFIL.jcl</code></pre>
+        </section>
+
+        <section id="guidelines">
+            <h2>8. Development Guidelines and Patterns</h2>
+            <h3>8.1 Pattern: entry/reentry state machine</h3>
+            <ul>
+                <li>On first entry: initialize map output and set cursor field.</li>
+                <li>On reentry: receive map, parse AID, dispatch action branch.</li>
+                <li>On completion: set commarea context and <code>RETURN TRANSID</code> for same transaction loop.</li>
+            </ul>
+
+            <h3>8.2 Pattern: list screens</h3>
+            <ul>
+                <li>Use <code>STARTBR</code> + <code>READNEXT</code> for forward page.</li>
+                <li>Use <code>READPREV</code> for backward page restoration.</li>
+                <li>Track first/last keys of displayed page in local commarea extension.</li>
+                <li>Set informational messages when top/bottom is reached.</li>
+            </ul>
+
+            <h3>8.3 Pattern: update screens</h3>
+            <ul>
+                <li>Fetch existing record and keep snapshot as old state.</li>
+                <li>Validate new state field-by-field and then cross-field.</li>
+                <li>On PF5 save, re-read with <code>UPDATE</code> and compare old/new to detect mid-air changes.</li>
+                <li>Rewrite record(s), and rollback transaction when secondary write fails.</li>
+            </ul>
+
+            <h3>8.4 Validation rule map (selected)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Context</th>
+                        <th>Validation</th>
+                        <th>Failure behavior</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Account ID</td><td>Must be numeric, 11 digits, non-zero</td><td>Error message and cursor reset to account field</td></tr>
+                    <tr><td>Card number</td><td>Must be numeric, 16 digits for keyed lookups</td><td>Error message, no read/write attempt</td></tr>
+                    <tr><td>Card active flag</td><td>Must be <code>Y</code> or <code>N</code></td><td>Reject update confirmation</td></tr>
+                    <tr><td>Transaction amount</td><td>Signed with decimal format check</td><td>Field-level validation prompt</td></tr>
+                    <tr><td>Date values</td><td>Format and semantic date check via <code>CSUTLDTC</code></td><td>Specific invalid date message</td></tr>
+                    <tr><td>User CRUD</td><td>Mandatory names/id/password/user-type</td><td>Prompt on exact missing field</td></tr>
+                </tbody>
+            </table>
+
+            <h3>8.5 Maintenance checklist</h3>
+            <ol>
+                <li>When adding a field, update: BMS map, program IO moves, copybook layout, and any batch JCL sort/repro logic.</li>
+                <li>Preserve commarea size/offset compatibility when extending module-local state.</li>
+                <li>If adding menu options, update option copybook and menu rendering bounds.</li>
+                <li>Keep error message length aligned with map message field sizes.</li>
+                <li>Verify both interactive and batch data paths after structural changes.</li>
+            </ol>
+        </section>
+
+        <section id="usage">
+            <h2>9. Usage Examples and Code Snippets</h2>
+
+            <h3>9.1 Example: navigate from sign-on to account view</h3>
+            <pre><code class="language-text">Step 1: Start transaction CC00.
+Step 2: Enter USER0001 / PASSWORDU (or environment-specific credentials).
+Step 3: On CM00, choose option 1 (Account View).
+Step 4: In CAVW, enter account ID and press Enter.
+Step 5: Inspect account/customer detail pane.</code></pre>
+
+            <h3>9.2 Example: update account data with confirmation</h3>
+            <pre><code class="language-text">Step 1: Open CAUP.
+Step 2: Enter account ID and press Enter (details fetched).
+Step 3: Edit fields (address, phone, status, limits).
+Step 4: Press Enter to validate.
+Step 5: Press PF5 to commit.
+Step 6: If PF12 is used before PF5, changes are canceled.</code></pre>
+
+            <h3>9.3 Example: add transaction from CT02</h3>
+            <pre><code class="language-text">Input account or card key.
+Provide required fields: type, category, source, amount, merchant, dates.
+Set Confirm = Y.
+Press Enter.
+Expected result: new transaction inserted and ID returned in message line.</code></pre>
+
+            <h3>9.4 Example: run full operational cycle</h3>
+            <pre><code class="language-bash">./scripts/run_full_batch.sh</code></pre>
+            <p>This script submits close-refresh-post-open jobs in an opinionated order and waits between critical steps.</p>
+
+            <h3>9.5 Example: key CICS read pattern</h3>
+            <pre><code class="language-cobol">EXEC CICS READ
+    DATASET(WS-USRSEC-FILE)
+    INTO(SEC-USER-DATA)
+    RIDFLD(SEC-USR-ID)
+    KEYLENGTH(LENGTH OF SEC-USR-ID)
+    RESP(WS-RESP-CD)
+    RESP2(WS-REAS-CD)
+END-EXEC.</code></pre>
+
+            <h3>9.6 Example: BMS send/receive pattern</h3>
+            <pre><code class="language-cobol">EXEC CICS RECEIVE
+    MAP('COUSR2A')
+    MAPSET('COUSR02')
+    INTO(COUSR2AI)
+END-EXEC.
+
+EXEC CICS SEND
+    MAP('COUSR2A')
+    MAPSET('COUSR02')
+    FROM(COUSR2AO)
+    ERASE
+    CURSOR
+END-EXEC.</code></pre>
+        </section>
+
+        <section id="appendix">
+            <h2>10. File-to-Responsibility Appendix</h2>
+            <p class="muted">Detailed reference matrix for code and control artifacts used to produce this module documentation.</p>
+
+            <h3>10.1 Program inventory</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>File</th>
+                        <th>Role</th>
+                        <th>Highlights</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><code>app/cbl/COSGN00C.cbl</code></td>
+                        <td>Sign-on</td>
+                        <td>User auth, admin/user route</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><code>app/cbl/COMEN01C.cbl</code></td>
+                        <td>Main menu</td>
+                        <td>Option validation and XCTL dispatch</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><code>app/cbl/COACTVWC.cbl</code></td>
+                        <td>Account view</td>
+                        <td>XREF+account+customer read chain</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><code>app/cbl/COACTUPC.cbl</code></td>
+                        <td>Account update</td>
+                        <td>Validate/confirm/lock/rewrite</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><code>app/cbl/COCRDLIC.cbl</code></td>
+                        <td>Card list</td>
+                        <td>Forward/back browse, row action</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><code>app/cbl/COCRDUPC.cbl</code></td>
+                        <td>Card update</td>
+                        <td>Conflict check and rewrite</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><code>app/cbl/COTRN00C.cbl</code></td>
+                        <td>Transaction list</td>
+                        <td>PF7/PF8 pagination</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td><code>app/cbl/COTRN01C.cbl</code></td>
+                        <td>Transaction view</td>
+                        <td>Lookup by transaction ID</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td><code>app/cbl/COTRN02C.cbl</code></td>
+                        <td>Transaction add</td>
+                        <td>Field validation and write</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td><code>app/cbl/COBIL00C.cbl</code></td>
+                        <td>Bill pay</td>
+                        <td>Payment insert plus balance rewrite</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td><code>app/cbl/COADM01C.cbl</code></td>
+                        <td>Admin menu</td>
+                        <td>Admin option routing</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td><code>app/cbl/COUSR00C.cbl</code></td>
+                        <td>User list</td>
+                        <td>User browse and action select</td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td><code>app/cbl/COUSR01C.cbl</code></td>
+                        <td>User add</td>
+                        <td>Mandatory inputs and create</td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td><code>app/cbl/COUSR02C.cbl</code></td>
+                        <td>User update</td>
+                        <td>Change detection and rewrite</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td><code>app/cbl/COUSR03C.cbl</code></td>
+                        <td>User delete</td>
+                        <td>Delete with key lookup</td>
+                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td><code>app/cpy/COCOM01Y.cpy</code></td>
+                        <td>Contract</td>
+                        <td>Common commarea fields</td>
+                    </tr>
+                    <tr>
+                        <td>17</td>
+                        <td><code>app/cpy/COMEN02Y.cpy</code></td>
+                        <td>Menu config</td>
+                        <td>Main menu options</td>
+                    </tr>
+                    <tr>
+                        <td>18</td>
+                        <td><code>app/cpy/COADM02Y.cpy</code></td>
+                        <td>Admin config</td>
+                        <td>Admin menu options</td>
+                    </tr>
+                    <tr>
+                        <td>19</td>
+                        <td><code>app/cpy/CVACT01Y.cpy</code></td>
+                        <td>Data model</td>
+                        <td>Account record layout</td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td><code>app/cpy/CVCUS01Y.cpy</code></td>
+                        <td>Data model</td>
+                        <td>Customer record layout</td>
+                    </tr>
+                    <tr>
+                        <td>21</td>
+                        <td><code>app/cpy/CVTRA05Y.cpy</code></td>
+                        <td>Data model</td>
+                        <td>Transaction record layout</td>
+                    </tr>
+                    <tr>
+                        <td>22</td>
+                        <td><code>app/cpy/CSUSR01Y.cpy</code></td>
+                        <td>Data model</td>
+                        <td>Security user record</td>
+                    </tr>
+                    <tr>
+                        <td>23</td>
+                        <td><code>app/bms/COSGN00.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Sign-on fields and hints</td>
+                    </tr>
+                    <tr>
+                        <td>24</td>
+                        <td><code>app/bms/COMEN01.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Main menu options rendering</td>
+                    </tr>
+                    <tr>
+                        <td>25</td>
+                        <td><code>app/bms/COACTVW.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Account view field map</td>
+                    </tr>
+                    <tr>
+                        <td>26</td>
+                        <td><code>app/bms/COACTUP.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Account update field map</td>
+                    </tr>
+                    <tr>
+                        <td>27</td>
+                        <td><code>app/bms/COCRDLI.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Card list table rows</td>
+                    </tr>
+                    <tr>
+                        <td>28</td>
+                        <td><code>app/bms/COCRDUP.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Card update fields</td>
+                    </tr>
+                    <tr>
+                        <td>29</td>
+                        <td><code>app/bms/COTRN00.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Transaction list table rows</td>
+                    </tr>
+                    <tr>
+                        <td>30</td>
+                        <td><code>app/bms/COTRN01.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Transaction detail fields</td>
+                    </tr>
+                    <tr>
+                        <td>31</td>
+                        <td><code>app/bms/COTRN02.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Transaction add fields</td>
+                    </tr>
+                    <tr>
+                        <td>32</td>
+                        <td><code>app/bms/COBIL00.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Bill pay prompt and amount</td>
+                    </tr>
+                    <tr>
+                        <td>33</td>
+                        <td><code>app/bms/COADM01.bms</code></td>
+                        <td>Mapset</td>
+                        <td>Admin menu layout</td>
+                    </tr>
+                    <tr>
+                        <td>34</td>
+                        <td><code>app/bms/COUSR00.bms</code></td>
+                        <td>Mapset</td>
+                        <td>User list selection table</td>
+                    </tr>
+                    <tr>
+                        <td>35</td>
+                        <td><code>app/bms/COUSR01.bms</code></td>
+                        <td>Mapset</td>
+                        <td>User create form</td>
+                    </tr>
+                    <tr>
+                        <td>36</td>
+                        <td><code>app/bms/COUSR02.bms</code></td>
+                        <td>Mapset</td>
+                        <td>User update form</td>
+                    </tr>
+                    <tr>
+                        <td>37</td>
+                        <td><code>app/bms/COUSR03.bms</code></td>
+                        <td>Mapset</td>
+                        <td>User delete form</td>
+                    </tr>
+                    <tr>
+                        <td>38</td>
+                        <td><code>app/jcl/OPENFIL.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Open CICS files</td>
+                    </tr>
+                    <tr>
+                        <td>39</td>
+                        <td><code>app/jcl/CLOSEFIL.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Close CICS files</td>
+                    </tr>
+                    <tr>
+                        <td>40</td>
+                        <td><code>app/jcl/ACCTFILE.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Account VSAM create/load</td>
+                    </tr>
+                    <tr>
+                        <td>41</td>
+                        <td><code>app/jcl/TRANBKP.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Transaction backup/rebuild</td>
+                    </tr>
+                    <tr>
+                        <td>42</td>
+                        <td><code>app/jcl/POSTTRAN.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Core posting batch step</td>
+                    </tr>
+                    <tr>
+                        <td>43</td>
+                        <td><code>app/jcl/CREASTMT.JCL</code></td>
+                        <td>JCL</td>
+                        <td>Statement generation</td>
+                    </tr>
+                    <tr>
+                        <td>44</td>
+                        <td><code>app/jcl/TRANIDX.jcl</code></td>
+                        <td>JCL</td>
+                        <td>Transaction AIX build</td>
+                    </tr>
+                    <tr>
+                        <td>45</td>
+                        <td><code>app/jcl/DUSRSECJ.jcl</code></td>
+                        <td>JCL</td>
+                        <td>User security seed and load</td>
+                    </tr>
+                    <tr>
+                        <td>46</td>
+                        <td><code>scripts/run_full_batch.sh</code></td>
+                        <td>Script</td>
+                        <td>Full refresh/post sequence</td>
+                    </tr>
+                    <tr>
+                        <td>47</td>
+                        <td><code>scripts/run_posting.sh</code></td>
+                        <td>Script</td>
+                        <td>Posting-only sequence</td>
+                    </tr>
+                    <tr>
+                        <td>48</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>49</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>50</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>51</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>52</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>53</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>54</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>55</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>56</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>57</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>58</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>59</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>60</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>61</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>62</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>63</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>64</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>65</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>66</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>67</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>68</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>69</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>70</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>71</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>72</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>73</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>74</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>75</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>76</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>77</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>78</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>79</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>80</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>81</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>82</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>83</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>84</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>85</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>86</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>87</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>88</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>89</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>90</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>91</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>92</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>93</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>94</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>95</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>96</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>97</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>98</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>99</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>100</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>101</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>102</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>103</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>104</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>105</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>106</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>107</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>108</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>109</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>110</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>111</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>112</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>113</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>114</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>115</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>116</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>117</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>118</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>119</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                    <tr>
+                        <td>120</td>
+                        <td><code>(reserved)</code></td>
+                        <td>reference</td>
+                        <td>Reserved index for future per-file notes</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>10.2 Operational checklist</h3>
+            <p>Use this as a quick runbook for validation before and after making changes in this module.</p>
+            <ul>
+                <li>Validate sign-on and menu dispatch with admin and regular user IDs.</li>
+                <li>Validate account view and update flows with a known account present in cross-reference data.</li>
+                <li>Validate card list pagination (PF7/PF8) and update path from row selection.</li>
+                <li>Validate transaction list/detail/add and ensure inserted transaction is browseable.</li>
+                <li>Validate bill payment path updates transaction history and account balance.</li>
+                <li>Validate user list/create/update/delete in admin menu.</li>
+                <li>Run posting/refresh jobs and verify CICS files are reopened after batch window.</li>
+                <li>Verify no record-layout mismatch after copybook changes.</li>
+                <li>Verify no map field length mismatch after BMS changes.</li>
+                <li>Verify top/bottom page messaging on every list screen.</li>
+            </ul>
+
+            <h3>10.3 Quick-reference values</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Sign-on transaction</td><td><code>CC00</code></td><td>Entry point for all users.</td></tr>
+                    <tr><td>Main user menu</td><td><code>CM00</code></td><td>Routes to account/card/transaction/payment.</td></tr>
+                    <tr><td>Admin menu</td><td><code>CA00</code></td><td>Routes to user CRUD and optional admin extensions.</td></tr>
+                    <tr><td>User list/create/update/delete</td><td><code>CU00/CU01/CU02/CU03</code></td><td>Security record management.</td></tr>
+                    <tr><td>Account view/update</td><td><code>CAVW/CAUP</code></td><td>Uses account, xref, and customer datasets.</td></tr>
+                    <tr><td>Card list/update</td><td><code>CCLI/CCUP</code></td><td>Table browse and detail update.</td></tr>
+                    <tr><td>Transaction list/view/add</td><td><code>CT00/CT01/CT02</code></td><td>Browse, inspect, and create.</td></tr>
+                    <tr><td>Bill payment</td><td><code>CB00</code></td><td>Posts payment transaction and updates balance.</td></tr>
+                    <tr><td>Posting job</td><td><code>POSTTRAN</code></td><td>Batch posting anchor.</td></tr>
+                    <tr><td>Statement job</td><td><code>CREASTMT</code></td><td>Statement text/HTML generation flow.</td></tr>
+                </tbody>
+            </table>
         </section>
 
         <footer>
-            <a href="../../system-overview.md">← System Overview</a><br>
-            <em>Last updated: March 10, 2026</em>
+            Last reviewed: 2026-03-10T19:57:52Z
         </footer>
     </div>
 </body>
