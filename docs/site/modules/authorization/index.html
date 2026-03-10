@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fdf6fb; color:#0c1f3b; margin:0; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
+        .header { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
+        h1 { margin:0; font-size:2em; }
+        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.1); }
+        ul { margin:0 0 12px 20px; }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        code { background:#fee2e2; padding:2px 4px; border-radius:4px; }
+        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛡️ Authorization Module</h1>
+            <p>Guidance for stories driving MQ, IMS, and DB2 integration scenarios.</p>
+        </header>
+
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Deliver a realistic credit-card authorization pipeline that ingests MQ requests, enforces business rules, writes pending authorizations to IMS, flags fraud in DB2 (`AUTHFRDS`), and exposes summary/detail screens plus a purge job.</p>
+            <p><strong>Business Context:</strong> This optional module showcases two-phase commit (IMS + DB2) and MQ request/response patterns that modernization teams can demo when connecting cloud POS events to a mainframe core.</p>
+        </section>
+
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Real-time Authorization:</strong> As a fraud analyst, I want to see pending requests in `CPVS` so I can escalate suspicious transactions before they settle.</li>
+                <li><strong>MQ Integration:</strong> As a cloud POS emulator, I want to post a comma-delimited message to `PAUTH.REQUEST` and validate the reply so I can test declines and approvals.</li>
+                <li><strong>Data Purge:</strong> As an operator, I want `CBPAUP0J` to purge expired authorizations nightly so IMS/VSAM datasets do not overflow.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>Message formats:</strong> `app/app-authorization-ims-db2-mq/README.md` documents request/response CSV fields (card number, merchant data, response codes).</li>
+                <li><strong>Diagrams:</strong> `diagrams/auth_flow.png`, `auth_summary.png`, `auth_details.png`, and fraud marking images show the user journey.</li>
+                <li><strong>Copybooks & BMS:</strong> Copybooks such as `CIPAUSMY`/`CIPAUDTY` align IMS segments with BMS map layouts `COPAU00`/`COPAU01`.</li>
+                <li><strong>Automation:</strong> JCL `CBPAUP0J` purges expired authorizations, and sample MQ definitions live under `app/app-authorization-ims-db2-mq/mq`.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Update a BMS label or PF key action for `CPVS` without touching MQ payloads.</li>
+                <li><strong>Medium (3-5 pts):</strong> Add a new MQ field (e.g., merchant ZIP) to the request, adjust `COPAUA0C`, and verify IMS segments and DB2 inserts.</li>
+                <li><strong>Complex (5-8 pts):</strong> Extend the fraud-marking flow to another downstream queue, ensuring DB2 transactions (`COPAUS2C`) and IMS updates stay two-phase consistent.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li>`COPAUA0C` processes MQ requests from `PAUTH.REQUEST` and writes pending entries into IMS segments (PAUTSUM0/PAUTDTL1).</li>
+                <li>`COPAUS0C`/`COPAUS1C` render summary/detail screens for operators to inspect authorizations.</li>
+                <li>`COPAUS2C` marks fraud and inserts a row into DB2 table `AUTHFRDS`; `CBPAUP0C`/`CBPAUP0J` purge stale data.</li>
+                <li>IMS DBDs (`DBPAUTP0`, `DBPAUTX0`) and PSBs (`PSBPAUTB`, `PSBPAUTL`) under `app/app-authorization-ims-db2-mq/ims`.</li>
+                <li>MQ resources defined in `app/app-authorization-ims-db2-mq/mq` with queues `AWS.M2.CARDDEMO.PAUTH.REQUEST/REPLY` and a connection to CICS.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>IMS HIDAM for pending authorization storage.</li>
+                <li>DB2 for fraud analytics (`AUTHFRDS`, `XAUTHFRD`).</li>
+                <li>MQ for request/response connectivity (demo clients, pos emulators).</li>
+                <li>VSAM copybooks for account/customer data.</li>
+            </ul>
+
+            <h3>🗂️ Public Interfaces</h3>
+            <pre><code>CP00 - MQ-triggered authorization intake (requests must carry card, merchant, amount)
+CPVS - Pending authorization summary screen
+CPVD - Authorization detail + fraud flag screen
+CBPAUP0J - Batch purge of expired authorizations
+AWS.M2.CARDDEMO.PAUTH.REQUEST / .REPLY - MQ queues documented in README with CSV payloads</code></pre>
+        </section>
+
+        <section>
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>MQ payloads missing required fields are rejected with a BMS error and recorded in `CCPAUERY` logs.</li>
+                <li>Marking a fraud case writes to DB2 `AUTHFRDS.AUTH_FRAUD` and updates the IMS segment without leaving stale locks.</li>
+                <li>`CBPAUP0J` deletes only authorizations older than the retention window documented in `README.md`, keeping IMS/VSAM alignment.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <a href="../../system-overview.md">← System Overview</a><br>
+            <em>Last updated: March 10, 2026</em>
+        </footer>
+    </div>
+</body>
+</html>
