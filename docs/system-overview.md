@@ -53,16 +53,67 @@
 
 ### 2. Authorization
 **ID:** `authorization`  
-**Purpose:** Add an MQ-triggered authorization pipeline that records request/response pairs, stores pending authorizations in IMS (PAUTSUM0/PAUTDTL1), marks fraud in DB2 (`AUTHFRDS`), and offers summary/details screens plus a purge job.  
-**Key Components:** CICS programs `COPAUA0C`, `COPAUS0C`, `COPAUS1C`, `COPAUS2C`; BMS mapsets `COPAU00`/`COPAU01`; IMS artifacts (`DBPAUTP0`, `DBPAUTX0`, PSBs) and DB2 artefacts (`AUTHFRDS`, `XAUTHFRD`); batch job `CBPAUP0J`; MQ queue definitions for `AWS.M2.CARDDEMO.PAUTH.REQUEST/REPLY`.  
+**Source:** `app/app-authorization-ims-db2-mq/`  
+**Purpose:** Add an MQ-triggered authorization pipeline that records request/response pairs, stores pending authorizations in IMS HIDAM (`PAUTSUM0`/`PAUTDTL1`), marks fraud in DB2 (`AUTHFRDS`), and offers 3270 BMS summary/detail screens plus a nightly batch purge job. Demonstrates two-phase commit (IMS + DB2) and MQ request/response correlation for modernization scenarios.  
+
+**Key Components:**
+
+| Component | Type | Description |
+|-----------|------|-------------|
+| `COPAUA0C` | CICS COBOL IMS MQ | Authorization Decision Engine (transaction `CP00`). Reads up to 500 messages from `PAUTH.REQUEST`, validates card/account via VSAM, writes IMS segments, sends replies. |
+| `COPAUS0C` | CICS COBOL IMS BMS | Pending Authorization Summary screen (transaction `CPVS`). Paginated IMS `PAUTSUM0` root scan via BMS map `COPAU0A`. |
+| `COPAUS1C` | CICS COBOL IMS BMS | Pending Authorization Detail screen (transaction `CPVD`). Reads `PAUTDTL1` segment; displays merchant info, decline reason; navigates to fraud marking. |
+| `COPAUS2C` | CICS COBOL IMS DB2 | Mark Authorization Fraud (internal, linked from `COPAUS1C`). Inserts row in `AUTHFRDS`; updates IMS `PA-AUTH-FRAUD` flag. |
+| `CBPAUP0C` / `CBPAUP0J` | Batch IMS BMP | Purge expired authorization segments from IMS. Expiry threshold from SYSIN. |
+| `COPAU00.bms` / `COPAU01.bms` | BMS Mapsets | 24×80 3270 screen definitions for summary and detail authorization views. |
+| `DBPAUTP0` / `DBPAUTX0` | IMS DBDs | HIDAM database with `PAUTSUM0` root (100 bytes, key=ACCNTID COMP-3) and `PAUTDTL1` child (200 bytes, key=composite Julian timestamp). Secondary index in `DBPAUTX0`. |
+| `PSBPAUTB` / `PSBPAUTL` | IMS PSBs | Program Specification Blocks for CICS programs (PCB +1) and batch BMP (PCB +2). |
+| `AUTHFRDS.ddl` / `XAUTHFRD.ddl` | DB2 DDL | Table `CARDDEMO.AUTHFRDS` (27 columns, PK: CARD_NUM + AUTH_TS) and unique index `XAUTHFRD` (CARD_NUM ASC, AUTH_TS DESC). |
+| `CCPAURQY` / `CCPAURLY` | Copybooks | MQ request (18 fields, 500-byte buffer) and reply (6 fields, 200-byte buffer) layouts. |
+| `CIPAUSMY` / `CIPAUDTY` | Copybooks | IMS segment structures for `PAUTSUM0` (summary) and `PAUTDTL1` (detail). |
+| `CRDDEMO2.csd` | CICS CSD | Transaction and MQCONN/MQQUEUE resource definitions for CP00, CPVS, CPVD. |
+
 **Public APIs:**
-- `CP00` – MQ-triggered authorization intake (requests from any MQ client).  
-- `CPVS` / `CPVD` – pending authorization summary and detail view.  
-- `CBPAUP0J` – nightly purge of expired authorizations and rollback of hold amounts.  
-- MQ queues (`PAUTH.REQUEST` / `PAUTH.REPLY`) with comma-separated message format (card number, merchant info, transaction amount, response codes).  
+- `CP00` (`COPAUA0C`) – MQ-triggered authorization intake. Processes up to 500 requests per invocation; validates card, account, credit limit; writes IMS and replies.  
+- `CPVS` (`COPAUS0C`) – Pending authorization summary screen. PF7/PF8 paging over `PAUTSUM0` IMS root segments.  
+- `CPVD` (`COPAUS1C`) – Pending authorization detail screen. Full merchant/amount/decline-reason view; links to fraud marking via `COPAUS2C`.  
+- `CBPAUP0J` – Nightly IMS BMP purge of expired `PAUTDTL1`/`PAUTSUM0` segments. Threshold from SYSIN.  
+- MQ queues `AWS.M2.CARDDEMO.PAUTH.REQUEST` (input, 500 bytes) / `AWS.M2.CARDDEMO.PAUTH.REPLY` (output, 200 bytes) using fixed-field COBOL layouts per `CCPAURQY`/`CCPAURLY` copybooks.  
+
+**Dependencies:**
+- **Internal:** `core-application` VSAM datasets (`ACCTDAT`, `CUSTDAT`, `CARDDAT`, `CARDAIX`, `CCXREF`) for card/account validation; `COMEN01C` for menu navigation.  
+- **External:** IBM MQ (queue manager with `PAUTH.REQUEST`/`REPLY`), IMS HIDAM (PSB `PSBPAUTB`, DBDs `DBPAUTP0`/`DBPAUTX0`), DB2 (`CARDDEMO.AUTHFRDS` table), RACF (operator authentication).  
+
+**Data Models:**
+- `PAUTSUM0` (IMS root, 100 bytes) – account-level summary: credit/cash limits, balances, approved/declined counts and amounts.  
+- `PAUTDTL1` (IMS child, 200 bytes) – per-authorization detail: card number, merchant info, amounts, response codes, match status (`P`/`D`/`E`/`M`), fraud flag (`F`/`R`).  
+- `CARDDEMO.AUTHFRDS` (DB2 table) – 27-column fraud record including CARD_NUM, AUTH_TS (PK), merchant data, AUTH_FRAUD flag, FRAUD_RPT_DATE.  
+
+**Authorization Decline Reason Codes:**
+
+| Code | Description |
+|------|-------------|
+| `0000` | APPROVED |
+| `3100` | INVALID CARD |
+| `4100` | INSUFFICNT FUND |
+| `4200` | CARD NOT ACTIVE |
+| `4300` | ACCOUNT CLOSED |
+| `4400` | EXCED DAILY LMT |
+| `5100` | CARD FRAUD |
+| `5200` | MERCHANT FRAUD |
+| `5300` | LOST CARD |
+| `9000` | UNKNOWN |
+
+**Business Rules:**
+- MQ requests must supply card number, merchant ID, transaction amount, and transaction ID; incomplete payloads are rejected before IMS access.  
+- Maximum 500 messages processed per `CP00` invocation (`WS-REQSTS-PROCESS-LIMIT`).  
+- Fraud marking inserts a row to `AUTHFRDS` and sets `PA-AUTH-FRAUD='F'` in the IMS segment in the same CICS unit-of-work (both commit or both back out).  
+- `CBPAUP0J` deletes only segments older than the SYSIN expiry threshold (Julian day); deletes orphaned `PAUTSUM0` roots when all children are purged.  
+
 **User Story Examples:**
-- As a fraud analyst, I want to mark a pending authorization as fraudulent via `COPAUS1C` so the transaction is persisted in `AUTHFRDS` for analytics.  
-- As a cloud POS emulator, I want to submit an MQ request to `PAUTH.REQUEST` and read the reply so I can simulate real-time declines.
+- As a fraud analyst, I want to mark a pending authorization as fraudulent via `COPAUS1C` so the transaction is persisted in `AUTHFRDS` for analytics and the IMS segment records the fraud flag.  
+- As a cloud POS emulator, I want to submit a fixed-field MQ request to `PAUTH.REQUEST` and receive a reply with authorization code and approved amount within 500 ms.  
+- As a batch operator, I want `CBPAUP0J` to purge IMS authorization segments older than 30 days so the HIDAM dataset stays within its allocated VSAM extent.
 
 ### 3. Transaction Type
 **ID:** `transaction-type`  

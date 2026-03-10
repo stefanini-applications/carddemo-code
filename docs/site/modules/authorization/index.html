@@ -1,99 +1,1136 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization - User Story Development Guide</title>
+    <meta name="last-updated" content="2026-03-10T15:52:34Z">
+    <title>authorization - Module Documentation</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fdf6fb; color:#0c1f3b; margin:0; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
-        .header { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
-        h1 { margin:0; font-size:2em; }
-        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.1); }
-        ul { margin:0 0 12px 20px; }
-        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
-        code { background:#fee2e2; padding:2px 4px; border-radius:4px; }
-        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 { color: #4fc3f7; border-bottom: 2px solid #4fc3f7; padding-bottom: 10px; }
+        h2 { color: #81c784; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+        h3 { color: #ffb74d; margin-top: 24px; }
+        h4 { color: #ce93d8; margin-top: 16px; }
+        code { background-color: #2d2d2d; padding: 2px 6px; border-radius: 3px; color: #f48fb1; font-family: monospace; }
+        pre { background-color: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; border-left: 3px solid #4fc3f7; }
+        pre code { background: none; padding: 0; color: #a5d6a7; }
+        a { color: #4fc3f7; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        nav { margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid #333; }
+        .badge { display: inline-block; background-color: #2d2d2d; color: #81c784;
+                 border: 1px solid #81c784; border-radius: 4px; padding: 2px 8px;
+                 font-size: 0.85em; margin: 2px; }
+        .badge-blue { color: #4fc3f7; border-color: #4fc3f7; }
+        .badge-orange { color: #ffb74d; border-color: #ffb74d; }
+        .badge-purple { color: #ce93d8; border-color: #ce93d8; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th { background-color: #2d2d2d; color: #81c784; padding: 10px; text-align: left; border: 1px solid #444; }
+        td { padding: 8px 10px; border: 1px solid #333; vertical-align: top; }
+        tr:nth-child(even) { background-color: #222; }
+        .info-box { background-color: #1e2a3a; border-left: 4px solid #4fc3f7;
+                    padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+        .warning-box { background-color: #2a1e1e; border-left: 4px solid #ef5350;
+                       padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+        .tip-box { background-color: #1e2a1e; border-left: 4px solid #81c784;
+                   padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+        .component-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                          gap: 16px; margin: 16px 0; }
+        .component-card { background-color: #252525; border: 1px solid #444;
+                          border-radius: 8px; padding: 16px; }
+        .component-card h4 { margin-top: 0; }
+        ul { margin: 8px 0 12px 20px; }
+        li { margin-bottom: 4px; }
+        .toc { background-color: #252525; border-radius: 8px; padding: 16px 24px; margin-bottom: 24px; }
+        .toc ul { list-style: none; padding-left: 0; }
+        .toc li { padding: 3px 0; }
+        .toc a { color: #81c784; }
+        footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #444;
+                 color: #888; font-size: 0.85em; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🛡️ Authorization Module</h1>
-            <p>Guidance for stories driving MQ, IMS, and DB2 integration scenarios.</p>
-        </header>
 
-        <section>
-            <h2>📋 Overview</h2>
-            <p><strong>Purpose:</strong> Deliver a realistic credit-card authorization pipeline that ingests MQ requests, enforces business rules, writes pending authorizations to IMS, flags fraud in DB2 (`AUTHFRDS`), and exposes summary/detail screens plus a purge job.</p>
-            <p><strong>Business Context:</strong> This optional module showcases two-phase commit (IMS + DB2) and MQ request/response patterns that modernization teams can demo when connecting cloud POS events to a mainframe core.</p>
-        </section>
+<nav><a href="../../index.html">&#8592; Back to Index</a></nav>
 
-        <section>
-            <h2>🎯 User Story Development Guide</h2>
-            <h3>📝 Module-Specific US Templates</h3>
-            <ul>
-                <li><strong>Real-time Authorization:</strong> As a fraud analyst, I want to see pending requests in `CPVS` so I can escalate suspicious transactions before they settle.</li>
-                <li><strong>MQ Integration:</strong> As a cloud POS emulator, I want to post a comma-delimited message to `PAUTH.REQUEST` and validate the reply so I can test declines and approvals.</li>
-                <li><strong>Data Purge:</strong> As an operator, I want `CBPAUP0J` to purge expired authorizations nightly so IMS/VSAM datasets do not overflow.</li>
-            </ul>
+<h1>&#128737; authorization</h1>
+<p>
+    <span class="badge badge-blue">CICS</span>
+    <span class="badge badge-blue">IMS HIDAM</span>
+    <span class="badge badge-blue">DB2</span>
+    <span class="badge badge-blue">IBM MQ</span>
+    <span class="badge badge-orange">Optional Module</span>
+    <span class="badge badge-purple">app/app-authorization-ims-db2-mq</span>
+</p>
+<p>
+    A complete MQ-triggered credit-card authorization pipeline for the CardDemo platform.
+    Ingests real-time authorization requests from IBM MQ, enforces card and account
+    validation rules, persists pending authorizations in IMS HIDAM, marks fraud in DB2,
+    exposes 3270 BMS summary/detail screens, and provides a nightly batch purge job.
+</p>
 
-            <h3>⚡ Development Acceleration Factors</h3>
-            <ul>
-                <li><strong>Message formats:</strong> `app/app-authorization-ims-db2-mq/README.md` documents request/response CSV fields (card number, merchant data, response codes).</li>
-                <li><strong>Diagrams:</strong> `diagrams/auth_flow.png`, `auth_summary.png`, `auth_details.png`, and fraud marking images show the user journey.</li>
-                <li><strong>Copybooks & BMS:</strong> Copybooks such as `CIPAUSMY`/`CIPAUDTY` align IMS segments with BMS map layouts `COPAU00`/`COPAU01`.</li>
-                <li><strong>Automation:</strong> JCL `CBPAUP0J` purges expired authorizations, and sample MQ definitions live under `app/app-authorization-ims-db2-mq/mq`.</li>
-            </ul>
+<div class="toc">
+    <strong>Table of Contents</strong>
+    <ul>
+        <li><a href="#overview">Overview &amp; Purpose</a></li>
+        <li><a href="#architecture">Architectural Context</a></li>
+        <li><a href="#components">Key Components</a></li>
+        <li><a href="#dependencies">Dependencies</a></li>
+        <li><a href="#public-apis">Public APIs &amp; Interfaces</a></li>
+        <li><a href="#data-models">Data Models &amp; Structures</a></li>
+        <li><a href="#business-rules">Business Rules</a></li>
+        <li><a href="#message-format">MQ Message Format</a></li>
+        <li><a href="#ims-schema">IMS Database Schema</a></li>
+        <li><a href="#db2-schema">DB2 Schema</a></li>
+        <li><a href="#configuration">Configuration &amp; Environment</a></li>
+        <li><a href="#development">Development Guidelines</a></li>
+        <li><a href="#usage-examples">Usage Examples</a></li>
+        <li><a href="#error-handling">Error Handling</a></li>
+        <li><a href="#performance">Performance Budgets</a></li>
+        <li><a href="#user-stories">User Story Examples</a></li>
+    </ul>
+</div>
 
-            <h3>📊 Complexity Guidelines</h3>
-            <ul>
-                <li><strong>Simple (1-2 pts):</strong> Update a BMS label or PF key action for `CPVS` without touching MQ payloads.</li>
-                <li><strong>Medium (3-5 pts):</strong> Add a new MQ field (e.g., merchant ZIP) to the request, adjust `COPAUA0C`, and verify IMS segments and DB2 inserts.</li>
-                <li><strong>Complex (5-8 pts):</strong> Extend the fraud-marking flow to another downstream queue, ensuring DB2 transactions (`COPAUS2C`) and IMS updates stay two-phase consistent.</li>
-            </ul>
-        </section>
+<h2 id="overview">Overview &amp; Purpose</h2>
+<p>
+    The <strong>authorization</strong> module is an optional CardDemo extension that
+    demonstrates real-time, multi-subsystem integration on z/OS. When deployed, it adds:
+</p>
+<ul>
+    <li>An MQ listener (<code>COPAUA0C</code>, transaction <code>CP00</code>) that processes
+        up to 500 pending authorization requests per invocation from queue
+        <code>AWS.M2.CARDDEMO.PAUTH.REQUEST</code>.</li>
+    <li>Card and account validation against VSAM datasets
+        (<code>CARDDAT</code>, <code>ACCTDAT</code>, <code>CUSTDAT</code>, <code>CCXREF</code>).</li>
+    <li>IMS HIDAM persistence of approved/declined pending authorizations in segments
+        <code>PAUTSUM0</code> (summary per account) and <code>PAUTDTL1</code>
+        (detail per authorization event).</li>
+    <li>A reply message written back to <code>AWS.M2.CARDDEMO.PAUTH.REPLY</code>
+        containing approval status, response codes, and approved amount.</li>
+    <li>3270 BMS screens for operators to browse pending authorizations and mark fraud
+        (<code>CPVS</code> / <code>CPVD</code>).</li>
+    <li>DB2 fraud tracking in table <code>CARDDEMO.AUTHFRDS</code> with unique index
+        <code>CARDDEMO.XAUTHFRD</code>.</li>
+    <li>A batch IMS BMP job (<code>CBPAUP0J</code>) that purges expired authorization
+        segments and restores hold amounts.</li>
+</ul>
 
-        <section>
-            <h2>🔧 Technical Foundation</h2>
-            <h3>🏗️ Key Components</h3>
-            <ul>
-                <li>`COPAUA0C` processes MQ requests from `PAUTH.REQUEST` and writes pending entries into IMS segments (PAUTSUM0/PAUTDTL1).</li>
-                <li>`COPAUS0C`/`COPAUS1C` render summary/detail screens for operators to inspect authorizations.</li>
-                <li>`COPAUS2C` marks fraud and inserts a row into DB2 table `AUTHFRDS`; `CBPAUP0C`/`CBPAUP0J` purge stale data.</li>
-                <li>IMS DBDs (`DBPAUTP0`, `DBPAUTX0`) and PSBs (`PSBPAUTB`, `PSBPAUTL`) under `app/app-authorization-ims-db2-mq/ims`.</li>
-                <li>MQ resources defined in `app/app-authorization-ims-db2-mq/mq` with queues `AWS.M2.CARDDEMO.PAUTH.REQUEST/REPLY` and a connection to CICS.</li>
-            </ul>
+<div class="info-box">
+    <strong>Business Context:</strong> This module simulates the real-time authorization
+    path typical of mainframe payment processing. Modernization teams use it to demonstrate
+    two-phase commit patterns (IMS + DB2), MQ request/response correlation, and fraud
+    detection workflows when migrating to cloud-native architectures.
+</div>
 
-            <h3>🔗 Dependencies</h3>
-            <ul>
-                <li>IMS HIDAM for pending authorization storage.</li>
-                <li>DB2 for fraud analytics (`AUTHFRDS`, `XAUTHFRD`).</li>
-                <li>MQ for request/response connectivity (demo clients, pos emulators).</li>
-                <li>VSAM copybooks for account/customer data.</li>
-            </ul>
+<h2 id="architecture">Architectural Context</h2>
+<p>
+    The authorization module sits alongside the core CardDemo application and depends
+    on three external subsystems (IMS, DB2, MQ) that must be installed before the
+    module is operational.
+</p>
 
-            <h3>🗂️ Public Interfaces</h3>
-            <pre><code>CP00 - MQ-triggered authorization intake (requests must carry card, merchant, amount)
-CPVS - Pending authorization summary screen
-CPVD - Authorization detail + fraud flag screen
-CBPAUP0J - Batch purge of expired authorizations
-AWS.M2.CARDDEMO.PAUTH.REQUEST / .REPLY - MQ queues documented in README with CSV payloads</code></pre>
-        </section>
+<pre><code>External MQ Client (cloud POS / test tool)
+        |
+        v  PAUTH.REQUEST queue
++-------+------------------------------------------+
+|  CICS Region (z/OS)                              |
+|                                                  |
+|  CP00: COPAUA0C (Authorization Decision Engine)  |
+|   |-- Reads VSAM: ACCTDAT, CUSTDAT, CARDDAT,     |
+|   |               CARDAIX, CCXREF                |
+|   |-- Writes IMS: PAUTSUM0 (root), PAUTDTL1      |
+|   +-- Puts reply to PAUTH.REPLY                  |
+|                                                  |
+|  CPVS: COPAUS0C (Summary Screen)                 |
+|   +-- Reads IMS: PAUTSUM0 root segments          |
+|       Navigates to COPAUS1C on selection         |
+|                                                  |
+|  CPVD: COPAUS1C (Detail Screen)                  |
+|   +-- Reads IMS: PAUTDTL1 segments               |
+|       LINK to COPAUS2C for fraud marking         |
+|                                                  |
+|  COPAUS2C (Mark Fraud - internal)                |
+|   |-- Updates IMS PAUTDTL1: PA-AUTH-FRAUD = F   |
+|   +-- Inserts DB2 CARDDEMO.AUTHFRDS row          |
++--------------------------------------------------+
+        |
+        v  PAUTH.REPLY queue
+External MQ Client receives approve/decline response
 
-        <section>
-            <h2>✅ Acceptance Criteria Examples</h2>
-            <ul>
-                <li>MQ payloads missing required fields are rejected with a BMS error and recorded in `CCPAUERY` logs.</li>
-                <li>Marking a fraud case writes to DB2 `AUTHFRDS.AUTH_FRAUD` and updates the IMS segment without leaving stale locks.</li>
-                <li>`CBPAUP0J` deletes only authorizations older than the retention window documented in `README.md`, keeping IMS/VSAM alignment.</li>
-            </ul>
-        </section>
+Batch (IMS BMP):
+CBPAUP0J --&gt; CBPAUP0C --&gt; purge expired PAUTDTL1/PAUTSUM0 segments</code></pre>
 
-        <footer>
-            <a href="../../system-overview.md">← System Overview</a><br>
-            <em>Last updated: March 10, 2026</em>
-        </footer>
+<h3>Processing Flow (Step by Step)</h3>
+<ol>
+    <li>External MQ client places a comma-delimited authorization request on
+        <code>PAUTH.REQUEST</code>.</li>
+    <li><code>COPAUA0C</code> (transaction <code>CP00</code>) is triggered via CICS-MQ,
+        opens the request queue, and loops over available messages (limit: 500 per run).</li>
+    <li>Card number is validated via VSAM cross-reference (<code>CCXREF</code>),
+        account status checked in <code>ACCTDAT</code>, and available credit compared
+        to the transaction amount.</li>
+    <li>Decline reasons applied: INSUFFICIENT-FUND, CARD-NOT-ACTIVE, ACCOUNT-CLOSED,
+        CARD-FRAUD, MERCHANT-FRAUD (codes 4100 through 5200).</li>
+    <li>Authorization record written to IMS HIDAM as a <code>PAUTDTL1</code> segment
+        under the account root <code>PAUTSUM0</code>; summary counters and balances
+        updated accordingly.</li>
+    <li>Reply message placed on <code>PAUTH.REPLY</code> with auth ID code,
+        response code, response reason, and approved amount.</li>
+    <li>Operators use <code>CPVS</code> / <code>CPVD</code> screens to browse pending
+        authorizations and optionally flag them as fraudulent via <code>COPAUS2C</code>,
+        which inserts a row in <code>CARDDEMO.AUTHFRDS</code>.</li>
+    <li>Nightly batch job <code>CBPAUP0J</code> purges expired
+        <code>PAUTDTL1</code>/<code>PAUTSUM0</code> segments from IMS.</li>
+</ol>
+
+<h2 id="components">Key Components</h2>
+
+<div class="component-grid">
+
+    <div class="component-card">
+        <h4>COPAUA0C.cbl</h4>
+        <p><strong>Type:</strong> CICS COBOL IMS MQ Program<br>
+           <strong>Transaction:</strong> <code>CP00</code><br>
+           <strong>PSB:</strong> <code>PSBPAUTB</code> (PCB offset +1)</p>
+        <p>
+            Card Authorization Decision Engine. Opens MQ request queue, iterates over
+            pending messages (up to 500), validates card/account/credit limit, writes
+            IMS segments, and posts replies. Primary entry point for the authorization pipeline.
+        </p>
+        <p><strong>VSAM files:</strong>
+            <code>ACCTDAT</code>, <code>CUSTDAT</code>, <code>CARDDAT</code>,
+            <code>CARDAIX</code>, <code>CCXREF</code>
+        </p>
     </div>
+
+    <div class="component-card">
+        <h4>COPAUS0C.cbl</h4>
+        <p><strong>Type:</strong> CICS COBOL IMS BMS Program<br>
+           <strong>Transaction:</strong> <code>CPVS</code><br>
+           <strong>BMS Map:</strong> <code>COPAU00 / COPAU0A</code></p>
+        <p>
+            Pending Authorization Summary Screen. Retrieves <code>PAUTSUM0</code>
+            root segments from IMS for a given account/card, renders a paginated list
+            (PF7/PF8) of pending authorizations with amounts, dates, and approval status.
+            Navigates to detail via <code>COPAUS1C</code>.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>COPAUS1C.cbl</h4>
+        <p><strong>Type:</strong> CICS COBOL IMS BMS Program<br>
+           <strong>Transaction:</strong> <code>CPVD</code><br>
+           <strong>BMS Map:</strong> <code>COPAU01</code></p>
+        <p>
+            Pending Authorization Detail Screen. Reads a specific <code>PAUTDTL1</code>
+            segment by authorization key. Displays all merchant information, transaction
+            amount, and decline reason code from an internal table of 10 entries
+            (0000=APPROVED through 9000=UNKNOWN). Offers PF key to invoke fraud marking.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>COPAUS2C.cbl</h4>
+        <p><strong>Type:</strong> CICS COBOL IMS DB2 Program<br>
+           <strong>SQL Includes:</strong> <code>SQLCA</code>, <code>AUTHFRDS</code></p>
+        <p>
+            Mark Authorization as Fraud. Receives a COMMAREA containing account ID,
+            customer ID, and authorization detail record. Inserts new row into
+            <code>CARDDEMO.AUTHFRDS</code> and updates IMS <code>PAUTDTL1</code>
+            segment <code>PA-AUTH-FRAUD</code> to <code>'F'</code>.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>CBPAUP0C.cbl / CBPAUP0J.jcl</h4>
+        <p><strong>Type:</strong> Batch COBOL IMS BMP<br>
+           <strong>PSB:</strong> <code>PSBPAUTB</code> (PCB offset +2)</p>
+        <p>
+            Purge Expired Pending Authorizations. Reads all <code>PAUTSUM0</code>
+            root segments, evaluates each <code>PAUTDTL1</code> child against the
+            expiry threshold (SYSIN parameter), deletes expired segments. Reports
+            summary and detail record counts to SYSOUT.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>COPAU00.bms / COPAU01.bms</h4>
+        <p><strong>Type:</strong> BMS Mapset Definitions<br>
+           <strong>Location:</strong> <code>app/app-authorization-ims-db2-mq/bms/</code></p>
+        <p>
+            <code>COPAU00</code> defines the summary screen map <code>COPAU0A</code>
+            (24x80 format with date/time header, authorization list, PF key legend).
+            <code>COPAU01</code> defines the detail map with full merchant and
+            authorization information fields.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>IMS Database Artifacts</h4>
+        <p><strong>DBDs:</strong> <code>DBPAUTP0</code>, <code>DBPAUTX0</code>,
+           <code>PADFLDBD</code>, <code>PASFLDBD</code><br>
+           <strong>PSBs:</strong> <code>PSBPAUTB</code>, <code>PSBPAUTL</code>,
+           <code>DLIGSAMP</code>, <code>PAUTBUNL</code></p>
+        <p>
+            IMS HIDAM database definitions in
+            <code>app/app-authorization-ims-db2-mq/ims/</code>.
+            <code>DBPAUTP0</code> (ACCESS=HIDAM,VSAM) contains root segment
+            <code>PAUTSUM0</code> (100 bytes, key=ACCNTID) with child
+            <code>PAUTDTL1</code> (200 bytes, key=PAUT9CTS timestamp).
+            <code>DBPAUTX0</code> provides the secondary index.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>Copybooks (app/app-authorization-ims-db2-mq/cpy/)</h4>
+        <ul>
+            <li><code>CCPAURQY</code> - MQ request message layout</li>
+            <li><code>CCPAURLY</code> - MQ reply message layout</li>
+            <li><code>CIPAUSMY</code> - IMS PAUTSUM0 segment structure</li>
+            <li><code>CIPAUDTY</code> - IMS PAUTDTL1 segment structure</li>
+            <li><code>CCPAUERY</code> - Error log record structure</li>
+            <li><code>PADFLPCB</code>, <code>PAUTBPCB</code>, <code>PASFLPCB</code> - IMS PCB copybooks</li>
+            <li><code>IMSFUNCS</code> - IMS utility function definitions</li>
+        </ul>
+    </div>
+
+    <div class="component-card">
+        <h4>DB2 Artifacts</h4>
+        <p><strong>DDL:</strong> <code>app/app-authorization-ims-db2-mq/ddl/</code><br>
+           <strong>DCL:</strong> <code>app/app-authorization-ims-db2-mq/dcl/</code></p>
+        <p>
+            <code>AUTHFRDS.ddl</code> - creates table <code>CARDDEMO.AUTHFRDS</code>
+            (27 columns, PRIMARY KEY on CARD_NUM + AUTH_TS).<br>
+            <code>XAUTHFRD.ddl</code> - creates unique index
+            <code>CARDDEMO.XAUTHFRD</code> (CARD_NUM ASC, AUTH_TS DESC, COPY YES).
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>Utility Batch Programs</h4>
+        <p><code>DBUNLDGS.CBL</code>, <code>PAUDBLOD.CBL</code>, <code>PAUDBUNL.CBL</code><br>
+           <strong>JCL:</strong> <code>DBPAUTP0.jcl</code>, <code>LOADPADB.JCL</code>,
+           <code>UNLDGSAM.JCL</code>, <code>UNLDPADB.JCL</code></p>
+        <p>
+            Utility programs for IMS database unload and reload operations.
+            Used during initial data load, migration, or disaster recovery.
+        </p>
+    </div>
+
+    <div class="component-card">
+        <h4>CSD / MQ Resource Definitions</h4>
+        <p><strong>CSD File:</strong>
+           <code>app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd</code></p>
+        <p>
+            CICS System Definition entries for CP00, CPVS, CPVD transactions
+            and MQCONN/MQQUEUE resource definitions connecting CICS to the MQ
+            queue manager and <code>PAUTH.REQUEST</code> / <code>PAUTH.REPLY</code> queues.
+        </p>
+    </div>
+
+</div>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<h3>Internal Module Dependencies</h3>
+<table>
+    <tr><th>Module / Dataset</th><th>Usage</th></tr>
+    <tr>
+        <td><code>core-application</code> VSAM datasets</td>
+        <td><code>COPAUA0C</code> reads <code>ACCTDAT</code>, <code>CUSTDAT</code>,
+            <code>CARDDAT</code>, <code>CARDAIX</code>, <code>CCXREF</code>
+            to validate cards and check credit limits.</td>
+    </tr>
+    <tr>
+        <td><code>COMEN01C</code> (main menu)</td>
+        <td><code>COPAUS0C</code> returns to main menu via XCTL when operator
+            presses back PF key.</td>
+    </tr>
+    <tr>
+        <td>Core copybooks (<code>app/cpy</code>)</td>
+        <td>Shared data structures for account, customer, and card records
+            referenced in COPAUA0C VSAM file access routines.</td>
+    </tr>
+</table>
+
+<h3>External Subsystem Dependencies</h3>
+<table>
+    <tr><th>Subsystem</th><th>Purpose</th><th>Required?</th></tr>
+    <tr>
+        <td>IBM MQ</td>
+        <td>Receives authorization requests from <code>PAUTH.REQUEST</code>;
+            sends replies to <code>PAUTH.REPLY</code>. Uses MQCONN/MQOPEN/MQGET/MQPUT/MQCLOSE.</td>
+        <td>Yes (for CP00)</td>
+    </tr>
+    <tr>
+        <td>IMS HIDAM</td>
+        <td>Stores pending authorization summary (<code>PAUTSUM0</code>) and detail
+            (<code>PAUTDTL1</code>) segments. Accessed via PSB <code>PSBPAUTB</code>.</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>DB2</td>
+        <td>Fraud tracking table <code>CARDDEMO.AUTHFRDS</code> populated by
+            <code>COPAUS2C</code> via embedded SQL. Index <code>XAUTHFRD</code>
+            supports fast retrieval.</td>
+        <td>For fraud marking</td>
+    </tr>
+    <tr>
+        <td>RACF</td>
+        <td>Operator authentication required before accessing CPVS/CPVD screens.</td>
+        <td>Yes (all CICS)</td>
+    </tr>
+    <tr>
+        <td>JES2/JES3</td>
+        <td>Submits batch job <code>CBPAUP0J</code> for nightly IMS purge.</td>
+        <td>For purge batch</td>
+    </tr>
+</table>
+
+<h2 id="public-apis">Public APIs &amp; Interfaces</h2>
+
+<h3>CICS Transaction Identifiers</h3>
+<table>
+    <tr><th>Transaction</th><th>Program</th><th>Description</th><th>Trigger</th></tr>
+    <tr>
+        <td><code>CP00</code></td>
+        <td><code>COPAUA0C</code></td>
+        <td>Authorization Decision Engine. Processes MQ request queue, validates
+            cards, writes IMS segments, sends replies. Processes up to 500 messages
+            per invocation.</td>
+        <td>CICS-MQ trigger or operator START</td>
+    </tr>
+    <tr>
+        <td><code>CPVS</code></td>
+        <td><code>COPAUS0C</code></td>
+        <td>Pending Authorization Summary. Paginated list view (PF7/PF8),
+            filterable by card number or account.</td>
+        <td>Operator keystroke / XCTL from menu</td>
+    </tr>
+    <tr>
+        <td><code>CPVD</code></td>
+        <td><code>COPAUS1C</code></td>
+        <td>Pending Authorization Detail. Full transaction and merchant detail
+            including decline reason; links to fraud marking.</td>
+        <td>Selection from CPVS screen</td>
+    </tr>
+    <tr>
+        <td>(internal)</td>
+        <td><code>COPAUS2C</code></td>
+        <td>Mark Authorization Fraud. Invoked via LINK from COPAUS1C with
+            COMMAREA containing auth detail record.</td>
+        <td>PF key on CPVD screen</td>
+    </tr>
+</table>
+
+<h3>Batch Job Interface</h3>
+<table>
+    <tr><th>Job Name</th><th>Program</th><th>Description</th></tr>
+    <tr>
+        <td><code>CBPAUP0J</code></td>
+        <td><code>CBPAUP0C</code> (IMS BMP via DFSRRC00)</td>
+        <td>Purge expired pending authorizations from IMS HIDAM.
+            Expiry threshold passed via SYSIN. Reports deleted record counts.</td>
+    </tr>
+</table>
+
+<h3>MQ Queue Interfaces</h3>
+<table>
+    <tr><th>Queue Name</th><th>Direction</th><th>Buffer Size</th><th>Description</th></tr>
+    <tr>
+        <td><code>AWS.M2.CARDDEMO.PAUTH.REQUEST</code></td>
+        <td>Input (MQGET)</td>
+        <td>500 bytes</td>
+        <td>Incoming authorization request. Fixed-field COBOL layout per CCPAURQY copybook.</td>
+    </tr>
+    <tr>
+        <td><code>AWS.M2.CARDDEMO.PAUTH.REPLY</code></td>
+        <td>Output (MQPUT)</td>
+        <td>200 bytes</td>
+        <td>Authorization response. Card number, transaction ID, auth code, response code,
+            decline reason, approved amount.</td>
+    </tr>
+</table>
+
+<h2 id="data-models">Data Models &amp; Structures</h2>
+
+<h3>MQ Request Layout (CCPAURQY copybook)</h3>
+<pre><code>* PENDING AUTHORIZATION REQUEST
+* File: app/app-authorization-ims-db2-mq/cpy/CCPAURQY.cpy
+05  PA-RQ-AUTH-DATE              PIC  X(06).    * YYMMDD
+05  PA-RQ-AUTH-TIME              PIC  X(06).    * HHMMSS
+05  PA-RQ-CARD-NUM               PIC  X(16).    * 16-digit card number
+05  PA-RQ-AUTH-TYPE              PIC  X(04).    * Authorization type code
+05  PA-RQ-CARD-EXPIRY-DATE       PIC  X(04).    * MMYY
+05  PA-RQ-MESSAGE-TYPE           PIC  X(06).    * Message type
+05  PA-RQ-MESSAGE-SOURCE         PIC  X(06).    * Source identifier
+05  PA-RQ-PROCESSING-CODE        PIC  9(06).    * Processing code
+05  PA-RQ-TRANSACTION-AMT        PIC +9(10).99. * Transaction amount
+05  PA-RQ-MERCHANT-CATAGORY-CODE PIC  X(04).    * MCC code
+05  PA-RQ-ACQR-COUNTRY-CODE      PIC  X(03).    * Country code
+05  PA-RQ-POS-ENTRY-MODE         PIC  9(02).    * POS entry mode
+05  PA-RQ-MERCHANT-ID            PIC  X(15).    * Merchant identifier
+05  PA-RQ-MERCHANT-NAME          PIC  X(22).    * Merchant name
+05  PA-RQ-MERCHANT-CITY          PIC  X(13).    * Merchant city
+05  PA-RQ-MERCHANT-STATE         PIC  X(02).    * State code
+05  PA-RQ-MERCHANT-ZIP           PIC  X(09).    * ZIP/postal code
+05  PA-RQ-TRANSACTION-ID         PIC  X(15).    * Unique transaction ID</code></pre>
+
+<h3>MQ Reply Layout (CCPAURLY copybook)</h3>
+<pre><code>* PENDING AUTHORIZATION RESPONSE
+* File: app/app-authorization-ims-db2-mq/cpy/CCPAURLY.cpy
+05  PA-RL-CARD-NUM               PIC  X(16).    * Card number (echo)
+05  PA-RL-TRANSACTION-ID         PIC  X(15).    * Transaction ID (echo)
+05  PA-RL-AUTH-ID-CODE           PIC  X(06).    * Assigned authorization code
+05  PA-RL-AUTH-RESP-CODE         PIC  X(02).    * Response code: 00=Approved
+05  PA-RL-AUTH-RESP-REASON       PIC  X(04).    * Decline reason code
+05  PA-RL-APPROVED-AMT           PIC +9(10).99. * Approved amount</code></pre>
+
+<h3>IMS Summary Segment (CIPAUSMY / PAUTSUM0 - 100 bytes)</h3>
+<pre><code>* IMS SEGMENT - PENDING AUTHORIZATION SUMMARY
+* File: app/app-authorization-ims-db2-mq/cpy/CIPAUSMY.cpy
+* Key: PA-ACCT-ID (HIDAM root, unique per account)
+05  PA-ACCT-ID                   PIC S9(11) COMP-3.  * Account ID (segment key)
+05  PA-CUST-ID                   PIC  9(09).          * Customer ID
+05  PA-AUTH-STATUS               PIC  X(01).          * Overall auth status
+05  PA-ACCOUNT-STATUS            PIC  X(02) OCCURS 5 TIMES. * Status codes
+05  PA-CREDIT-LIMIT              PIC S9(09)V99 COMP-3.
+05  PA-CASH-LIMIT                PIC S9(09)V99 COMP-3.
+05  PA-CREDIT-BALANCE            PIC S9(09)V99 COMP-3.
+05  PA-CASH-BALANCE              PIC S9(09)V99 COMP-3.
+05  PA-APPROVED-AUTH-CNT         PIC S9(04) COMP.     * Count of approvals
+05  PA-DECLINED-AUTH-CNT         PIC S9(04) COMP.     * Count of declines
+05  PA-APPROVED-AUTH-AMT         PIC S9(09)V99 COMP-3. * Sum approved
+05  PA-DECLINED-AUTH-AMT         PIC S9(09)V99 COMP-3. * Sum declined
+05  FILLER                       PIC X(34).</code></pre>
+
+<h3>IMS Detail Segment (CIPAUDTY / PAUTDTL1 - 200 bytes)</h3>
+<pre><code>* IMS SEGMENT - PENDING AUTHORIZATION DETAILS
+* File: app/app-authorization-ims-db2-mq/cpy/CIPAUDTY.cpy
+* Key: PA-AUTHORIZATION-KEY (composite Julian date + time COMP-3)
+05  PA-AUTHORIZATION-KEY.
+    10 PA-AUTH-DATE-9C           PIC S9(05) COMP-3.   * Julian date
+    10 PA-AUTH-TIME-9C           PIC S9(09) COMP-3.   * Time (microseconds)
+05  PA-AUTH-ORIG-DATE            PIC  X(06).    * Original auth date YYMMDD
+05  PA-AUTH-ORIG-TIME            PIC  X(06).    * Original auth time HHMMSS
+05  PA-CARD-NUM                  PIC  X(16).    * Card number
+05  PA-AUTH-TYPE                 PIC  X(04).
+05  PA-CARD-EXPIRY-DATE          PIC  X(04).
+05  PA-MESSAGE-TYPE              PIC  X(06).
+05  PA-MESSAGE-SOURCE            PIC  X(06).
+05  PA-AUTH-ID-CODE              PIC  X(06).    * Assigned authorization code
+05  PA-AUTH-RESP-CODE            PIC  X(02).
+    88 PA-AUTH-APPROVED          VALUE '00'.
+05  PA-AUTH-RESP-REASON          PIC  X(04).
+05  PA-PROCESSING-CODE           PIC  9(06).
+05  PA-TRANSACTION-AMT           PIC S9(10)V99 COMP-3.
+05  PA-APPROVED-AMT              PIC S9(10)V99 COMP-3.
+05  PA-MERCHANT-CATAGORY-CODE    PIC  X(04).
+05  PA-ACQR-COUNTRY-CODE         PIC  X(03).
+05  PA-POS-ENTRY-MODE            PIC  9(02).
+05  PA-MERCHANT-ID               PIC  X(15).
+05  PA-MERCHANT-NAME             PIC  X(22).
+05  PA-MERCHANT-CITY             PIC  X(13).
+05  PA-MERCHANT-STATE            PIC  X(02).
+05  PA-MERCHANT-ZIP              PIC  X(09).
+05  PA-TRANSACTION-ID            PIC  X(15).
+05  PA-MATCH-STATUS              PIC  X(01).
+    88 PA-MATCH-PENDING          VALUE 'P'.     * Pending settlement
+    88 PA-MATCH-AUTH-DECLINED    VALUE 'D'.     * Declined
+    88 PA-MATCH-PENDING-EXPIRED  VALUE 'E'.     * Expired
+    88 PA-MATCHED-WITH-TRAN      VALUE 'M'.     * Matched with posted tran
+05  PA-AUTH-FRAUD                PIC  X(01).
+    88 PA-FRAUD-CONFIRMED        VALUE 'F'.     * Fraud confirmed
+    88 PA-FRAUD-REMOVED          VALUE 'R'.     * Fraud flag removed
+05  PA-FRAUD-RPT-DATE            PIC  X(08).
+05  FILLER                       PIC  X(17).</code></pre>
+
+<h3>Error Log Record (CCPAUERY copybook)</h3>
+<pre><code>* PENDING AUTHORIZATION ERROR LOG
+* File: app/app-authorization-ims-db2-mq/cpy/CCPAUERY.cpy
+01 ERROR-LOG-RECORD.
+    05 ERR-DATE                  PIC  X(06).    * YYMMDD
+    05 ERR-TIME                  PIC  X(06).    * HHMMSS
+    05 ERR-APPLICATION           PIC  X(08).    * Application name
+    05 ERR-PROGRAM               PIC  X(08).    * Program name (e.g. COPAUA0C)
+    05 ERR-LOCATION              PIC  X(04).    * Paragraph/section code
+    05 ERR-LEVEL                 PIC  X(01).
+       88 ERR-LOG                VALUE 'L'.     * Log (trace)
+       88 ERR-INFO               VALUE 'I'.     * Informational
+       88 ERR-WARNING            VALUE 'W'.     * Warning (non-fatal)
+       88 ERR-CRITICAL           VALUE 'C'.     * Critical (fatal)
+    05 ERR-SUBSYSTEM             PIC  X(01).
+       88 ERR-APP                VALUE 'A'.     * Application error
+       88 ERR-CICS               VALUE 'C'.     * CICS error
+       88 ERR-IMS                VALUE 'I'.     * IMS error
+       88 ERR-DB2                VALUE 'D'.     * DB2 error
+       88 ERR-MQ                 VALUE 'M'.     * MQ error
+       88 ERR-FILE               VALUE 'F'.     * File/VSAM error
+    05 ERR-CODE-1                PIC  X(09).    * Primary error code
+    05 ERR-CODE-2                PIC  X(09).    * Secondary error code
+    05 ERR-MESSAGE               PIC  X(50).    * Error description
+    05 ERR-EVENT-KEY             PIC  X(20).    * Event correlation key</code></pre>
+
+<h2 id="business-rules">Business Rules</h2>
+
+<h3>Authorization Decision Rules (COPAUA0C)</h3>
+<table>
+    <tr><th>Rule</th><th>Condition</th><th>Response Code / Action</th></tr>
+    <tr>
+        <td>Invalid Card</td>
+        <td>Card number not found in VSAM <code>CCXREF</code></td>
+        <td><code>3100</code> INVALID CARD; decline</td>
+    </tr>
+    <tr>
+        <td>Insufficient Funds</td>
+        <td>Transaction amount exceeds available credit
+            (CREDIT-LIMIT minus CREDIT-BALANCE)</td>
+        <td><code>4100</code> INSUFFICNT FUND; decline</td>
+    </tr>
+    <tr>
+        <td>Card Not Active</td>
+        <td>Card status flag inactive in <code>CARDDAT</code></td>
+        <td><code>4200</code> CARD NOT ACTIVE; decline</td>
+    </tr>
+    <tr>
+        <td>Account Closed</td>
+        <td>Account status in <code>ACCTDAT</code> is closed</td>
+        <td><code>4300</code> ACCOUNT CLOSED; decline</td>
+    </tr>
+    <tr>
+        <td>Daily Limit Exceeded</td>
+        <td>Cumulative approved authorizations exceed daily cap</td>
+        <td><code>4400</code> EXCED DAILY LMT; decline</td>
+    </tr>
+    <tr>
+        <td>Card Fraud Flag</td>
+        <td>Card previously flagged as fraud in IMS segments</td>
+        <td><code>5100</code> CARD FRAUD; decline</td>
+    </tr>
+    <tr>
+        <td>Merchant Fraud Flag</td>
+        <td>Merchant ID matches a known fraudulent merchant</td>
+        <td><code>5200</code> MERCHANT FRAUD; decline</td>
+    </tr>
+    <tr>
+        <td>Lost Card</td>
+        <td>Card reported as lost</td>
+        <td><code>5300</code> LOST CARD; decline</td>
+    </tr>
+    <tr>
+        <td>Approved</td>
+        <td>All checks pass; credit available</td>
+        <td><code>0000</code> APPROVED; write IMS, send reply with approved amount</td>
+    </tr>
+</table>
+
+<h3>Validation Rules (COPAUA0C)</h3>
+<ul>
+    <li><strong>Required fields:</strong> MQ requests must supply card number, merchant ID,
+        transaction amount, and transaction ID. Incomplete payloads are rejected before
+        any IMS interaction.</li>
+    <li><strong>Processing limit:</strong> Maximum 500 messages per <code>CP00</code>
+        invocation (<code>WS-REQSTS-PROCESS-LIMIT</code>) prevents unbounded queue drain.</li>
+    <li><strong>Amount parsing:</strong> Transaction amount must be parseable from
+        13-character alphanumeric field; non-numeric values cause decline code 9000.</li>
+</ul>
+
+<h3>Fraud Marking Rules (COPAUS2C)</h3>
+<ul>
+    <li>Fraud marking inserts a full row to <code>AUTHFRDS</code> with
+        <code>AUTH_FRAUD = 'Y'</code> and <code>FRAUD_RPT_DATE</code>.</li>
+    <li>Corresponding IMS <code>PAUTDTL1</code> segment has <code>PA-AUTH-FRAUD = 'F'</code>
+        (PA-FRAUD-CONFIRMED).</li>
+    <li>Fraud removal sets <code>PA-AUTH-FRAUD = 'R'</code> (PA-FRAUD-REMOVED).</li>
+    <li>Both the DB2 insert and IMS segment update are within the same CICS
+        unit-of-work; either both commit or both back out.</li>
+</ul>
+
+<h3>Retention / Purge Rules (CBPAUP0C)</h3>
+<ul>
+    <li>Expiry threshold in SYSIN parameter (Julian day format YYDDD).</li>
+    <li>Any <code>PAUTDTL1</code> whose authorization date is older than
+        <code>CURRENT-YYDDD minus WS-EXPIRY-DAYS</code> qualifies for deletion.</li>
+    <li>If all detail segments under a <code>PAUTSUM0</code> root are deleted,
+        the root segment is also deleted.</li>
+    <li>IMS checkpoint calls issued every N records (controlled by
+        <code>WK-CHKPT-ID-CTR</code>) for recoverability.</li>
+</ul>
+
+<h2 id="message-format">MQ Message Format</h2>
+
+<p>Request and reply buffers use fixed-field COBOL layouts (not delimiter-separated).
+   Request buffer: 500 bytes. Reply buffer: 200 bytes.</p>
+
+<h3>Example Request Values</h3>
+<pre><code>Field                    Len  Example
+-----------------------  ---  --------------------
+PA-RQ-AUTH-DATE           6   260310        (YYMMDD = 2026-03-10)
+PA-RQ-AUTH-TIME           6   155234        (HHMMSS = 15:52:34)
+PA-RQ-CARD-NUM           16   4111111111111111
+PA-RQ-AUTH-TYPE           4   0100
+PA-RQ-CARD-EXPIRY-DATE    4   1227          (MMYY = Dec 2027)
+PA-RQ-MESSAGE-TYPE        6   000100
+PA-RQ-MESSAGE-SOURCE      6   POS001
+PA-RQ-PROCESSING-CODE     6   000000
+PA-RQ-TRANSACTION-AMT    13   +0000000100.50
+PA-RQ-MERCHANT-CAT-CODE   4   5411          (Grocery stores)
+PA-RQ-ACQR-COUNTRY-CODE   3   USA
+PA-RQ-POS-ENTRY-MODE      2   02
+PA-RQ-MERCHANT-ID        15   MERC00000000001
+PA-RQ-MERCHANT-NAME      22   GROCERY PLUS INC
+PA-RQ-MERCHANT-CITY      13   SPRINGFIELD
+PA-RQ-MERCHANT-STATE      2   IL
+PA-RQ-MERCHANT-ZIP        9   627011234
+PA-RQ-TRANSACTION-ID     15   TXN20260310001</code></pre>
+
+<h3>Example Reply Values (Approved)</h3>
+<pre><code>Field                    Len  Example
+-----------------------  ---  --------------------
+PA-RL-CARD-NUM           16   4111111111111111
+PA-RL-TRANSACTION-ID     15   TXN20260310001
+PA-RL-AUTH-ID-CODE        6   A12345
+PA-RL-AUTH-RESP-CODE      2   00            (Approved)
+PA-RL-AUTH-RESP-REASON    4   0000
+PA-RL-APPROVED-AMT       13   +0000000100.50</code></pre>
+
+<div class="tip-box">
+    <strong>Response Codes:</strong>
+    Response code <code>00</code> = Approved; any other value = Declined.<br>
+    Decline reason codes: 3100=INVALID CARD, 4100=INSUFFICNT FUND,
+    4200=CARD NOT ACTIVE, 4300=ACCOUNT CLOSED, 4400=EXCED DAILY LMT,
+    5100=CARD FRAUD, 5200=MERCHANT FRAUD, 5300=LOST CARD, 9000=UNKNOWN.
+</div>
+
+<h2 id="ims-schema">IMS Database Schema</h2>
+
+<p>IMS HIDAM database <code>DBPAUTP0</code> uses VSAM as the underlying access method
+   with a two-level segment hierarchy:</p>
+
+<pre><code>DBD: DBPAUTP0  ACCESS=(HIDAM,VSAM)  DATASET DD1=DDPAUTP0,SIZE=4096
+|
++-- SEGM: PAUTSUM0  (100 bytes, ROOT)
+|      KEY: ACCNTID bytes 1-6, COMP-3, unique
+|      Pointer: LCHILD to DBPAUTX0 secondary index (PAUTINDX, POINTER=INDX)
+|
++-- SEGM: PAUTDTL1  (200 bytes, CHILD of PAUTSUM0)
+       KEY: PAUT9CTS bytes 1-8, CHAR, unique
+            = composite Julian date (COMP-3) + time (COMP-3)
+
+Secondary Index DBD: DBPAUTX0
+   Provides alternate access path into PAUTSUM0 (e.g. by card number)</code></pre>
+
+<h3>PSB Summary</h3>
+<table>
+    <tr><th>PSB</th><th>Used By</th><th>Access / PCB</th></tr>
+    <tr>
+        <td><code>PSBPAUTB</code></td>
+        <td>COPAUA0C, COPAUS0C, COPAUS1C, CBPAUP0C</td>
+        <td>Read/write PAUTSUM0 + PAUTDTL1. PCB offset +1 for CICS, +2 for BMP batch.</td>
+    </tr>
+    <tr>
+        <td><code>PSBPAUTL</code></td>
+        <td>PAUDBUNL (unload utility)</td>
+        <td>Read-only sequential unload of authorization database segments.</td>
+    </tr>
+    <tr>
+        <td><code>DLIGSAMP</code></td>
+        <td>Sample / test programs</td>
+        <td>General sample PSB for DL/I call testing and development.</td>
+    </tr>
+    <tr>
+        <td><code>PAUTBUNL</code></td>
+        <td>Bulk unload batch programs</td>
+        <td>Bulk unload for backup and restore operations.</td>
+    </tr>
+</table>
+
+<h2 id="db2-schema">DB2 Schema</h2>
+
+<h3>Table: CARDDEMO.AUTHFRDS</h3>
+<pre><code>-- File: app/app-authorization-ims-db2-mq/ddl/AUTHFRDS.ddl
+CREATE TABLE CARDDEMO.AUTHFRDS
+(CARD_NUM               CHAR(16)     NOT NULL,   -- PK part 1: card number
+ AUTH_TS                TIMESTAMP    NOT NULL,   -- PK part 2: authorization timestamp
+ AUTH_TYPE              CHAR(4)              ,
+ CARD_EXPIRY_DATE       CHAR(4)              ,
+ MESSAGE_TYPE           CHAR(6)              ,
+ MESSAGE_SOURCE         CHAR(6)              ,
+ AUTH_ID_CODE           CHAR(6)              ,   -- Authorization code
+ AUTH_RESP_CODE         CHAR(2)              ,   -- Response code
+ AUTH_RESP_REASON       CHAR(4)              ,   -- Decline reason
+ PROCESSING_CODE        CHAR(6)              ,
+ TRANSACTION_AMT        DECIMAL(12,2)        ,
+ APPROVED_AMT           DECIMAL(12,2)        ,
+ MERCHANT_CATAGORY_CODE CHAR(4)              ,
+ ACQR_COUNTRY_CODE      CHAR(3)              ,
+ POS_ENTRY_MODE         SMALLINT             ,
+ MERCHANT_ID            CHAR(15)             ,
+ MERCHANT_NAME          VARCHAR(22)          ,
+ MERCHANT_CITY          CHAR(13)             ,
+ MERCHANT_STATE         CHAR(02)             ,
+ MERCHANT_ZIP           CHAR(09)             ,
+ TRANSACTION_ID         CHAR(15)             ,
+ MATCH_STATUS           CHAR(1)              ,   -- P=Pending, D=Declined, E=Expired, M=Matched
+ AUTH_FRAUD             CHAR(1)              ,   -- Y=Fraud confirmed
+ FRAUD_RPT_DATE         DATE                 ,
+ ACCT_ID                DECIMAL(11)          ,
+ CUST_ID                DECIMAL(9)           ,
+ PRIMARY KEY(CARD_NUM, AUTH_TS));
+
+-- File: app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl
+CREATE UNIQUE INDEX CARDDEMO.XAUTHFRD
+    ON CARDDEMO.AUTHFRDS
+    (CARD_NUM ASC, AUTH_TS DESC)
+    COPY YES;</code></pre>
+
+<h2 id="configuration">Configuration &amp; Environment</h2>
+
+<h3>Installation Prerequisites</h3>
+<table>
+    <tr><th>Component</th><th>Configuration</th><th>Notes</th></tr>
+    <tr>
+        <td>IMS</td>
+        <td>DBDLIB, PSBLIB loaded with DBPAUTP0, DBPAUTX0, PSBPAUTB</td>
+        <td>Run DBDGEN and PSBGEN using JCL in ims/ subfolder</td>
+    </tr>
+    <tr>
+        <td>DB2</td>
+        <td>AUTHFRDS table and XAUTHFRD index in CARDDEMO schema</td>
+        <td>Run DDL files from <code>app/app-authorization-ims-db2-mq/ddl/</code></td>
+    </tr>
+    <tr>
+        <td>MQ</td>
+        <td>Queue manager with PAUTH.REQUEST and PAUTH.REPLY queues</td>
+        <td>CSD: <code>app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd</code></td>
+    </tr>
+    <tr>
+        <td>CICS</td>
+        <td>Transactions CP00, CPVS, CPVD defined and programs loaded</td>
+        <td>CEMS NEWCOPY after loading new versions</td>
+    </tr>
+    <tr>
+        <td>VSAM</td>
+        <td>HLQ-specific dataset names for core VSAM files</td>
+        <td>Must match HLQ from install guide; configure in JCL DD statements</td>
+    </tr>
+</table>
+
+<h3>CBPAUP0J SYSIN Format</h3>
+<pre><code>//SYSIN    DD *
+00,00001,00001,Y
+*
+* Positions 1-2:  Expiry days threshold (00=all, 30=30 days old)
+* Positions 4-8:  IMS checkpoint frequency (records between checkpoints)
+* Positions 10-14: Initial checkpoint counter
+* Position 16:   Y/N print deleted records to SYSOUT</code></pre>
+
+<h3>COPAUA0C Working Storage Limits</h3>
+<pre><code>WS-REQSTS-PROCESS-LIMIT  PIC S9(4)  COMP VALUE 500
+    -- Maximum MQ messages processed per CP00 invocation
+
+WS-REQUEST-QNAME         PIC X(48)
+    -- AWS.M2.CARDDEMO.PAUTH.REQUEST (from CSD/environment)
+
+WS-REPLY-QNAME           PIC X(48)
+    -- AWS.M2.CARDDEMO.PAUTH.REPLY</code></pre>
+
+<h2 id="development">Development Guidelines</h2>
+
+<h3>Adding a New MQ Request Field</h3>
+<ol>
+    <li>Add the field to <code>CCPAURQY.cpy</code> in
+        <code>app/app-authorization-ims-db2-mq/cpy/</code>.</li>
+    <li>If it must be persisted, add it to <code>CIPAUDTY.cpy</code> and
+        regenerate IMS DBD/PSB (<code>DBPAUTP0</code>); reload using
+        <code>LOADPADB.JCL</code>.</li>
+    <li>If DB2 tracking is needed, add the column to <code>AUTHFRDS.ddl</code>
+        and update DCL in <code>app/app-authorization-ims-db2-mq/dcl/</code>.</li>
+    <li>Update <code>COPAUA0C.cbl</code> to map the new field from the
+        MQ buffer to the IMS segment.</li>
+    <li>Update BMS maps and COPAUS0C/COPAUS1C if the field should be displayed.</li>
+</ol>
+
+<h3>IMS Segment Regeneration Steps</h3>
+<pre><code>1. Edit DBD:  app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd
+2. DBDGEN:    Submit DBPAUTP0.jcl (IMS DBD generation utility)
+3. Edit PSB:  app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb
+4. PSBGEN:    Use IMS PSB generation utility
+5. ACBGEN:    IMS Application Control Block generation
+6. NEWCOPY:   CEMT NEWCOPY for CICS programs after recompile
+7. Verify:    Send a test MQ message; check IMS and BMS output</code></pre>
+
+<h3>Coding Conventions</h3>
+<ul>
+    <li>IMS status codes MUST use 88-level condition names
+        (STATUS-OK, SEGMENT-NOT-FOUND, END-OF-DB, RETRY-CONDITION, etc.)
+        rather than literal two-character strings in EVALUATE branches.</li>
+    <li>All MQ API calls use CICS-managed connections (MQCONN via CSD resource
+        definitions) to ensure CICS unit-of-work consistency; never call
+        MQCONN directly from application code.</li>
+    <li>Error conditions write structured records via <code>CCPAUERY.cpy</code>
+        layout with subsystem indicator (A/C/I/D/M/F) and severity level
+        (L/I/W/C).</li>
+    <li>COMMAREA is used for program-to-program communication
+        (COPAUS1C to COPAUS2C). Matching LINKAGE SECTION structures
+        must be maintained in both programs.</li>
+    <li>IMS root segment key (<code>ACCNTID</code>) is COMP-3 packed decimal.
+        Always convert correctly from account ID numeric fields before
+        IMS GU/GN calls.</li>
+</ul>
+
+<div class="warning-box">
+    <strong>Warning:</strong> The <code>PAUTSUM0</code> segment key is COMP-3
+    packed decimal (ACCNTID). Incorrect packing will return IMS status <code>GE</code>
+    (segment not found) with no clear diagnostic. Always validate key field
+    conversion when adding new IMS access paths.
+</div>
+
+<h2 id="usage-examples">Usage Examples</h2>
+
+<h3>Submitting a Test Authorization via MQ</h3>
+<pre><code>* Build a fixed-field message per CCPAURQY layout (500 bytes total)
+* Then use IBM MQ amqsput utility to place on request queue:
+*
+*   amqsput AWS.M2.CARDDEMO.PAUTH.REQUEST QM1
+*
+* If CP00 is not auto-triggered via CICS-MQ bridge, start manually:
+*   CEMT S TRAN(CP00) START
+*
+* Read the reply (blocking get, 10 second timeout):
+*   amqsget AWS.M2.CARDDEMO.PAUTH.REPLY QM1
+*
+* Expected reply fields:
+*   Bytes 1-16:  Card number (echoed)
+*   Bytes 17-31: Transaction ID (echoed)
+*   Bytes 32-37: Auth ID Code (e.g. A12345)
+*   Bytes 38-39: Response Code (00=Approved)
+*   Bytes 40-43: Response Reason (0000=Approved, 4100=Insuf Funds)
+*   Bytes 44-56: Approved Amount</code></pre>
+
+<h3>Browsing Pending Authorizations on 3270 Terminal</h3>
+<pre><code>1. From CardDemo main menu (CM00 / COMEN01C):
+   - Select Authorization option or enter CPVS at transaction prompt
+
+2. CPVS screen (COPAUS0C - COPAU0A map):
+   - Enter card number or account number in input field
+   - PF8: scroll forward through pending authorizations
+   - PF7: scroll backward
+   - S: select a row to drill into detail (navigates to CPVD)
+
+3. CPVD screen (COPAUS1C - COPAU01 map):
+   - Displays full merchant info, amounts, decline reason
+   - PF9 (or configured fraud key): invoke COPAUS2C via LINK
+   - PF3: return to CPVS summary screen
+
+4. Fraud marking (COPAUS2C):
+   - Called via CICS LINK with COMMAREA from COPAUS1C
+   - COMMAREA: ACCT-ID(11) + CUST-ID(9) + PAUTDTL1-record
+   - Returns: fraud status code in COMMAREA WS-FRD-ACTION field
+   - BMS message line confirms success or displays SQLCODE on error</code></pre>
+
+<h3>Running the Nightly Purge Job</h3>
+<pre><code>//CBPAUP0J JOB 'CARDDEMO',CLASS=A,MSGCLASS=H,MSGLEVEL=(1,1),
+//             REGION=0M,NOTIFY=&amp;SYSUID
+//STEP01  EXEC PGM=DFSRRC00,
+//             PARM='BMP,CBPAUP0C,PSBPAUTB'
+//STEPLIB    DD DISP=SHR,DSN=IMS.SDFSRESL
+//           DD DISP=SHR,DSN=YOUR.HLQ.LOADLIB
+//DFSRESLB   DD DISP=SHR,DSN=IMS.SDFSRESL
+//PROCLIB    DD DISP=SHR,DSN=IMS.PROCLIB
+//IMS        DD DISP=SHR,DSN=IMS.PSBLIB
+//           DD DISP=SHR,DSN=IMS.DBDLIB
+//SYSIN    DD *
+30,00100,00001,Y
+//SYSOUT     DD SYSOUT=*
+
+* Expected SYSOUT summary:
+*   SUMMARY SEGMENTS READ:   nnnnn
+*   SUMMARY SEGMENTS DELETED: nnnn
+*   DETAIL SEGMENTS READ:    nnnnn
+*   DETAIL SEGMENTS DELETED:  nnnn</code></pre>
+
+<h3>COBOL Snippet: Core MQ Processing Loop (COPAUA0C)</h3>
+<pre><code>       PROCEDURE DIVISION.
+      *-- Open MQ request queue
+           MOVE WS-REQUEST-QNAME TO MQM-OD-REQUEST-OBJECTNAME
+           CALL 'MQOPEN' USING MQM-HCONN-REQUEST
+                               MQM-OD-REQUEST
+                               WS-OPTIONS
+                               W01-HOBJ-REQUEST
+                               WS-COMPCODE
+                               WS-REASON
+           IF WS-COMPCODE = MQCC-OK
+               SET WS-REQUEST-MQ-OPEN TO TRUE
+           END-IF
+
+      *-- Process messages until limit or queue empty
+           PERFORM UNTIL WS-LOOP-END
+                      OR WS-MSG-PROCESSED &gt;= WS-REQSTS-PROCESS-LIMIT
+               CALL 'MQGET' USING W01-HCONN-REQUEST
+                                  W01-HOBJ-REQUEST
+                                  MQM-MD-REQUEST
+                                  MQM-GMO-REQUEST
+                                  W01-BUFFLEN
+                                  W01-GET-BUFFER
+                                  W01-DATALEN
+                                  WS-COMPCODE
+                                  WS-REASON
+               IF WS-COMPCODE = MQCC-OK
+                   ADD 1 TO WS-MSG-PROCESSED
+                   PERFORM 2000-PROCESS-AUTH-REQUEST
+               ELSE
+                   SET WS-LOOP-END TO TRUE
+               END-IF
+           END-PERFORM</code></pre>
+
+<h2 id="error-handling">Error Handling</h2>
+
+<p>All programs use the structured <code>CCPAUERY.cpy</code> error logging layout
+   with subsystem and severity codes.</p>
+
+<h3>IMS Error Handling</h3>
+<table>
+    <tr><th>88-level Condition</th><th>IMS Status</th><th>Action</th></tr>
+    <tr><td>STATUS-OK</td><td>' ' or 'FW'</td><td>Continue normal processing</td></tr>
+    <tr><td>SEGMENT-NOT-FOUND</td><td>'GE'</td><td>Handle as expected no-data condition</td></tr>
+    <tr><td>DUPLICATE-SEGMENT-FOUND</td><td>'II'</td><td>Log warning; skip insert</td></tr>
+    <tr><td>DATABASE-UNAVAILABLE</td><td>'BA'</td><td>RETRY-CONDITION; delay and retry</td></tr>
+    <tr><td>COULD-NOT-SCHEDULE-PSB</td><td>'TE'</td><td>RETRY-CONDITION; delay and retry</td></tr>
+    <tr><td>END-OF-DB</td><td>'GB'</td><td>Normal end-of-scan termination</td></tr>
+</table>
+
+<h3>MQ Error Handling</h3>
+<ul>
+    <li>MQGET returns <code>MQCC-FAILED</code> with reason <code>MQRC-NO-MSG-AVAILABLE</code>
+        when the queue is empty — this is the normal loop-exit condition, not an error.</li>
+    <li>All other MQ failures capture <code>WS-COMPCODE</code> and <code>WS-REASON</code>,
+        log to CCPAUERY with ERR-MQ subsystem indicator, and terminate gracefully.</li>
+    <li>Messages that cannot be processed are backed out to the dead-letter queue
+        via the CICS backout mechanism.</li>
+</ul>
+
+<h3>DB2 Error Handling (COPAUS2C)</h3>
+<ul>
+    <li>All SQL operations check SQLCA via <code>WS-SQLCODE</code> and <code>WS-SQLSTATE</code>.</li>
+    <li>Non-zero SQLCODE sets <code>ERR-FLG-ON</code> and returns error status
+        in the COMMAREA to the calling screen.</li>
+    <li>Fraud INSERT and IMS segment update are in the same CICS unit-of-work;
+        failure in either rolls back both.</li>
+</ul>
+
+<h2 id="performance">Performance Budgets</h2>
+<table>
+    <tr><th>Operation</th><th>Target</th><th>Notes</th></tr>
+    <tr>
+        <td>MQ round-trip (request to reply)</td>
+        <td>&lt; 500 ms</td>
+        <td>Per authorization under nominal load; includes IMS write</td>
+    </tr>
+    <tr>
+        <td>CPVS / CPVD screen response</td>
+        <td>&lt; 2.5 sec (95th pct.)</td>
+        <td>Single SEND MAPSET including IMS GN scan for the page</td>
+    </tr>
+    <tr>
+        <td>CBPAUP0J batch step</td>
+        <td>Within nightly window</td>
+        <td>Checkpoint every 100 records; duration proportional to IMS volume</td>
+    </tr>
+    <tr>
+        <td>COPAUA0C per-message processing</td>
+        <td>&lt; 5 ms per message</td>
+        <td>VSAM lookups cached by CICS; IMS single-segment write</td>
+    </tr>
+</table>
+
+<h2 id="user-stories">User Story Examples</h2>
+
+<div class="info-box">
+    <strong>Real-time Authorization (Medium, 3-5 pts)</strong><br>
+    As a cloud POS emulator, I want to submit an MQ message to
+    <code>PAUTH.REQUEST</code> and receive an approval/decline reply within 500 ms
+    so that I can simulate real-time point-of-sale authorization scenarios.<br><br>
+    <em>Acceptance Criteria:</em>
+    <ul>
+        <li>Reply message contains a valid AUTH-ID-CODE and AUTH-RESP-CODE.</li>
+        <li>Approved transactions are written to IMS PAUTDTL1 with PA-AUTH-APPROVED = '00'.</li>
+        <li>Declined transactions have a non-zero response code matching the decline reason table.</li>
+        <li>Processing time under nominal load stays below 500 ms.</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <strong>Fraud Marking (Medium, 3-5 pts)</strong><br>
+    As a fraud analyst, I want to mark a pending authorization as fraudulent
+    via the CPVD detail screen so that the transaction is persisted in
+    AUTHFRDS for analytics and the IMS segment is updated accordingly.<br><br>
+    <em>Acceptance Criteria:</em>
+    <ul>
+        <li>Row inserted in CARDDEMO.AUTHFRDS with AUTH_FRAUD = 'Y' and FRAUD_RPT_DATE.</li>
+        <li>IMS PAUTDTL1 segment has PA-AUTH-FRAUD = 'F' (PA-FRAUD-CONFIRMED).</li>
+        <li>BMS message line confirms fraud marking succeeded.</li>
+        <li>Undo operation sets PA-AUTH-FRAUD = 'R' (PA-FRAUD-REMOVED).</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <strong>Nightly Purge (Simple, 1-2 pts)</strong><br>
+    As a batch operator, I want CBPAUP0J to purge authorizations older than
+    the configured threshold from IMS so that the HIDAM database stays within
+    its allocated VSAM extent.<br><br>
+    <em>Acceptance Criteria:</em>
+    <ul>
+        <li>Only segments older than the SYSIN-configured expiry threshold are deleted.</li>
+        <li>SYSOUT shows counts of summary and detail segments deleted per run.</li>
+        <li>Active/unexpired records are not removed.</li>
+        <li>Job completes within the nightly batch window with IMS checkpoints taken.</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <strong>Decline Reason Display (Simple, 1-2 pts)</strong><br>
+    As an operator, I want the CPVD detail screen to display a human-readable
+    decline reason so I can quickly assess whether to escalate a transaction.<br><br>
+    <em>Acceptance Criteria:</em>
+    <ul>
+        <li>All 10 reason codes (0000 through 9000) map to readable descriptions on the BMS screen.</li>
+        <li>Code 0000 shows "APPROVED".</li>
+        <li>Unrecognized codes display as "9000 UNKNOWN".</li>
+    </ul>
+</div>
+
+<div class="info-box">
+    <strong>New Merchant Field (Complex, 5-8 pts)</strong><br>
+    As a product owner, I want the authorization request to carry an additional
+    merchant latitude/longitude field so that fraud models can incorporate
+    geolocation data.<br><br>
+    <em>Acceptance Criteria:</em>
+    <ul>
+        <li>CCPAURQY copybook extended with PA-RQ-MERCHANT-LAT and PA-RQ-MERCHANT-LON fields.</li>
+        <li>CIPAUDTY copybook and IMS DBPAUTP0 DBD regenerated; PAUTDTL1 segment stores new fields.</li>
+        <li>AUTHFRDS DB2 table updated with MERCHANT_LAT and MERCHANT_LON columns.</li>
+        <li>COPAUA0C maps new MQ fields to IMS segment and DB2 row.</li>
+        <li>COPAUS1C BMS screen displays geolocation on detail view.</li>
+        <li>Existing regression tests confirm existing 18 request fields still function.</li>
+    </ul>
+</div>
+
+<footer>
+    <p>
+        Module: <strong>authorization</strong> |
+        Source: <code>app/app-authorization-ims-db2-mq/</code> |
+        Project: CardDemo (stefanini-applications/carddemo-code)
+    </p>
+    Last reviewed: 2026-03-10T15:52:34Z
+</footer>
+
 </body>
 </html>
