@@ -1,99 +1,1002 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authorization - User Story Development Guide</title>
+    <meta name="last-updated" content="2026-03-10T20:53:30Z">
+    <title>authorization - Module Documentation</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fdf6fb; color:#0c1f3b; margin:0; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
-        .header { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
-        h1 { margin:0; font-size:2em; }
-        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.1); }
-        ul { margin:0 0 12px 20px; }
-        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
-        code { background:#fee2e2; padding:2px 4px; border-radius:4px; }
-        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
+        :root {
+            --bg: #1a1a1a;
+            --panel: #242424;
+            --panel-2: #2d2d2d;
+            --text: #e0e0e0;
+            --muted: #b8b8b8;
+            --accent: #4fc3f7;
+            --accent-2: #81c784;
+            --warn: #ffcc80;
+            --danger: #ef9a9a;
+            --border: #3a3a3a;
+            --code: #121212;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top right, #222 0%, var(--bg) 55%);
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.65;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        nav {
+            margin-bottom: 16px;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .hero {
+            background: linear-gradient(130deg, #1f2f3b 0%, #163238 45%, #2f3a1f 100%);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            margin: 0 0 8px 0;
+            color: var(--accent);
+            font-size: 2rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+        }
+
+        .hero p {
+            margin: 8px 0;
+            color: var(--text);
+        }
+
+        .toc {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            color: var(--accent-2);
+        }
+
+        .toc ul {
+            margin: 0;
+            padding-left: 18px;
+            columns: 2;
+            column-gap: 28px;
+        }
+
+        .toc li {
+            margin: 2px 0;
+        }
+
+        section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        section h2 {
+            margin-top: 0;
+            color: var(--accent-2);
+        }
+
+        section h3 {
+            color: var(--accent);
+            margin-top: 20px;
+        }
+
+        section h4 {
+            color: var(--warn);
+            margin-top: 18px;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        ul,
+        ol {
+            margin: 8px 0;
+            padding-left: 22px;
+        }
+
+        li {
+            margin: 4px 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        th {
+            background: #303030;
+            color: var(--accent-2);
+        }
+
+        code {
+            background: #303030;
+            border: 1px solid #454545;
+            border-radius: 4px;
+            padding: 1px 5px;
+            color: #f2f2f2;
+        }
+
+        pre {
+            background: var(--code);
+            border: 1px solid #393939;
+            border-radius: 8px;
+            padding: 14px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        pre code {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: #d7d7d7;
+        }
+
+        .note {
+            border-left: 4px solid var(--accent);
+            background: #1f2830;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .warning {
+            border-left: 4px solid #ff9800;
+            background: #2f2618;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .danger {
+            border-left: 4px solid #e57373;
+            background: #321d1d;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .pill {
+            display: inline-block;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: #2f2f2f;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .toc ul {
+                columns: 1;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🛡️ Authorization Module</h1>
-            <p>Guidance for stories driving MQ, IMS, and DB2 integration scenarios.</p>
-        </header>
+<div class="container">
+    <nav>
+        <a href="../../index.html">← Back to Index</a>
+    </nav>
 
-        <section>
-            <h2>📋 Overview</h2>
-            <p><strong>Purpose:</strong> Deliver a realistic credit-card authorization pipeline that ingests MQ requests, enforces business rules, writes pending authorizations to IMS, flags fraud in DB2 (`AUTHFRDS`), and exposes summary/detail screens plus a purge job.</p>
-            <p><strong>Business Context:</strong> This optional module showcases two-phase commit (IMS + DB2) and MQ request/response patterns that modernization teams can demo when connecting cloud POS events to a mainframe core.</p>
-        </section>
+    <header class="hero" id="top">
+        <h1>authorization</h1>
+        <p>Module documentation for CardDemo authorization extension (<code>app/app-authorization-ims-db2-mq</code>).</p>
+        <p>Scope: MQ request/response intake, authorization decisioning, IMS pending data storage, DB2 fraud registry, operator screens, and batch purge.</p>
+        <div>
+            <span class="pill">CICS</span>
+            <span class="pill">COBOL</span>
+            <span class="pill">IMS HIDAM</span>
+            <span class="pill">DB2</span>
+            <span class="pill">MQ</span>
+            <span class="pill">BMS 3270</span>
+            <span class="pill">Batch JCL</span>
+        </div>
+    </header>
 
-        <section>
-            <h2>🎯 User Story Development Guide</h2>
-            <h3>📝 Module-Specific US Templates</h3>
-            <ul>
-                <li><strong>Real-time Authorization:</strong> As a fraud analyst, I want to see pending requests in `CPVS` so I can escalate suspicious transactions before they settle.</li>
-                <li><strong>MQ Integration:</strong> As a cloud POS emulator, I want to post a comma-delimited message to `PAUTH.REQUEST` and validate the reply so I can test declines and approvals.</li>
-                <li><strong>Data Purge:</strong> As an operator, I want `CBPAUP0J` to purge expired authorizations nightly so IMS/VSAM datasets do not overflow.</li>
-            </ul>
+    <section class="toc">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#overview">1. Module Overview and Purpose</a></li>
+            <li><a href="#architecture">2. Architectural Context</a></li>
+            <li><a href="#components">3. Key Components and Responsibilities</a></li>
+            <li><a href="#dependencies">4. Dependencies</a></li>
+            <li><a href="#apis">5. Public APIs and Interfaces</a></li>
+            <li><a href="#models">6. Data Models</a></li>
+            <li><a href="#business-rules">7. Business Rules</a></li>
+            <li><a href="#configuration">8. Configuration and Runtime Inputs</a></li>
+            <li><a href="#guidelines">9. Development Guidelines and Patterns</a></li>
+            <li><a href="#usage">10. Usage Examples and Code Snippets</a></li>
+            <li><a href="#operations">11. Operations and Support</a></li>
+            <li><a href="#testing">12. Validation Checklist</a></li>
+            <li><a href="#glossary">13. Glossary</a></li>
+            <li><a href="#refs">14. Source References</a></li>
+        </ul>
+    </section>
 
-            <h3>⚡ Development Acceleration Factors</h3>
-            <ul>
-                <li><strong>Message formats:</strong> `app/app-authorization-ims-db2-mq/README.md` documents request/response CSV fields (card number, merchant data, response codes).</li>
-                <li><strong>Diagrams:</strong> `diagrams/auth_flow.png`, `auth_summary.png`, `auth_details.png`, and fraud marking images show the user journey.</li>
-                <li><strong>Copybooks & BMS:</strong> Copybooks such as `CIPAUSMY`/`CIPAUDTY` align IMS segments with BMS map layouts `COPAU00`/`COPAU01`.</li>
-                <li><strong>Automation:</strong> JCL `CBPAUP0J` purges expired authorizations, and sample MQ definitions live under `app/app-authorization-ims-db2-mq/mq`.</li>
-            </ul>
+    <section id="overview">
+        <h2>1) Module Overview and Purpose</h2>
+        <p>
+            The <code>authorization</code> module provides real-time authorization processing for card transactions.
+            Requests arrive through MQ, are evaluated against account availability, and are recorded as pending authorizations in IMS.
+            Operators can review and drill into pending items through CICS/BMS transactions.
+            Fraud status can be toggled from the detail screen and is persisted in DB2.
+        </p>
+        <p>
+            The module exists as an optional extension to the CardDemo core and focuses on modernization patterns:
+            queue-driven orchestration, multi-store persistence (IMS + DB2), and supportable batch retention.
+        </p>
+        <div class="note">
+            Main transaction IDs: <code>CP00</code> (intake), <code>CPVS</code> (summary), <code>CPVD</code> (detail).
+        </div>
+        <h3>Primary User Outcomes</h3>
+        <ul>
+            <li>Accept external authorization requests over MQ.</li>
+            <li>Return near-real-time approval/decline response data.</li>
+            <li>Retain pending authorization state for review and reconciliation.</li>
+            <li>Track confirmed/removed fraud in DB2 for analytics/audit workflows.</li>
+            <li>Purge stale pending data to keep IMS datasets lean.</li>
+        </ul>
+    </section>
 
-            <h3>📊 Complexity Guidelines</h3>
-            <ul>
-                <li><strong>Simple (1-2 pts):</strong> Update a BMS label or PF key action for `CPVS` without touching MQ payloads.</li>
-                <li><strong>Medium (3-5 pts):</strong> Add a new MQ field (e.g., merchant ZIP) to the request, adjust `COPAUA0C`, and verify IMS segments and DB2 inserts.</li>
-                <li><strong>Complex (5-8 pts):</strong> Extend the fraud-marking flow to another downstream queue, ensuring DB2 transactions (`COPAUS2C`) and IMS updates stay two-phase consistent.</li>
-            </ul>
-        </section>
+    <section id="architecture">
+        <h2>2) Architectural Context</h2>
+        <h3>High-Level Flow</h3>
+        <ol>
+            <li>An MQ-compatible producer sends a comma-separated authorization request message.</li>
+            <li><code>COPAUA0C</code> reads the message via <code>MQGET</code> and extracts fields with <code>UNSTRING</code>.</li>
+            <li>Program reads card/account/customer context from VSAM cross-reference and master files.</li>
+            <li>Decision logic computes available credit and builds response fields.</li>
+            <li>Program sends response through <code>MQPUT1</code> using inbound <code>ReplyToQ</code> and saved <code>CorrelId</code>.</li>
+            <li>Program updates IMS summary segment and inserts IMS detail segment.</li>
+            <li>Operators inspect entries in <code>CPVS</code>/<code>CPVD</code>; PF5 in detail links to <code>COPAUS2C</code> for DB2 fraud write/update.</li>
+            <li>Batch job <code>CBPAUP0J</code> runs <code>CBPAUP0C</code> to remove expired pending records.</li>
+        </ol>
 
-        <section>
-            <h2>🔧 Technical Foundation</h2>
-            <h3>🏗️ Key Components</h3>
-            <ul>
-                <li>`COPAUA0C` processes MQ requests from `PAUTH.REQUEST` and writes pending entries into IMS segments (PAUTSUM0/PAUTDTL1).</li>
-                <li>`COPAUS0C`/`COPAUS1C` render summary/detail screens for operators to inspect authorizations.</li>
-                <li>`COPAUS2C` marks fraud and inserts a row into DB2 table `AUTHFRDS`; `CBPAUP0C`/`CBPAUP0J` purge stale data.</li>
-                <li>IMS DBDs (`DBPAUTP0`, `DBPAUTX0`) and PSBs (`PSBPAUTB`, `PSBPAUTL`) under `app/app-authorization-ims-db2-mq/ims`.</li>
-                <li>MQ resources defined in `app/app-authorization-ims-db2-mq/mq` with queues `AWS.M2.CARDDEMO.PAUTH.REQUEST/REPLY` and a connection to CICS.</li>
-            </ul>
+        <h3>Subsystem Placement</h3>
+        <div class="card-grid">
+            <div class="card">
+                <h4>CICS Online</h4>
+                <p>Programs: <code>COPAUA0C</code>, <code>COPAUS0C</code>, <code>COPAUS1C</code>, <code>COPAUS2C</code>.</p>
+                <p>Mapsets: <code>COPAU00</code>, <code>COPAU01</code>.</p>
+            </div>
+            <div class="card">
+                <h4>IMS Data</h4>
+                <p>DBD: <code>DBPAUTP0</code> (HIDAM primary), <code>DBPAUTX0</code> (index).</p>
+                <p>Segments: <code>PAUTSUM0</code> root + <code>PAUTDTL1</code> child.</p>
+            </div>
+            <div class="card">
+                <h4>DB2 Fraud</h4>
+                <p>Table: <code>CARDDEMO.AUTHFRDS</code>.</p>
+                <p>Index: <code>CARDDEMO.XAUTHFRD</code>.</p>
+            </div>
+            <div class="card">
+                <h4>Batch</h4>
+                <p>Job: <code>CBPAUP0J</code>.</p>
+                <p>Program: <code>CBPAUP0C</code> in BMP mode (<code>DFSRRC00</code>).</p>
+            </div>
+        </div>
 
-            <h3>🔗 Dependencies</h3>
-            <ul>
-                <li>IMS HIDAM for pending authorization storage.</li>
-                <li>DB2 for fraud analytics (`AUTHFRDS`, `XAUTHFRD`).</li>
-                <li>MQ for request/response connectivity (demo clients, pos emulators).</li>
-                <li>VSAM copybooks for account/customer data.</li>
-            </ul>
+        <h3>Internal Navigation Model</h3>
+        <ul>
+            <li><code>CPVS</code> page can XCTL to <code>COPAUS1C</code> when selection flag is <code>S</code>.</li>
+            <li><code>CPVD</code> PF3 returns to summary via COMMAREA handoff.</li>
+            <li><code>CPVD</code> PF8 steps to next detail record by IMS <code>GNP</code>.</li>
+            <li><code>CPVD</code> PF5 toggles fraud status and links to DB2 writer.</li>
+        </ul>
+    </section>
 
-            <h3>🗂️ Public Interfaces</h3>
-            <pre><code>CP00 - MQ-triggered authorization intake (requests must carry card, merchant, amount)
-CPVS - Pending authorization summary screen
-CPVD - Authorization detail + fraud flag screen
-CBPAUP0J - Batch purge of expired authorizations
-AWS.M2.CARDDEMO.PAUTH.REQUEST / .REPLY - MQ queues documented in README with CSV payloads</code></pre>
-        </section>
+    <section id="components">
+        <h2>3) Key Components and Responsibilities</h2>
 
-        <section>
-            <h2>✅ Acceptance Criteria Examples</h2>
-            <ul>
-                <li>MQ payloads missing required fields are rejected with a BMS error and recorded in `CCPAUERY` logs.</li>
-                <li>Marking a fraud case writes to DB2 `AUTHFRDS.AUTH_FRAUD` and updates the IMS segment without leaving stale locks.</li>
-                <li>`CBPAUP0J` deletes only authorizations older than the retention window documented in `README.md`, keeping IMS/VSAM alignment.</li>
-            </ul>
-        </section>
+        <h3>3.1 Program Inventory</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Program</th>
+                <th>Type</th>
+                <th>Primary Responsibility</th>
+                <th>Entry</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>COPAUA0C</code></td>
+                <td>CICS COBOL IMS/MQ</td>
+                <td>Read MQ request, apply decision logic, send response, persist summary/detail in IMS.</td>
+                <td><code>CP00</code></td>
+            </tr>
+            <tr>
+                <td><code>COPAUS0C</code></td>
+                <td>CICS COBOL IMS/BMS</td>
+                <td>Render authorization summary list with PF7/PF8 paging and selection flow.</td>
+                <td><code>CPVS</code></td>
+            </tr>
+            <tr>
+                <td><code>COPAUS1C</code></td>
+                <td>CICS COBOL IMS/BMS</td>
+                <td>Show authorization detail; PF5 fraud toggle; PF8 next auth navigation.</td>
+                <td><code>CPVD</code></td>
+            </tr>
+            <tr>
+                <td><code>COPAUS2C</code></td>
+                <td>CICS COBOL DB2</td>
+                <td>Insert/update DB2 fraud record keyed by <code>(CARD_NUM, AUTH_TS)</code>.</td>
+                <td>Linked by <code>COPAUS1C</code></td>
+            </tr>
+            <tr>
+                <td><code>CBPAUP0C</code></td>
+                <td>Batch COBOL IMS</td>
+                <td>Delete expired detail records and optionally orphan summaries; checkpointed processing.</td>
+                <td><code>CBPAUP0J</code></td>
+            </tr>
+            </tbody>
+        </table>
 
-        <footer>
-            <a href="../../system-overview.md">← System Overview</a><br>
-            <em>Last updated: March 10, 2026</em>
-        </footer>
-    </div>
+        <h3>3.2 BMS Screens</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Mapset</th>
+                <th>Map</th>
+                <th>Purpose</th>
+                <th>Key PF/ENTER Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>COPAU00</code></td>
+                <td><code>COPAU0A</code></td>
+                <td>Summary list + account header + five-row authorization table.</td>
+                <td>ENTER query/select, PF3 back, PF7 backward, PF8 forward.</td>
+            </tr>
+            <tr>
+                <td><code>COPAU01</code></td>
+                <td><code>COPAU1A</code></td>
+                <td>Single authorization detail view with fraud metadata.</td>
+                <td>PF3 back, PF5 mark/remove fraud, PF8 next authorization.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>3.3 Copybooks (Key)</h3>
+        <ul>
+            <li><code>CCPAURQY</code>: request field structure read from MQ payload order.</li>
+            <li><code>CCPAURLY</code>: response field structure returned to MQ caller.</li>
+            <li><code>CIPAUSMY</code>: IMS summary segment (<code>PAUTSUM0</code>).</li>
+            <li><code>CIPAUDTY</code>: IMS detail segment (<code>PAUTDTL1</code>).</li>
+            <li><code>AUTHFRDS.dcl</code>: DB2 host variable map used in <code>COPAUS2C</code>.</li>
+            <li><code>CVACT01Y</code> + <code>CVACT03Y</code>: account and card-xref lookup layouts.</li>
+        </ul>
+    </section>
+
+    <section id="dependencies">
+        <h2>4) Dependencies (Internal + External)</h2>
+
+        <h3>4.1 Internal Module Dependencies</h3>
+        <ul>
+            <li><strong>core-application datasets:</strong> reads account/customer/xref VSAM to contextualize requests.</li>
+            <li><strong>shared COMMAREA conventions:</strong> uses <code>COCOM01Y</code> navigation and context transfer.</li>
+            <li><strong>shared message/title copybooks:</strong> <code>CSMSG01Y</code>, <code>COTTL01Y</code>, <code>CSDAT01Y</code>.</li>
+        </ul>
+
+        <h3>4.2 External Runtime Dependencies</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Dependency</th>
+                <th>Where Used</th>
+                <th>Why It Matters</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>IBM MQ (COBOL MQI copybooks + runtime)</td>
+                <td><code>COPAUA0C</code></td>
+                <td>Reads inbound requests and sends correlated replies.</td>
+            </tr>
+            <tr>
+                <td>IMS DB (HIDAM)</td>
+                <td><code>COPAUA0C</code>, <code>COPAUS0C</code>, <code>COPAUS1C</code>, <code>CBPAUP0C</code></td>
+                <td>Stores pending authorization summary/detail, supports browse and purge.</td>
+            </tr>
+            <tr>
+                <td>DB2</td>
+                <td><code>COPAUS2C</code></td>
+                <td>Persists fraud status and metadata for analytics.</td>
+            </tr>
+            <tr>
+                <td>CICS TS</td>
+                <td>All online programs</td>
+                <td>Transaction routing, map IO, syncpoint/rollback controls.</td>
+            </tr>
+            <tr>
+                <td>VSAM files (<code>CCXREF</code>, <code>ACCTDAT</code>, <code>CUSTDAT</code>)</td>
+                <td><code>COPAUA0C</code>, <code>COPAUS0C</code></td>
+                <td>Lookup card/account/customer and credit figures.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>4.3 CICS Resource Bindings</h3>
+        <ul>
+            <li><code>CP00 -> COPAUA0C</code></li>
+            <li><code>CPVS -> COPAUS0C</code></li>
+            <li><code>CPVD -> COPAUS1C</code></li>
+            <li><code>DB2TRAN CPVDTRAN -> DB2ENTRY AWS01PLN -> TRANSID CPVD</code></li>
+        </ul>
+    </section>
+
+    <section id="apis">
+        <h2>5) Public APIs and Interfaces</h2>
+
+        <h3>5.1 Transaction Interfaces</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Interface</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>CP00</code></td>
+                <td>MQ-triggered CICS transaction</td>
+                <td>CSV request message on MQ queue</td>
+                <td>CSV response to inbound <code>ReplyToQ</code></td>
+            </tr>
+            <tr>
+                <td><code>CPVS</code></td>
+                <td>BMS online screen</td>
+                <td>Account ID + optional row selection (<code>S</code>)</td>
+                <td>Summary page data + navigation to detail</td>
+            </tr>
+            <tr>
+                <td><code>CPVD</code></td>
+                <td>BMS online screen</td>
+                <td>Selected authorization key in COMMAREA</td>
+                <td>Detailed auth record; fraud toggle side effects</td>
+            </tr>
+            <tr>
+                <td><code>CBPAUP0J</code></td>
+                <td>Batch job</td>
+                <td>SYSIN control string</td>
+                <td>Purge execution statistics and checkpoints</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>5.2 CP00 MQ Request Contract</h3>
+        <p>
+            Request values are parsed in this order by <code>UNSTRING ... DELIMITED BY ','</code>.
+        </p>
+        <pre><code class="language-text">AUTH-DATE
+AUTH-TIME
+CARD-NUM
+AUTH-TYPE
+CARD-EXPIRY-DATE
+MESSAGE-TYPE
+MESSAGE-SOURCE
+PROCESSING-CODE
+TRANSACTION-AMT
+MERCHANT-CATAGORY-CODE
+ACQR-COUNTRY-CODE
+POS-ENTRY-MODE
+MERCHANT-ID
+MERCHANT-NAME
+MERCHANT-CITY
+MERCHANT-STATE
+MERCHANT-ZIP
+TRANSACTION-ID</code></pre>
+
+        <h4>Example Request</h4>
+        <pre><code class="language-text">260310,154501,4556123412341234,PURC,3007,0100,ATM001,000000,0000000125.75,5411,840,05,M12345678901234,STORE 55,SEATTLE,WA,981011234,TRX202603100001</code></pre>
+
+        <h3>5.3 CP00 MQ Response Contract</h3>
+        <pre><code class="language-text">CARD-NUM,TRANSACTION-ID,AUTH-ID-CODE,AUTH-RESP-CODE,AUTH-RESP-REASON,APPROVED-AMT</code></pre>
+
+        <h4>Example Approved Response</h4>
+        <pre><code class="language-text">4556123412341234,TRX202603100001,154501,00,0000,      125.75</code></pre>
+
+        <h4>Example Declined Response</h4>
+        <pre><code class="language-text">4556123412341234,TRX202603100001,154501,05,4100,        0.00</code></pre>
+
+        <h3>5.4 Response Reason Mapping (from runtime decisioning)</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Reason</th>
+                <th>Meaning</th>
+                <th>Source in Code</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td><code>0000</code></td><td>Approved</td><td><code>COPAUA0C 6000-MAKE-DECISION</code></td></tr>
+            <tr><td><code>3100</code></td><td>Card/account/customer lookup failed</td><td><code>CARD-NFOUND/NFOUND-*</code> conditions</td></tr>
+            <tr><td><code>4100</code></td><td>Insufficient fund / over available credit</td><td><code>WS-TRANSACTION-AMT &gt; WS-AVAILABLE-AMT</code></td></tr>
+            <tr><td><code>4200</code></td><td>Card not active (reserved path)</td><td>decline reason flag mapping</td></tr>
+            <tr><td><code>4300</code></td><td>Account closed (reserved path)</td><td>decline reason flag mapping</td></tr>
+            <tr><td><code>5100</code></td><td>Card fraud</td><td>decline reason flag mapping</td></tr>
+            <tr><td><code>5200</code></td><td>Merchant fraud</td><td>decline reason flag mapping</td></tr>
+            <tr><td><code>9000</code></td><td>Fallback unknown decline reason</td><td><code>WHEN OTHER</code></td></tr>
+            </tbody>
+        </table>
+
+        <div class="warning">
+            In current implementation, strict field-by-field mandatory validation is not centralized.
+            Missing/invalid payload fields generally fail later in lookup/decisioning paths and surface as decline or operational errors.
+        </div>
+    </section>
+
+    <section id="models">
+        <h2>6) Data Models and Structures</h2>
+
+        <h3>6.1 IMS Root Segment (<code>PAUTSUM0</code>)</h3>
+        <p>
+            Root stores account-scoped pending totals and balances.
+        </p>
+        <pre><code class="language-cobol">05  PA-ACCT-ID            PIC S9(11) COMP-3.
+05  PA-CUST-ID            PIC  9(09).
+05  PA-CREDIT-LIMIT       PIC S9(09)V99 COMP-3.
+05  PA-CASH-LIMIT         PIC S9(09)V99 COMP-3.
+05  PA-CREDIT-BALANCE     PIC S9(09)V99 COMP-3.
+05  PA-CASH-BALANCE       PIC S9(09)V99 COMP-3.
+05  PA-APPROVED-AUTH-CNT  PIC S9(04) COMP.
+05  PA-DECLINED-AUTH-CNT  PIC S9(04) COMP.
+05  PA-APPROVED-AUTH-AMT  PIC S9(09)V99 COMP-3.
+05  PA-DECLINED-AUTH-AMT  PIC S9(09)V99 COMP-3.</code></pre>
+
+        <h3>6.2 IMS Child Segment (<code>PAUTDTL1</code>)</h3>
+        <p>
+            Child stores request+decision detail and lifecycle/fraud flags.
+        </p>
+        <pre><code class="language-cobol">05  PA-AUTHORIZATION-KEY.
+    10 PA-AUTH-DATE-9C    PIC S9(05) COMP-3.
+    10 PA-AUTH-TIME-9C    PIC S9(09) COMP-3.
+05  PA-CARD-NUM           PIC X(16).
+05  PA-AUTH-RESP-CODE     PIC X(02).
+05  PA-AUTH-RESP-REASON   PIC X(04).
+05  PA-APPROVED-AMT       PIC S9(10)V99 COMP-3.
+05  PA-MATCH-STATUS       PIC X(01).  *> P/D/E/M
+05  PA-AUTH-FRAUD         PIC X(01).  *> F/R
+05  PA-FRAUD-RPT-DATE     PIC X(08).</code></pre>
+
+        <h3>6.3 DB2 Fraud Table (<code>CARDDEMO.AUTHFRDS</code>)</h3>
+        <p>
+            Fraud write model mirrors IMS detail fields with enrichment for account/customer linkage.
+        </p>
+        <pre><code class="language-sql">CREATE TABLE CARDDEMO.AUTHFRDS (
+  CARD_NUM CHAR(16) NOT NULL,
+  AUTH_TS TIMESTAMP NOT NULL,
+  AUTH_TYPE CHAR(4),
+  CARD_EXPIRY_DATE CHAR(4),
+  MESSAGE_TYPE CHAR(6),
+  MESSAGE_SOURCE CHAR(6),
+  AUTH_ID_CODE CHAR(6),
+  AUTH_RESP_CODE CHAR(2),
+  AUTH_RESP_REASON CHAR(4),
+  PROCESSING_CODE CHAR(6),
+  TRANSACTION_AMT DECIMAL(12,2),
+  APPROVED_AMT DECIMAL(12,2),
+  MERCHANT_CATAGORY_CODE CHAR(4),
+  ACQR_COUNTRY_CODE CHAR(3),
+  POS_ENTRY_MODE SMALLINT,
+  MERCHANT_ID CHAR(15),
+  MERCHANT_NAME VARCHAR(22),
+  MERCHANT_CITY CHAR(13),
+  MERCHANT_STATE CHAR(2),
+  MERCHANT_ZIP CHAR(9),
+  TRANSACTION_ID CHAR(15),
+  MATCH_STATUS CHAR(1),
+  AUTH_FRAUD CHAR(1),
+  FRAUD_RPT_DATE DATE,
+  ACCT_ID DECIMAL(11),
+  CUST_ID DECIMAL(9),
+  PRIMARY KEY (CARD_NUM, AUTH_TS)
+);</code></pre>
+
+        <h3>6.4 VSAM Context Models (Used in Decisioning)</h3>
+        <ul>
+            <li><code>ACCOUNT-RECORD</code> provides <code>ACCT-CURR-BAL</code>, <code>ACCT-CREDIT-LIMIT</code>, <code>ACCT-ACTIVE-STATUS</code>.</li>
+            <li><code>CARD-XREF-RECORD</code> links <code>XREF-CARD-NUM</code> to <code>XREF-ACCT-ID</code>/<code>XREF-CUST-ID</code>.</li>
+        </ul>
+    </section>
+
+    <section id="business-rules">
+        <h2>7) Business Rules</h2>
+
+        <h3>7.1 Authorization Decision</h3>
+        <ul>
+            <li>Default starts as approval path (<code>SET APPROVE-AUTH TO TRUE</code>).</li>
+            <li>If summary exists, available = <code>PA-CREDIT-LIMIT - PA-CREDIT-BALANCE</code>.</li>
+            <li>If summary missing but account exists, available = <code>ACCT-CREDIT-LIMIT - ACCT-CURR-BAL</code>.</li>
+            <li>If amount exceeds available, decline with <code>AUTH-RESP-CODE = '05'</code> and reason <code>4100</code>.</li>
+            <li>If xref/account/customer lookup fails, decline reason maps to <code>3100</code>.</li>
+            <li>On approval, response code <code>00</code> and approved amount equals transaction amount.</li>
+        </ul>
+
+        <h3>7.2 IMS Persistence</h3>
+        <ul>
+            <li>Summary segment inserted on first auth per account or replaced on subsequent auths.</li>
+            <li>Detail segment inserted for every processed request with inverse-date/time key.</li>
+            <li>Match status set to pending (<code>P</code>) for approval or declined (<code>D</code>) for decline.</li>
+        </ul>
+
+        <h3>7.3 Fraud Toggle Behavior</h3>
+        <ul>
+            <li>PF5 in CPVD toggles <code>PA-AUTH-FRAUD</code> between confirmed (<code>F</code>) and removed (<code>R</code>).</li>
+            <li><code>COPAUS1C</code> sends fraud payload via CICS LINK to <code>COPAUS2C</code>.</li>
+            <li><code>COPAUS2C</code> INSERTs DB2 row; duplicate key triggers UPDATE fallback.</li>
+            <li>On DB2 success, CPVD updates IMS detail and takes SYNCPOINT; else rollback.</li>
+        </ul>
+
+        <h3>7.4 Purge and Retention</h3>
+        <ul>
+            <li>Batch computes original auth day from inverse date key and compares to current day.</li>
+            <li>If day difference >= configured expiry days, detail record qualifies for delete.</li>
+            <li>Summary counters/amounts are decremented when child details are deleted.</li>
+            <li>If no counts remain, summary record is deleted.</li>
+            <li>Checkpoint frequency is configurable through SYSIN controls.</li>
+        </ul>
+
+        <div class="danger">
+            Purge compares YYDDD values arithmetically. Cross-year behavior should be validated in production schedules.
+        </div>
+    </section>
+
+    <section id="configuration">
+        <h2>8) Configuration and Environment Variables</h2>
+
+        <h3>8.1 Program Constants</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Program</th>
+                <th>Constant</th>
+                <th>Default</th>
+                <th>Use</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>COPAUA0C</code></td>
+                <td><code>WS-REQSTS-PROCESS-LIMIT</code></td>
+                <td>500</td>
+                <td>Max request loop count per invocation.</td>
+            </tr>
+            <tr>
+                <td><code>COPAUA0C</code></td>
+                <td><code>WS-WAIT-INTERVAL</code></td>
+                <td>5000</td>
+                <td>MQGET wait interval.</td>
+            </tr>
+            <tr>
+                <td><code>COPAUA0C</code></td>
+                <td><code>PSB-NAME</code></td>
+                <td><code>PSBPAUTB</code></td>
+                <td>IMS schedule target.</td>
+            </tr>
+            <tr>
+                <td><code>COPAUS0C</code>/<code>COPAUS1C</code></td>
+                <td><code>PSB-NAME</code></td>
+                <td><code>PSBPAUTB</code></td>
+                <td>IMS browse/read target.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>8.2 Dataset and File Names</h3>
+        <ul>
+            <li><code>CCXREF</code> card xref dataset logical name.</li>
+            <li><code>ACCTDAT</code> account dataset logical name.</li>
+            <li><code>CUSTDAT</code> customer dataset logical name.</li>
+            <li><code>CXACAIX</code>/<code>CARDAIX</code> alternate index access path naming in summary/intake.</li>
+            <li><code>DDPAUTP0</code>, <code>DDPAUTX0</code> IMS dataset DDs in JCL.</li>
+        </ul>
+
+        <h3>8.3 Batch SYSIN Controls (<code>CBPAUP0J</code>)</h3>
+        <p>Format parsed by <code>CBPAUP0C</code>:</p>
+        <pre><code class="language-text">P-EXPIRY-DAYS,P-CHKP-FREQ,P-CHKP-DIS-FREQ,P-DEBUG-FLAG</code></pre>
+        <p>Example from JCL:</p>
+        <pre><code class="language-text">00,00001,00001,Y</code></pre>
+
+        <div class="note">
+            If non-numeric or blank values are provided, defaults in COBOL are applied for several controls.
+        </div>
+
+        <h3>8.4 CICS Resource Setup Commands</h3>
+        <pre><code class="language-text">CEDA INSTALL TRANS(CP00) GROUP(CARDDEMO)
+CEDA INSTALL TRANS(CPVS) GROUP(CARDDEMO)
+CEDA INSTALL TRANS(CPVD) GROUP(CARDDEMO)
+CEDA INSTALL DB2ENTRY(AWS01PLN) GROUP(CARDDEMO)
+CEDA INSTALL DB2TRAN(CPVDTRAN) GROUP(CARDDEMO)
+CEMT SET PROG(COPAUA0C) NEWCOPY
+CEMT SET PROG(COPAUS0C) NEWCOPY
+CEMT SET PROG(COPAUS1C) NEWCOPY
+CEMT SET PROG(COPAUS2C) NEWCOPY</code></pre>
+    </section>
+
+    <section id="guidelines">
+        <h2>9) Development Guidelines and Patterns</h2>
+
+        <h3>9.1 Message Parsing and Compatibility</h3>
+        <ul>
+            <li>Preserve CSV field order unless all producers and consumers are upgraded in lockstep.</li>
+            <li>Prefer additive fields at end of payload with guarded parsing strategy when extending.</li>
+            <li>If mandatory validation is tightened, define explicit reject codes and caller contract updates.</li>
+        </ul>
+
+        <h3>9.2 IMS Update Discipline</h3>
+        <ul>
+            <li>Schedule PSB once per transactional unit and release/term appropriately.</li>
+            <li>Handle <code>PSB-SCHEDULED-MORE-THAN-ONCE</code> branch consistently (existing pattern present).</li>
+            <li>Keep summary counters synchronized with detail insert/delete paths.</li>
+        </ul>
+
+        <h3>9.3 Fraud Path Consistency</h3>
+        <ul>
+            <li>DB2 write success should always align with IMS fraud marker update in same user action.</li>
+            <li>Retain rollback on DB2 failure to avoid UI showing fraud state not present in DB2.</li>
+            <li>If adding new fraud actions, extend action code domain beyond <code>F</code>/<code>R</code> deliberately.</li>
+        </ul>
+
+        <h3>9.4 UI Patterns</h3>
+        <ul>
+            <li>Summary list supports exactly five visible rows per page in current map definition.</li>
+            <li>Selection semantics are strict: valid select indicator is <code>S</code> or <code>s</code>.</li>
+            <li>PF key instructions are embedded in BMS map text; update map and program behavior together.</li>
+        </ul>
+
+        <h3>9.5 Error Logging</h3>
+        <ul>
+            <li>CP00 logs structured errors to TD queue <code>CSSL</code> via <code>WRITEQ TD</code>.</li>
+            <li>Error severity flags distinguish warning vs critical and can trigger early return.</li>
+            <li>When adding new failures, include event key and reason/resp codes for supportability.</li>
+        </ul>
+    </section>
+
+    <section id="usage">
+        <h2>10) Usage Examples and Code Snippets</h2>
+
+        <h3>10.1 Request Extraction (CP00)</h3>
+        <pre><code class="language-cobol">UNSTRING W01-GET-BUFFER(1:W01-DATALEN)
+         DELIMITED BY ','
+         INTO PA-RQ-AUTH-DATE
+              PA-RQ-AUTH-TIME
+              PA-RQ-CARD-NUM
+              PA-RQ-AUTH-TYPE
+              PA-RQ-CARD-EXPIRY-DATE
+              PA-RQ-MESSAGE-TYPE
+              PA-RQ-MESSAGE-SOURCE
+              PA-RQ-PROCESSING-CODE
+              WS-TRANSACTION-AMT-AN
+              PA-RQ-MERCHANT-CATAGORY-CODE
+              PA-RQ-ACQR-COUNTRY-CODE
+              PA-RQ-POS-ENTRY-MODE
+              PA-RQ-MERCHANT-ID
+              PA-RQ-MERCHANT-NAME
+              PA-RQ-MERCHANT-CITY
+              PA-RQ-MERCHANT-STATE
+              PA-RQ-MERCHANT-ZIP
+              PA-RQ-TRANSACTION-ID
+END-UNSTRING</code></pre>
+
+        <h3>10.2 Decision and Reason Mapping (CP00)</h3>
+        <pre><code class="language-cobol">IF WS-TRANSACTION-AMT > WS-AVAILABLE-AMT
+   SET DECLINE-AUTH TO TRUE
+   SET INSUFFICIENT-FUND TO TRUE
+END-IF
+
+IF DECLINE-AUTH
+   MOVE '05' TO PA-RL-AUTH-RESP-CODE
+   MOVE '4100' TO PA-RL-AUTH-RESP-REASON
+ELSE
+   MOVE '00' TO PA-RL-AUTH-RESP-CODE
+   MOVE '0000' TO PA-RL-AUTH-RESP-REASON
+END-IF</code></pre>
+
+        <h3>10.3 Response Construction (CP00)</h3>
+        <pre><code class="language-cobol">STRING PA-RL-CARD-NUM         ','
+       PA-RL-TRANSACTION-ID   ','
+       PA-RL-AUTH-ID-CODE     ','
+       PA-RL-AUTH-RESP-CODE   ','
+       PA-RL-AUTH-RESP-REASON ','
+       WS-APPROVED-AMT-DIS    ','
+       DELIMITED BY SIZE
+       INTO W02-PUT-BUFFER
+       WITH POINTER WS-RESP-LENGTH
+END-STRING</code></pre>
+
+        <h3>10.4 Fraud Insert with Duplicate Update Fallback (CPVD helper)</h3>
+        <pre><code class="language-cobol">EXEC SQL
+   INSERT INTO CARDDEMO.AUTHFRDS (...)
+   VALUES (...)
+END-EXEC
+IF SQLCODE = ZERO
+   SET WS-FRD-UPDT-SUCCESS TO TRUE
+ELSE
+   IF SQLCODE = -803
+      PERFORM FRAUD-UPDATE
+   ELSE
+      SET WS-FRD-UPDT-FAILED TO TRUE
+   END-IF
+END-IF</code></pre>
+
+        <h3>10.5 Purge Qualification Rule (Batch)</h3>
+        <pre><code class="language-cobol">COMPUTE WS-AUTH-DATE = 99999 - PA-AUTH-DATE-9C
+COMPUTE WS-DAY-DIFF = CURRENT-YYDDD - WS-AUTH-DATE
+IF WS-DAY-DIFF >= WS-EXPIRY-DAYS
+   SET QUALIFIED-FOR-DELETE TO TRUE
+END-IF</code></pre>
+
+        <h3>10.6 Typical Operator Journey</h3>
+        <ol>
+            <li>Run transaction <code>CPVS</code>.</li>
+            <li>Enter account ID and press ENTER.</li>
+            <li>Review five-row summary list and navigate PF7/PF8 if needed.</li>
+            <li>Type <code>S</code> against one row and press ENTER to open CPVD.</li>
+            <li>Press PF5 to mark/remove fraud or PF8 to inspect next auth.</li>
+            <li>Press PF3 to return to summary list.</li>
+        </ol>
+    </section>
+
+    <section id="operations">
+        <h2>11) Operations and Support Notes</h2>
+
+        <h3>11.1 Runtime Signals</h3>
+        <ul>
+            <li>CP00 tracks MQ and IMS errors with location codes (<code>M001</code>, <code>I00x</code>, etc.).</li>
+            <li>Critical errors can trigger immediate terminate and return.</li>
+            <li>Batch prints processed/deleted summary and detail counters.</li>
+        </ul>
+
+        <h3>11.2 Operational Risks</h3>
+        <ul>
+            <li>Queue payload contract drift can silently degrade decision quality.</li>
+            <li>Missing DB2TRAN binding for <code>CPVD</code> breaks fraud persistence.</li>
+            <li>Large purge window can retain stale records and increase browse cost.</li>
+            <li>Aggressive purge window can remove records needed for operational review.</li>
+        </ul>
+
+        <h3>11.3 Recovery Considerations</h3>
+        <ul>
+            <li>CPVD fraud update path uses SYNCPOINT and rollback control.</li>
+            <li>Batch job uses IMS checkpoints to improve restartability.</li>
+            <li>CP00 response queue send failure is logged as critical MQ error.</li>
+        </ul>
+    </section>
+
+    <section id="testing">
+        <h2>12) Validation Checklist</h2>
+        <ul>
+            <li>Verify <code>CP00</code> receives request and produces correlated reply.</li>
+            <li>Validate approve/decline transitions across at least 3 amount scenarios.</li>
+            <li>Confirm <code>PAUTSUM0</code>/<code>PAUTDTL1</code> are inserted/updated as expected.</li>
+            <li>Confirm <code>CPVS</code> paging and selection behavior across multiple pages.</li>
+            <li>Confirm <code>CPVD</code> PF5 updates DB2 and IMS consistently.</li>
+            <li>Confirm duplicate fraud insert path uses update fallback (SQLCODE -803).</li>
+            <li>Run <code>CBPAUP0J</code> in test mode and verify deletion + checkpoint counts.</li>
+            <li>Verify no regressions to core account lookup dependencies.</li>
+        </ul>
+    </section>
+
+    <section id="glossary">
+        <h2>13) Glossary</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Term</th>
+                <th>Meaning</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td>PAUTSUM0</td><td>IMS root segment storing per-account pending authorization aggregates.</td></tr>
+            <tr><td>PAUTDTL1</td><td>IMS child segment storing individual authorization details.</td></tr>
+            <tr><td>Inverse Date/Time Key</td><td>Descending-sort key computed as <code>99999-YYDDD</code> and <code>999999999-time</code>.</td></tr>
+            <tr><td>Match Status</td><td>Authorization lifecycle marker (<code>P</code>, <code>D</code>, <code>E</code>, <code>M</code>).</td></tr>
+            <tr><td>Fraud Action</td><td>Toggle action passed to DB2 helper (<code>F</code> mark, <code>R</code> remove).</td></tr>
+            <tr><td>CPVS / CPVD</td><td>Summary/detail CICS screens for pending authorization management.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="refs">
+        <h2>14) Source References</h2>
+        <ul>
+            <li><code>app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cpy/CCPAURQY.cpy</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cpy/CCPAURLY.cpy</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cpy/CIPAUSMY.cpy</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/cpy/CIPAUDTY.cpy</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/bms/COPAU00.bms</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/bms/COPAU01.bms</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ims/DBPAUTX0.dbd</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ims/PSBPAUTL.psb</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ddl/AUTHFRDS.ddl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/dcl/AUTHFRDS.dcl</code></li>
+            <li><code>app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd</code></li>
+            <li><code>app/cpy/CVACT01Y.cpy</code></li>
+            <li><code>app/cpy/CVACT03Y.cpy</code></li>
+        </ul>
+    </section>
+
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #444; color: #888; font-size: 0.85em;">
+        Last reviewed: 2026-03-10T20:53:30Z
+    </footer>
+</div>
 </body>
 </html>
