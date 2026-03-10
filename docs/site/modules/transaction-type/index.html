@@ -1,98 +1,1152 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Type - User Story Development Guide</title>
+    <meta name="last-updated" content="2026-03-10T16:12:37Z">
+    <title>transaction-type - Module Documentation</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f5fff0; color:#0f1c2c; margin:0; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; }
-        .header { background:linear-gradient(135deg,#22c55e,#15803d); color:#fff; padding:32px; border-radius:16px 16px 0 0; }
-        h1 { margin:0; font-size:2em; }
-        section { background:#fff; border-radius:12px; padding:20px 28px; margin-bottom:16px; box-shadow:0 10px 30px rgba(15,23,42,0.09); }
-        ul { margin:0 0 12px 20px; }
-        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
-        code { background:#dcfce7; padding:2px 4px; border-radius:4px; }
-        footer { text-align:right; font-size:0.9em; color:#94a3b8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        nav {
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        h1 {
+            color: #4fc3f7;
+            border-bottom: 2px solid #4fc3f7;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #81c784;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-left: 4px solid #81c784;
+            padding-left: 12px;
+        }
+        h3 {
+            color: #ffb74d;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.15em;
+        }
+        h4 {
+            color: #ce93d8;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        p { margin-bottom: 12px; }
+        ul, ol { margin-left: 24px; margin-bottom: 12px; }
+        li { margin-bottom: 5px; }
+        code {
+            background-color: #2d2d2d;
+            color: #f48fb1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2d2d2d;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 12px 0 20px;
+            border-left: 3px solid #4fc3f7;
+        }
+        pre code {
+            background-color: transparent;
+            color: #e0e0e0;
+            padding: 0;
+            font-size: 0.88em;
+        }
+        a { color: #4fc3f7; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+        .badge-blue { background-color: #1565c0; color: #e3f2fd; }
+        .badge-green { background-color: #2e7d32; color: #e8f5e9; }
+        .badge-orange { background-color: #e65100; color: #fff3e0; }
+        .badge-purple { background-color: #4a148c; color: #f3e5f5; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 20px;
+            font-size: 0.93em;
+        }
+        th {
+            background-color: #263238;
+            color: #80cbc4;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #4fc3f7;
+        }
+        td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #333;
+            vertical-align: top;
+        }
+        tr:nth-child(even) { background-color: #1f1f1f; }
+        tr:hover { background-color: #2a2a2a; }
+        .info-box {
+            background-color: #0d2137;
+            border: 1px solid #1565c0;
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .warning-box {
+            background-color: #1a1200;
+            border: 1px solid #f57f17;
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .warning-box h4 { color: #ffb74d; }
+        .rule-box {
+            background-color: #0d1a0d;
+            border: 1px solid #2e7d32;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin: 10px 0;
+        }
+        .toc {
+            background-color: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 18px 22px;
+            margin: 20px 0 35px;
+            display: inline-block;
+            min-width: 280px;
+        }
+        .toc h3 { color: #80cbc4; margin-top: 0; }
+        .toc ol { margin-left: 18px; }
+        .toc li { margin-bottom: 4px; }
+        .arch-diagram {
+            background-color: #111;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #90caf9;
+        }
+        .section-divider {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 30px 0;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #888;
+            font-size: 0.85em;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>💳 Transaction Type Module</h1>
-            <p>Guide for DB2-backed reference data stories that feed the legacy transaction engine.</p>
-        </header>
 
-        <section>
-            <h2>📋 Overview</h2>
-            <p><strong>Purpose:</strong> Demonstrate DB2 integration through `CTTU`/`CTLI` screens and batch jobs while syncing transaction-type metadata back to VSAM so the core CICS engine understands new categories.</p>
-            <p><strong>Business Context:</strong> Having a single source of truth for transaction types empowers governors to define categories, categories-to-transaction mapping, and ensure reporting/transaction-processing stay aligned.</p>
-        </section>
+<nav>
+    <a href="../../index.html">← Back to Index</a>
+</nav>
 
-        <section>
-            <h2>🎯 User Story Development Guide</h2>
-            <h3>📝 Module-Specific US Templates</h3>
-            <ul>
-                <li><strong>Create Transaction Type:</strong> As an admin, I want to define a new transaction-type code plus description via `CTTU` so the VSAM/DB2 blend accepts it.</li>
-                <li><strong>Cursor Navigation:</strong> As a user, I want `CTLI` to page forward/backward through categories (using forward/backward cursors) so I can audit the dataset.</li>
-                <li><strong>Batch Sync:</strong> As a release engineer, I want `TRANEXTR` to produce VSAM-compatible files after DB2 updates so nightly posting reads the latest metadata.</li>
-            </ul>
+<h1>transaction-type</h1>
 
-            <h3>⚡ Development Acceleration Factors</h3>
-            <ul>
-                <li><strong>README guidance:</strong> `app/app-transaction-type-db2/README.md` spells out DB2 tables, SQL statements, and installation steps.</li>
-                <li><strong>DB2 artifacts:</strong> DDL scripts under `app/app-transaction-type-db2/ddl` describe `TRANSACTION_TYPE` and `TRANSACTION_TYPE_CATEGORY` with FK and PK constraints.</li>
-                <li><strong>Batch jobs:</strong> `TRANEXTR`, `CREADDB21`, and `MNTTRDB2` jobs show the extraction path and allow you to verify data propagation into VSAM.</li>
-            </ul>
+<p>
+    <span class="badge badge-blue">Version 1.0.0</span>
+    <span class="badge badge-green">Apache 2.0</span>
+    <span class="badge badge-orange">Optional Module</span>
+    <span class="badge badge-purple">DB2 + CICS</span>
+</p>
 
-            <h3>📊 Complexity Guidelines</h3>
-            <ul>
-                <li><strong>Simple (1-2 pts):</strong> Update a BMS label or add a new column to the `CTLI` list screen (no dataset change).</li>
-                <li><strong>Medium (3-5 pts):</strong> Add a new field to `TRANSACTION_TYPE_CATEGORY`, update static SQL in `CTTU`, and refresh the DDL/sync scripts.</li>
-                <li><strong>Complex (5-8 pts):</strong> Introduce a new DB2 table (e.g., reward tiers) and wire `TRANEXTR` plus posting jobs to include the new data.</li>
-            </ul>
-        </section>
+<div class="toc">
+    <h3>📋 Table of Contents</h3>
+    <ol>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#architecture">Architectural Context</a></li>
+        <li><a href="#components">Key Components</a></li>
+        <li><a href="#public-apis">Public APIs</a></li>
+        <li><a href="#data-models">Data Models</a></li>
+        <li><a href="#business-rules">Business Rules</a></li>
+        <li><a href="#dependencies">Dependencies</a></li>
+        <li><a href="#configuration">Configuration &amp; Installation</a></li>
+        <li><a href="#development">Development Guidelines</a></li>
+        <li><a href="#usage-examples">Usage Examples</a></li>
+        <li><a href="#performance">Performance Considerations</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+</div>
 
-        <section>
-            <h2>🔧 Technical Foundation</h2>
-            <h3>🏗️ Key Components</h3>
-            <ul>
-                <li>`CTTU` (`COTRTUPC`) handles add/edit operations using static embedded SQL and SQLCA error handling.</li>
-                <li>`CTLI` (`COTRTLIC`) demonstrates forward/backward cursor navigation and grouped deletes.</li>
-                <li>`TRANEXTR` (`DSNTIAUL` job) extracts DB2 rows into VSAM-compatible files consumed downstream.</li>
-                <li>`MNTTRDB2` (`COBTUPDT`) is the batch maintenance program for periodic updates.</li>
-                <li>Control files in `app/app-transaction-type-db2/ctl` and precompiler declarations in `dcl/` keep COBOL/DB2 integrations aligned.</li>
-            </ul>
+<!-- ═══════════════════════════════════════════ OVERVIEW ═════════════════════════════════════ -->
+<h2 id="overview">1. Overview</h2>
 
-            <h3>🔗 Dependencies</h3>
-            <ul>
-                <li>DB2 subsystem (DDL, plans, DCLGEN, and SQLCA) is mandatory.</li>
-                <li>CICS with DB2 support for static SQL programs.</li>
-                <li>JCL automations for `TRANEXTR`, `CREADB21`, `MNTTRDB2` to propagate data.</li>
-                <li>VSAM for downstream transaction flows—`TRANEXTR` must keep this file consistent.</li>
-            </ul>
+<p>
+    The <strong>Transaction Type</strong> module is an optional extension for the CardDemo credit-card management
+    platform. It demonstrates IBM DB2 integration patterns using embedded static SQL inside IBM CICS COBOL programs,
+    providing a robust relational approach to managing transaction type reference data while maintaining
+    backward compatibility with the legacy VSAM-based transaction processing system.
+</p>
 
-            <h3>🗂️ Public Interfaces</h3>
-            <pre><code>CTTU - Transaction type add/edit screen (embedded SQL)
-CTLI - Transaction type list/update/delete (forward/backward cursor)
-TRANEXTR - Extract DB2 metadata into VSAM files
-CREADB21 - Create DB2 objects used by the module
-MNTTRDB2 - Batch maintenance job for transaction types</code></pre>
-        </section>
+<p>
+    The module resides entirely under <code>app/app-transaction-type-db2/</code> and operates independently of the
+    core application once the DB2 subsystem is configured and the CICS DB2 entry (<code>CARDDEMO</code>) is in place.
+</p>
 
-        <section>
-            <h2>✅ Acceptance Criteria Examples</h2>
-            <ul>
-                <li>DB2 constraints (`PRIMARY KEY`, `FOREIGN KEY`) prevent deleting a transaction type that still backs VSAM entries.</li>
-                <li>`TRANEXTR` writes VSAM files that match the layout expected by `app/cpy/CVTRA04Y.cpy` so `CT00` reads valid data.</li>
-                <li>`CTTU` surfaces SQLCA error codes in BMS message lines when DB2 rejects a duplicate key.</li>
-            </ul>
-        </section>
+<h3>Purpose and Business Context</h3>
+<ul>
+    <li>Maintain <strong>transaction type metadata</strong> (codes and descriptions) in a DB2 relational table for
+        improved data integrity and concurrent update safety.</li>
+    <li>Manage <strong>transaction type categories</strong> with full referential integrity enforced by DB2 foreign
+        keys, preventing orphaned category records.</li>
+    <li>Expose an <strong>admin CRUD UI</strong> (CICS green-screen transactions <code>CTTU</code> and
+        <code>CTLI</code>) for operators to add, browse, update, and delete type records.</li>
+    <li>Synchronize reference data back to <strong>VSAM sequential files</strong> via the <code>TRANEXTR</code>
+        batch job so the legacy <code>CT00</code>/<code>COTRN</code> transaction screens continue to render
+        consistent category labels without touching DB2 directly.</li>
+    <li>Serve as a canonical <strong>teaching example</strong> of DB2 cursor navigation, SQLCA error checking,
+        and the DB2 precompiler workflow in a CICS environment.</li>
+</ul>
 
-        <footer>
-            <a href="../../system-overview.md">← System Overview</a><br>
-            <em>Last updated: March 10, 2026</em>
-        </footer>
-    </div>
+<div class="info-box">
+    <strong>ℹ️ Optional Module:</strong> This module requires a DB2 subsystem accessible from the CICS region.
+    The base CardDemo application runs entirely on VSAM without DB2. Install this module only when demonstrating
+    DB2 integration patterns or administering transaction type metadata from an online terminal.
+</div>
+
+<!-- ═══════════════════════════════════════════ ARCHITECTURE ════════════════════════════════ -->
+<h2 id="architecture">2. Architectural Context</h2>
+
+<p>
+    The transaction-type module sits as a <em>leaf node</em> in the CardDemo dependency graph. The core application
+    depends on it for enriched transaction labels; the module itself depends on both DB2 (primary store) and
+    VSAM (replicated copy for high-speed reads).
+</p>
+
+<div class="arch-diagram">
+<pre>
+  3270 Terminal
+       │
+       │  BMS PF Keys (CTTU / CTLI screens)
+       ▼
+  ┌──────────────────────────┐
+  │   CICS Region             │
+  │   COTRTUPC  (CTTU)        │──── EXEC SQL INSERT/SELECT/UPDATE ──▶  DB2
+  │   COTRTLIC  (CTLI)        │──── EXEC SQL cursor FETCH/DELETE  ──▶  CARDDEMO.TRANSACTION_TYPE
+  └──────────────────────────┘                                          CARDDEMO.TRANSACTION_TYPE_CATEGORY
+                                                                            │
+  JCL Batch (JES2)                                                          │
+  ┌──────────────────────────┐                                              │
+  │  TRANEXTR  (DSNTIAUL)    │◀──── UNLOAD via SQL SELECT ─────────────────┘
+  │     extracts DB2 rows    │
+  │     creates VSAM files   │──▶  AWS.M2.CARDDEMO.TRANTYPE.PS
+  └──────────────────────────┘     AWS.M2.CARDDEMO.TRANCATG.PS
+                                        │
+  ┌──────────────────────────┐          │  read at runtime
+  │  Core Application         │◀────────┘
+  │  COTRN00C (CT00 screen)   │
+  └──────────────────────────┘
+
+  ┌──────────────────────────┐
+  │  MNTTRDB2 (COBTUPDT)     │──── Batch INSERT/UPDATE/DELETE ──▶  DB2
+  │  Input: INPFILE           │
+  └──────────────────────────┘
+
+  ┌──────────────────────────┐
+  │  CREADB21 (DSNTEP4)      │──── CREATE TABLE / LOAD ──────────▶  DB2
+  │  One-time setup job       │
+  └──────────────────────────┘
+</pre>
+</div>
+
+<h3>Dual-Storage Strategy</h3>
+<p>
+    The module uses a <strong>dual-storage strategy</strong>: DB2 is the authoritative source of truth for
+    administrative operations; VSAM sequential files serve as a nightly snapshot consumed by the high-speed
+    3270 transaction path. Changes made via <code>CTTU</code>/<code>CTLI</code> or <code>MNTTRDB2</code> are
+    not visible to <code>CT00</code> screens until <code>TRANEXTR</code> is executed (typically nightly).
+</p>
+
+<h3>Dependency Graph</h3>
+<pre><code>core-application ──depends on──▶ transaction-type
+transaction-type ──stores in ──▶ DB2  (CARDDEMO.TRANSACTION_TYPE, TRANSACTION_TYPE_CATEGORY)
+transaction-type ──replicates ─▶ VSAM (AWS.M2.CARDDEMO.TRANTYPE.PS, TRANCATG.PS)
+</code></pre>
+
+<!-- ═══════════════════════════════════════════ COMPONENTS ═══════════════════════════════════ -->
+<h2 id="components">3. Key Components</h2>
+
+<h3>Online (CICS) Components</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>BMS Mapset</th>
+            <th>COBOL Program</th>
+            <th>Function</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>CTTU</code></td>
+            <td><code>COTRTUP</code> (map <code>CTRTUPA</code>)</td>
+            <td><code>COTRTUPC</code></td>
+            <td>Add and update a single transaction type record via embedded static SQL INSERT/SELECT/UPDATE with SQLCA validation.</td>
+        </tr>
+        <tr>
+            <td><code>CTLI</code></td>
+            <td><code>COTRTLI</code> (map <code>CTRTLIA</code>)</td>
+            <td><code>COTRTLIC</code></td>
+            <td>List, update, and delete transaction types using forward/backward DB2 cursors; displays up to 7 rows per page with PF7/PF8 paging.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>COTRTUPC – Transaction Type Add/Edit (<code>CTTU</code>)</h4>
+<ul>
+    <li>Accepts a 2-character transaction type code (<code>TR_TYPE</code>) and a description of up to 50 characters.</li>
+    <li>On first invocation (no COMMAREA), displays a blank form prompting the operator to enter new data.</li>
+    <li>Validates both fields via COBOL 88-level flags (<code>FLG-TRANFILTER-ISVALID</code>,
+        <code>FLG-DESCRIPTION-ISVALID</code>) before issuing any SQL.</li>
+    <li>Supports a two-phase confirm flow: PF5 previews changes, a second PF5 commits them; PF12 cancels.</li>
+    <li>Detects concurrent update conflicts: if a record changes between fetch and update it raises
+        <em>"Record changed by someone else. Please review"</em>.</li>
+    <li>Invoked from Admin Menu (<code>CA00</code>) option 6 or directly by entering <code>CTTU</code> in the
+        CICS transaction field.</li>
+</ul>
+
+<h4>COTRTLIC – Transaction Type List/Update/Delete (<code>CTLI</code>)</h4>
+<ul>
+    <li>Displays up to 7 transaction type records per screen page.</li>
+    <li>Uses two declared DB2 cursors:
+        <ul>
+            <li><code>C-TR-TYPE-FORWARD</code> – fetches rows with <code>TR_TYPE &gt;= :WS-START-KEY</code>
+                ordered ascending for PF8 (page down).</li>
+            <li><code>C-TR-TYPE-BACKWARD</code> – fetches rows with <code>TR_TYPE &lt; :WS-START-KEY</code>
+                ordered descending for PF7 (page up).</li>
+        </ul>
+    </li>
+    <li>Supports optional filter by type code or description (LIKE search); filter changes trigger a new cursor open.</li>
+    <li>Row-level selection: enter <code>U</code> in the selection column to update a row's description;
+        enter <code>D</code> to request deletion (with referential integrity enforced by DB2).</li>
+    <li>Transfer to <code>CTTU</code> is performed via <code>XCTL</code> when an update is selected,
+        passing context through COMMAREA.</li>
+    <li>Invoked from Admin Menu (<code>CA00</code>) option 5.</li>
+</ul>
+
+<h3>Batch Components</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Job Name</th>
+            <th>Utility / Program</th>
+            <th>Function</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>CREADB21</code></td>
+            <td><code>DSNTIAD</code>, <code>DSNTEP4</code></td>
+            <td>One-time setup: creates the CardDemo DB2 database, tablespace, tables, indexes, and loads initial seed data from control files.</td>
+        </tr>
+        <tr>
+            <td><code>TRANEXTR</code></td>
+            <td><code>DSNTIAUL</code> (SQL unload)</td>
+            <td>Nightly extract: backs up prior VSAM files to GDG (+1), deletes current files, then unloads <code>TRANSACTION_TYPE</code> and <code>TRANSACTION_TYPE_CATEGORY</code> from DB2 into fixed-format PS datasets (LRECL=60).</td>
+        </tr>
+        <tr>
+            <td><code>MNTTRDB2</code></td>
+            <td><code>COBTUPDT</code></td>
+            <td>Batch maintenance: reads a sequential input file (<code>INPFILE</code>) where each record begins with an operation code (A/U/D/*) and applies INSERT, UPDATE, or DELETE to DB2.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>COBTUPDT – Batch Maintenance Program</h4>
+<p>Input record layout (60-byte fixed, LRECL=60):</p>
+<pre><code>Column  1     : Operation code  A=Add  U=Update  D=Delete  *=Comment
+Columns 2-3   : TR_TYPE code (2-char alphanumeric)
+Columns 4-53  : TR_DESCRIPTION (50-char alphanumeric)
+</code></pre>
+<p>
+    The program reads the input file sequentially, evaluates the operation code, and performs the corresponding
+    embedded SQL statement. Errors are displayed to <code>SYSOUT</code> and cause the program to ABEND via
+    <code>9999-ABEND</code>.
+</p>
+
+<h3>BMS Maps</h3>
+
+<table>
+    <thead>
+        <tr><th>Mapset</th><th>Map</th><th>Copybook</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>COTRTUP</code></td>
+            <td><code>CTRTUPA</code></td>
+            <td><code>COTRTUP.cpy</code></td>
+            <td>Single-record add/edit form: type code field (protected on update), description field, info message line, PF key legend.</td>
+        </tr>
+        <tr>
+            <td><code>COTRTLI</code></td>
+            <td><code>CTRTLIA</code></td>
+            <td><code>COTRTLI.cpy</code></td>
+            <td>7-row tabular list: selection column, type code column (2 chars), description column (50 chars), filter fields at the top.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>DB2 Precompiler Artifacts</h3>
+
+<table>
+    <thead>
+        <tr><th>Artifact</th><th>Path</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>DCLTRTYP</td>
+            <td><code>dcl/DCLTRTYP.dcl</code></td>
+            <td>DCLGEN output for <code>CARDDEMO.TRANSACTION_TYPE</code>. Defines COBOL host variable group <code>DCLTRANSACTION-TYPE</code> with <code>DCL-TR-TYPE</code> (PIC X(2)) and <code>DCL-TR-DESCRIPTION</code> (VARCHAR 50).</td>
+        </tr>
+        <tr>
+            <td>DCLTRCAT</td>
+            <td><code>dcl/DCLTRCAT.dcl</code></td>
+            <td>DCLGEN output for <code>CARDDEMO.TRANSACTION_TYPE_CATEGORY</code>. Defines <code>DCLTRANSACTION-TYPE-CATEGORY</code> with type code, category code, and category description fields.</td>
+        </tr>
+        <tr>
+            <td>CSDB2RWY</td>
+            <td><code>cpy/CSDB2RWY.cpy</code></td>
+            <td>Common WORKING-STORAGE for DB2: <code>WS-DB2-COMMON-VARS</code>, DSNTIAC message buffer (<code>WS-DSNTIAC-FORMATTED</code>), SQLCODE display variable.</td>
+        </tr>
+        <tr>
+            <td>CSDB2RPY</td>
+            <td><code>cpy/CSDB2RPY.cpy</code></td>
+            <td>Common PROCEDURE DIVISION paragraphs: <code>9998-PRIMING-QUERY</code> (connectivity check via <code>SYSIBM.SYSDUMMY1</code>) and <code>9999-FORMAT-DB2-MESSAGE</code> (calls DSNTIAC utility to format SQLCA into readable text).</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ PUBLIC APIS ═════════════════════════════════ -->
+<h2 id="public-apis">4. Public APIs</h2>
+
+<h3>CICS Transaction: CTTU – Add/Edit Transaction Type</h3>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Transaction ID</td><td><code>CTTU</code></td></tr>
+        <tr><td>Program</td><td><code>COTRTUPC</code></td></tr>
+        <tr><td>Mapset</td><td><code>COTRTUP</code></td></tr>
+        <tr><td>Entry Points</td><td>Direct CICS input; Admin Menu (CA00) option 6; <code>XCTL</code> from COTRTLIC</td></tr>
+        <tr><td>PF Key Bindings</td><td>Enter – search/validate; PF5 – confirm/save; PF12 – cancel; PF3 – exit to CA00</td></tr>
+        <tr><td>SQLCA Checks</td><td>SQLCODE 0 = success; SQLCODE 100 = not found; any other = error surfaced via DSNTIAC</td></tr>
+    </tbody>
+</table>
+
+<p><strong>Screen flow:</strong></p>
+<ol>
+    <li>Operator enters a 2-char type code and description, presses Enter.</li>
+    <li>Program validates inputs; if invalid, error message appears on the message line.</li>
+    <li>If valid, SQL SELECT checks for existing record. If found, description is displayed for update; if not, add-mode prompt appears.</li>
+    <li>Operator presses PF5 to commit. Program issues INSERT or UPDATE as appropriate.</li>
+    <li>On success, confirmation message is displayed; on failure, SQLCA details are formatted and shown.</li>
+</ol>
+
+<h3>CICS Transaction: CTLI – List/Update/Delete Transaction Types</h3>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Transaction ID</td><td><code>CTLI</code></td></tr>
+        <tr><td>Program</td><td><code>COTRTLIC</code></td></tr>
+        <tr><td>Mapset</td><td><code>COTRTLI</code></td></tr>
+        <tr><td>Entry Points</td><td>Admin Menu (CA00) option 5; direct CICS input</td></tr>
+        <tr><td>PF Key Bindings</td><td>Enter – apply filter/refresh; PF7 – page up; PF8 – page down; PF10 – confirm delete or update; PF3 – exit</td></tr>
+        <tr><td>Max Rows/Screen</td><td>7</td></tr>
+        <tr><td>Filter Fields</td><td>Type code (exact match) and description (LIKE search)</td></tr>
+        <tr><td>Selection Codes</td><td><code>U</code> = update (transfer to CTTU); <code>D</code> = delete (with RI check)</td></tr>
+    </tbody>
+</table>
+
+<h3>Batch Job: TRANEXTR – DB2-to-VSAM Extract</h3>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Job Name</td><td><code>TRANEXTR</code></td></tr>
+        <tr><td>Utility</td><td><code>DSNTIAUL</code> (DB2 SQL unload)</td></tr>
+        <tr><td>Frequency</td><td>Nightly (runs once per day; changes reflect next business day)</td></tr>
+        <tr><td>Input</td><td>DB2 tables <code>CARDDEMO.TRANSACTION_TYPE</code> and <code>CARDDEMO.TRANSACTION_TYPE_CATEGORY</code></td></tr>
+        <tr><td>Output</td><td><code>&amp;HLQ..TRANTYPE.PS</code> (LRECL=60, FB) and <code>&amp;HLQ..TRANCATG.PS</code> (LRECL=60, FB)</td></tr>
+        <tr><td>Backup</td><td>Prior VSAM files are copied to GDG (<code>TRANTYPE.BKUP(+1)</code>, <code>TRANCATG.PS.BKUP(+1)</code>) before deletion</td></tr>
+        <tr><td>HLQ Parameter</td><td><code>SET HLQ=AWS.M2.CARDDEMO</code> at top of JCL; customise for target environment</td></tr>
+    </tbody>
+</table>
+
+<p><strong>SQL used by TRANEXTR for TRANTYPE.PS:</strong></p>
+<pre><code>SELECT CAST(CONCAT(CONCAT(
+    TR_TYPE
+   ,CAST(TR_DESCRIPTION AS CHAR(50))
+    )
+   ,REPEAT('0',8)
+  ) AS CHAR(60))
+ FROM  CARDDEMO.TRANSACTION_TYPE
+ ORDER BY TR_TYPE;
+</code></pre>
+
+<p><strong>SQL used by TRANEXTR for TRANCATG.PS:</strong></p>
+<pre><code>SELECT CAST(
+      TRC_TYPE_CODE
+   || TRC_TYPE_CATEGORY
+   || CAST(TRC_CAT_DATA AS CHAR(50))
+   || REPEAT('0',4)
+                    AS CHAR(60))
+FROM  CARDDEMO.TRANSACTION_TYPE_CATEGORY
+ORDER BY
+      TRC_TYPE_CODE
+    , TRC_TYPE_CATEGORY;
+</code></pre>
+
+<h3>Batch Job: MNTTRDB2 – Batch DB2 Maintenance</h3>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Job Name</td><td><code>MNTTRDB2</code></td></tr>
+        <tr><td>Program</td><td><code>COBTUPDT</code></td></tr>
+        <tr><td>DB2 Plan</td><td><code>CARDDEMO</code></td></tr>
+        <tr><td>Input DD</td><td><code>INPFILE</code> (sequential, LRECL=53 minimum)</td></tr>
+        <tr><td>Input Format</td><td>Col 1: A/U/D/*; Cols 2–3: TR_TYPE; Cols 4–53: TR_DESCRIPTION</td></tr>
+        <tr><td>Error Handling</td><td>Non-zero SQLCODE causes <code>9999-ABEND</code>; message written to SYSOUT before abend</td></tr>
+    </tbody>
+</table>
+
+<h3>Batch Job: CREADB21 – DB2 Object Creation and Initial Load</h3>
+
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Job Name</td><td><code>CREADB21</code></td></tr>
+        <tr><td>Utilities</td><td><code>DSNTIAD</code> (DDL execution), <code>DSNTEP4</code> (data load)</td></tr>
+        <tr><td>Steps</td><td>FREEPLN (free existing plans), CRCRDDB (create DB/tablespace/tables/indexes), LDTTYPE (load TRANSACTION_TYPE), LDTCCAT (load TRANSACTION_TYPE_CATEGORY)</td></tr>
+        <tr><td>DB2 Subsystem</td><td><code>DAZ1</code> (parameterisable via <code>SET DB2S=</code>)</td></tr>
+        <tr><td>Control Files</td><td><code>DB2CREAT.ctl</code>, <code>DB2FREE.ctl</code>, <code>DB2LTTYP.ctl</code>, <code>DB2LTCAT.ctl</code>, <code>DB2TIAD1.ctl</code>, <code>DB2TEP41.ctl</code></td></tr>
+    </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ DATA MODELS ═════════════════════════════════ -->
+<h2 id="data-models">5. Data Models</h2>
+
+<h3>DB2 Table: <code>CARDDEMO.TRANSACTION_TYPE</code></h3>
+
+<pre><code>CREATE TABLE CARDDEMO.TRANSACTION_TYPE
+(   TR_TYPE         CHAR(2)      NOT NULL,
+    TR_DESCRIPTION  VARCHAR(50)  NOT NULL,
+    PRIMARY KEY(TR_TYPE)
+) IN CARDDEMO.CARDSPC1 CCSID EBCDIC;
+
+CREATE UNIQUE INDEX CARDDEMO.XTRAN_TYPE
+    ON CARDDEMO.TRANSACTION_TYPE (TR_TYPE ASC);
+</code></pre>
+
+<table>
+    <thead><tr><th>Column</th><th>Type</th><th>Nullable</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>TR_TYPE</code></td><td>CHAR(2)</td><td>NOT NULL</td><td>Primary key. Two-character alphanumeric transaction type code (e.g., <code>PU</code> for Purchase, <code>RR</code> for Return).</td></tr>
+        <tr><td><code>TR_DESCRIPTION</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Human-readable description of the transaction type, up to 50 characters.</td></tr>
+    </tbody>
+</table>
+
+<h3>DB2 Table: <code>CARDDEMO.TRANSACTION_TYPE_CATEGORY</code></h3>
+
+<pre><code>CREATE TABLE CARDDEMO.TRANSACTION_TYPE_CATEGORY
+(   TRC_TYPE_CODE     CHAR(2)      NOT NULL,
+    TRC_TYPE_CATEGORY CHAR(4)      NOT NULL,
+    TRC_CAT_DATA      VARCHAR(50)  NOT NULL,
+    PRIMARY KEY(TRC_TYPE_CODE, TRC_TYPE_CATEGORY),
+    FOREIGN KEY TRC_TYPE_CODE (TRC_TYPE_CODE)
+        REFERENCES CARDDEMO.TRANSACTION_TYPE (TR_TYPE)
+        ON DELETE RESTRICT
+);
+</code></pre>
+
+<table>
+    <thead><tr><th>Column</th><th>Type</th><th>Nullable</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>TRC_TYPE_CODE</code></td><td>CHAR(2)</td><td>NOT NULL</td><td>Foreign key to <code>TRANSACTION_TYPE.TR_TYPE</code>. Composite PK part 1.</td></tr>
+        <tr><td><code>TRC_TYPE_CATEGORY</code></td><td>CHAR(4)</td><td>NOT NULL</td><td>Category code within a type. Composite PK part 2.</td></tr>
+        <tr><td><code>TRC_CAT_DATA</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Category description / label.</td></tr>
+    </tbody>
+</table>
+
+<h3>COBOL Host Variable Declarations (DCLGEN)</h3>
+
+<h4>DCLTRANSACTION-TYPE (<code>DCLTRTYP.dcl</code>)</h4>
+<pre><code>EXEC SQL DECLARE CARDDEMO.TRANSACTION_TYPE TABLE
+( TR_TYPE         CHAR(2)     NOT NULL,
+  TR_DESCRIPTION  VARCHAR(50) NOT NULL
+) END-EXEC.
+
+01  DCLTRANSACTION-TYPE.
+    10 DCL-TR-TYPE              PIC X(2).
+    10 DCL-TR-DESCRIPTION.
+       49 DCL-TR-DESCRIPTION-LEN   PIC S9(4) USAGE COMP.
+       49 DCL-TR-DESCRIPTION-TEXT  PIC X(50).
+</code></pre>
+
+<h4>DCLTRANSACTION-TYPE-CATEGORY (<code>DCLTRCAT.dcl</code>)</h4>
+<pre><code>EXEC SQL DECLARE CARDDEMO.TRANSACTION_TYPE_CATEGORY TABLE
+( TRC_TYPE_CODE     CHAR(2) NOT NULL,
+  TRC_TYPE_CATEGORY CHAR(4) NOT NULL,
+  TRC_CAT_DATA      VARCHAR(50) NOT NULL
+) END-EXEC.
+
+01  DCLTRANSACTION-TYPE-CATEGORY.
+    10 DCL-TRC-TYPE-CODE       PIC X(2).
+    10 DCL-TRC-TYPE-CATEGORY   PIC X(4).
+    10 DCL-TRC-CAT-DATA.
+       49 DCL-TRC-CAT-DATA-LEN   PIC S9(4) USAGE COMP.
+       49 DCL-TRC-CAT-DATA-TEXT  PIC X(50).
+</code></pre>
+
+<h3>VSAM Output File Layouts</h3>
+
+<table>
+    <thead><tr><th>Dataset</th><th>LRECL</th><th>Layout</th></tr></thead>
+    <tbody>
+        <tr>
+            <td><code>TRANTYPE.PS</code></td>
+            <td>60</td>
+            <td>Cols 1–2: TR_TYPE; Cols 3–52: TR_DESCRIPTION (padded to 50); Cols 53–60: <code>00000000</code> (filler)</td>
+        </tr>
+        <tr>
+            <td><code>TRANCATG.PS</code></td>
+            <td>60</td>
+            <td>Cols 1–2: TRC_TYPE_CODE; Cols 3–6: TRC_TYPE_CATEGORY; Cols 7–56: TRC_CAT_DATA (padded to 50); Cols 57–60: <code>0000</code> (filler)</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ BUSINESS RULES ══════════════════════════════ -->
+<h2 id="business-rules">6. Business Rules</h2>
+
+<div class="rule-box">
+    <h4>BR-01: Referential Integrity – No Orphaned Categories</h4>
+    <p>The <code>TRANSACTION_TYPE_CATEGORY</code> table has a <code>FOREIGN KEY … ON DELETE RESTRICT</code> constraint
+    referencing <code>TRANSACTION_TYPE.TR_TYPE</code>. Deleting a transaction type code that still has associated
+    categories will be rejected by DB2 with a non-zero SQLCODE. The CTLI screen surfaces this as a delete failure
+    message.</p>
+</div>
+
+<div class="rule-box">
+    <h4>BR-02: Dual-Source Synchronisation Requirement</h4>
+    <p>Online changes (CTTU / CTLI) and batch changes (MNTTRDB2) update DB2 only. The <code>TRANEXTR</code> job
+    <em>must</em> be executed to propagate those changes to the VSAM files read by the core application's COTRN
+    screens. There is no real-time sync; the lag is one batch cycle.</p>
+</div>
+
+<div class="rule-box">
+    <h4>BR-03: DB2 Cursor Discipline</h4>
+    <p>Both COTRTLIC cursors (<code>C-TR-TYPE-FORWARD</code> and <code>C-TR-TYPE-BACKWARD</code>) must be
+    explicitly OPENed before each FETCH loop and CLOSEd afterward. SQLCA must be checked after every EXEC SQL;
+    SQLCODE 100 signals end-of-data (not an error). Any other non-zero SQLCODE must abort the operation and
+    surface a formatted message via <code>9999-FORMAT-DB2-MESSAGE</code>.</p>
+</div>
+
+<div class="rule-box">
+    <h4>BR-04: Admin-Only Access</h4>
+    <p>Both online transactions (<code>CTTU</code> and <code>CTLI</code>) set <code>CDEMO-USRTYP-ADMIN</code> in
+    the COMMAREA on entry, meaning they are intended for administrator accounts only (e.g.,
+    <code>ADMIN001</code>). They are accessible from Admin Menu (<code>CA00</code>) options 5 and 6, which are not
+    displayed to non-admin users.</p>
+</div>
+
+<div class="rule-box">
+    <h4>BR-05: Input Validation Rules</h4>
+    <ul>
+        <li><code>TR_TYPE</code> must be exactly 2 alphanumeric characters (validated via INSPECT against
+            <code>LIT-ALL-ALPHANUM-FROM-X</code>).</li>
+        <li><code>TR_DESCRIPTION</code> must be non-blank; maximum 50 characters.</li>
+        <li>In MNTTRDB2 input file: column 1 must be <code>A</code>, <code>U</code>, <code>D</code>, or
+            <code>*</code>. Any other value triggers a <code>9999-ABEND</code>.</li>
+    </ul>
+</div>
+
+<div class="rule-box">
+    <h4>BR-06: Concurrent Update Protection</h4>
+    <p>COTRTUPC reads the current record into a work area before presenting it for update. On PF5 (commit), it
+    re-reads the record and compares the stored copy. If the description has changed between the read and the
+    commit (i.e., another user updated the record), the program rejects the update with message
+    <em>"Record changed by someone else. Please review"</em>.</p>
+</div>
+
+<div class="rule-box">
+    <h4>BR-07: GDG Backup on TRANEXTR</h4>
+    <p>Before overwriting the VSAM output files, TRANEXTR backs up the current version of <code>TRANTYPE.PS</code>
+    to <code>TRANTYPE.BKUP(+1)</code> and <code>TRANCATG.PS</code> to <code>TRANCATG.PS.BKUP(+1)</code> using
+    IEBGENER. This preserves one generation of history. Steps run conditionally on RC=0 from the previous step
+    (<code>COND=(0,NE)</code>).</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ DEPENDENCIES ════════════════════════════════ -->
+<h2 id="dependencies">7. Dependencies</h2>
+
+<h3>Internal Dependencies</h3>
+<table>
+    <thead><tr><th>Dependency</th><th>Type</th><th>Reason</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>core-application</td>
+            <td>Requires base installed</td>
+            <td>Admin Menu (CA00), COMMAREA structure (<code>COCOM01Y</code>), shared copybooks (<code>CSDAT01Y</code>, <code>CSMSG01Y</code>, <code>CSUSR01Y</code>, <code>CSUTLDWY</code>, <code>COTTL01Y</code>), and VSAM account/transaction datasets must all exist.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>External / Platform Dependencies</h3>
+<table>
+    <thead><tr><th>Dependency</th><th>Component</th><th>Notes</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>IBM DB2 for z/OS</td>
+            <td>Subsystem <code>DAZ1</code> (default)</td>
+            <td>Tables <code>CARDDEMO.TRANSACTION_TYPE</code> and <code>CARDDEMO.TRANSACTION_TYPE_CATEGORY</code> must exist. STOGROUP <code>AWST1STG</code> must be available for CREADB21.</td>
+        </tr>
+        <tr>
+            <td>IBM CICS with DB2 Support</td>
+            <td>DB2ENTRY <code>CARDDEMO</code>, DB2TRANs <code>CTLITRAN</code> / <code>CTTUTRAN</code></td>
+            <td>CICS must be configured with a DB2 connection pool. The DB2ENTRY defined in <code>CRDDEMOD.csd</code> sets PLAN(<code>CARDDEMO</code>), PRIORITY(HIGH), THREADLIMIT(1).</td>
+        </tr>
+        <tr>
+            <td>DB2 Utilities</td>
+            <td><code>DSNTIAUL</code>, <code>DSNTEP4</code>, <code>DSNTIAD</code>, <code>DSNTIAC</code></td>
+            <td>Load libraries must be accessible via STEPLIB in batch JCL (<code>OEM.DB2.DAZ1.RUNLIB.LOAD</code>, <code>OEMA.DB2.VERSIONA.SDSNLOAD</code>). DSNTIAC is called at runtime from CICS programs for SQLCA formatting.</td>
+        </tr>
+        <tr>
+            <td>JES2 / JES3</td>
+            <td>Spool and dataset allocation</td>
+            <td>Batch jobs submit to JES; CA-7/Control-M scheduling can automate TRANEXTR nightly.</td>
+        </tr>
+        <tr>
+            <td>RACF</td>
+            <td>Dataset-level security</td>
+            <td>The CARDDEMO LOADLIB and DBRMLIB must be accessible to the batch user; DB2 GRANT statements in DB2CREAT.ctl grant PUBLIC access to the table, but RACF dataset protections may override.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ CONFIGURATION ═══════════════════════════════ -->
+<h2 id="configuration">8. Configuration &amp; Installation</h2>
+
+<h3>Prerequisites</h3>
+<ol>
+    <li>Base CardDemo application installed and operational (VSAM datasets, CICS region, COBOL programs).</li>
+    <li>DB2 subsystem configured and accessible from the CICS region.</li>
+    <li>DB2 utilities (<code>DSNTIAUL</code>, <code>DSNTEP4</code>, <code>DSNTIAD</code>) bound and available.</li>
+    <li>STOGROUP <code>AWST1STG</code> exists in the DB2 subsystem (or update <code>DB2CREAT.ctl</code>).</li>
+</ol>
+
+<h3>Installation Steps</h3>
+
+<h4>Step 1 – Create DB2 Objects (CREADB21)</h4>
+<pre><code>// Customise HLQ and DB2S parameters in CREADB21.jcl, then submit:
+//   SET CODER=AWS
+//   SET LBNM=&CODER..M2.CARDDEMO
+//   SET DB2S=DAZ1
+
+// CREADB21 runs the following steps:
+//   FREEPLN  - Frees existing DB2 plans/packages (RC 8 is normal if first run)
+//   CRCRDDB  - Creates CARDDEMO database, CARDSPC1 tablespace, tables, indexes
+//   LDTTYPE  - Loads initial TRANSACTION_TYPE seed data via DSNTEP4
+//   LDTCCAT  - Loads initial TRANSACTION_TYPE_CATEGORY seed data via DSNTEP4
+</code></pre>
+
+<h4>Step 2 – Define CICS Resources</h4>
+<p>Upload and process <code>csd/CRDDEMOD.csd</code> in your CICS region. This defines:</p>
+<pre><code>DEFINE MAPSET(COTRTLI)  GROUP(CARDDEMO)  -- List screen map
+DEFINE MAPSET(COTRTUP)  GROUP(CARDDEMO)  -- Add/edit screen map
+DEFINE PROGRAM(COTRTLIC) GROUP(CARDDEMO) TRANSID(CTLI)
+DEFINE PROGRAM(COTRTUPC) GROUP(CARDDEMO) TRANSID(CTTU)
+DEFINE TRANSACTION(CTLI) GROUP(CARDDEMO) PROGRAM(COTRTLIC)
+DEFINE TRANSACTION(CTTU) GROUP(CARDDEMO) PROGRAM(COTRTUPC)
+DEFINE DB2ENTRY(CARDDEMO)  GROUP(CARDDEMO) PLAN(CARDDEMO)
+DEFINE DB2TRAN(CTLITRAN)   GROUP(CARDDEMO) ENTRY(CARDDEMO) TRANSID(CTLI)
+DEFINE DB2TRAN(CTTUTRAN)   GROUP(CARDDEMO) ENTRY(CARDDEMO) TRANSID(CTTU)
+</code></pre>
+
+<h4>Step 3 – Compile Programs with DB2 Precompiler</h4>
+<p>
+    All COBOL programs in this module contain embedded SQL and must be compiled using the DB2 precompiler before
+    the standard COBOL compile step. The compile sequence is:
+</p>
+<pre><code>1. DB2 Precompile  (DSNHPC)  -- produces modified COBOL source + DBRM
+2. COBOL Compile   (IGYCRCTL) -- compiles precompiled source
+3. Linkedit        (IEWL)    -- links to load library
+4. DB2 BIND        (DSN BIND) -- binds DBRM into plan CARDDEMO
+</code></pre>
+
+<h4>Step 4 – Initial Data Extract</h4>
+<pre><code>// After CREADB21 loads seed data, run TRANEXTR to create VSAM files:
+// This populates AWS.M2.CARDDEMO.TRANTYPE.PS and TRANCATG.PS
+// Customise HLQ at top of TRANEXTR.jcl:
+//   SET HLQ=AWS.M2.CARDDEMO
+</code></pre>
+
+<h4>Step 5 – Enable Admin Menu Options</h4>
+<p>
+    Once the above steps are complete, options 5 and 6 become functional in Admin Menu (<code>CA00</code>).
+    Log in as <code>ADMIN001</code> / <code>PASSWORD</code> to verify.
+</p>
+
+<h3>Environment Variables / JCL Parameters</h3>
+
+<table>
+    <thead><tr><th>Parameter</th><th>JCL</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>HLQ</code></td><td>TRANEXTR</td><td><code>AWS.M2.CARDDEMO</code></td><td>High-level qualifier for all output datasets.</td></tr>
+        <tr><td><code>CODER</code></td><td>CREADB21</td><td><code>AWS</code></td><td>Prefix used to build <code>LBNM</code> for the CardDemo library.</td></tr>
+        <tr><td><code>LBNM</code></td><td>CREADB21</td><td><code>&amp;CODER..M2.CARDDEMO</code></td><td>PDS containing control files for DB2 object creation.</td></tr>
+        <tr><td><code>DB2S</code></td><td>CREADB21</td><td><code>DAZ1</code></td><td>DB2 subsystem ID (SSID).</td></tr>
+        <tr><td><code>INPFILE</code></td><td>MNTTRDB2</td><td><em>(user-supplied)</em></td><td>Sequential input file containing batch maintenance records.</td></tr>
+    </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════ DEVELOPMENT ═════════════════════════════════ -->
+<h2 id="development">9. Development Guidelines</h2>
+
+<h3>DB2 Embedded SQL Patterns</h3>
+
+<p>All SQL in this module uses <strong>static embedded SQL</strong> compiled at precompile time into a DBRM
+(Database Request Module). This is the recommended pattern for CICS COBOL programs because:</p>
+<ul>
+    <li>Access paths are determined at bind time, yielding predictable performance.</li>
+    <li>Static SQL avoids dynamic plan lookup overhead on each execution.</li>
+    <li>SQLCA is populated automatically after each EXEC SQL; always check <code>SQLCODE</code>.</li>
+</ul>
+
+<h4>Canonical SQLCA Check Pattern</h4>
+<pre><code>       EXEC SQL
+            SELECT TR_TYPE
+                  ,TR_DESCRIPTION
+              INTO :DCL-TR-TYPE
+                  ,:DCL-TR-DESCRIPTION
+              FROM CARDDEMO.TRANSACTION_TYPE
+             WHERE TR_TYPE = :WS-INPUT-TTYPE
+       END-EXEC
+
+       MOVE SQLCODE TO WS-DISP-SQLCODE
+
+       EVALUATE TRUE
+           WHEN SQLCODE = ZERO
+               SET FOUND-TRANTYPE-IN-TABLE TO TRUE
+           WHEN SQLCODE = +100
+               SET WS-RECORD-NOT-FOUND TO TRUE
+           WHEN OTHER
+               SET WS-DB2-ERROR TO TRUE
+               MOVE 'SELECT TRAN TYPE: ' TO WS-DB2-CURRENT-ACTION
+               PERFORM 9999-FORMAT-DB2-MESSAGE
+                  THRU 9999-FORMAT-DB2-MESSAGE-EXIT
+       END-EVALUATE
+</code></pre>
+
+<h4>Forward Cursor Paging Pattern</h4>
+<pre><code>       EXEC SQL
+            DECLARE C-TR-TYPE-FORWARD CURSOR FOR
+                SELECT TR_TYPE, TR_DESCRIPTION
+                  FROM CARDDEMO.TRANSACTION_TYPE
+                 WHERE TR_TYPE >= :WS-START-KEY
+                   AND ((:WS-EDIT-TYPE-FLAG = '1'
+                   AND   TR_TYPE = :WS-TYPE-CD-FILTER)
+                    OR  (:WS-EDIT-TYPE-FLAG <> '1'))
+                 ORDER BY TR_TYPE
+       END-EXEC
+
+       EXEC SQL OPEN  C-TR-TYPE-FORWARD END-EXEC
+       PERFORM UNTIL WS-RECORDS-COUNT >= WS-MAX-SCREEN-LINES
+                  OR SQLCODE = +100
+           EXEC SQL FETCH C-TR-TYPE-FORWARD
+                     INTO :DCL-TR-TYPE, :DCL-TR-DESCRIPTION
+           END-EXEC
+           IF SQLCODE = ZERO
+               ADD 1 TO WS-RECORDS-COUNT
+               ... populate screen array ...
+           END-IF
+       END-PERFORM
+       EXEC SQL CLOSE C-TR-TYPE-FORWARD END-EXEC
+</code></pre>
+
+<h4>Delete with RI Check Pattern</h4>
+<pre><code>       EXEC SQL
+            DELETE FROM CARDDEMO.TRANSACTION_TYPE
+             WHERE TR_TYPE = :WS-DELETE-TYPE-CODE
+       END-EXEC
+
+       EVALUATE TRUE
+           WHEN SQLCODE = ZERO
+               SET FLG-DELETED-YES TO TRUE
+           WHEN SQLCODE = -532        *> FK violation
+               SET WS-RI-VIOLATION  TO TRUE
+               ... display "Cannot delete; categories exist" ...
+           WHEN OTHER
+               SET WS-DB2-ERROR TO TRUE
+               PERFORM 9999-FORMAT-DB2-MESSAGE ...
+       END-EVALUATE
+</code></pre>
+
+<h3>Coding Conventions</h3>
+<ul>
+    <li>All programs use 88-level condition names for flag variables (e.g., <code>INPUT-OK</code>,
+        <code>FLG-DELETED-YES</code>); set flags with <code>SET … TO TRUE</code> rather than MOVE literals.</li>
+    <li>Working-storage literals are grouped under <code>01 WS-CONSTANTS</code> (for static strings) and
+        <code>01 WS-MISC-STORAGE</code> (for working variables).</li>
+    <li>Messages shown to users are defined as 88-level values on info/return message PIC X fields, making
+        all user-facing text visible in one place.</li>
+    <li>DB2 common procedures (<code>9998-PRIMING-QUERY</code>, <code>9999-FORMAT-DB2-MESSAGE</code>) are
+        shared via copybooks <code>CSDB2RWY</code> (working-storage) and <code>CSDB2RPY</code> (procedure
+        division), included with <code>EXEC SQL INCLUDE</code>.</li>
+    <li>CICS COMMAREA: each program copies the shared <code>CARDDEMO-COMMAREA</code> (from <code>COCOM01Y</code>)
+        at the front, then appends a private commarea structure for program-specific state.</li>
+</ul>
+
+<h3>Adding a New Transaction Type Field</h3>
+<ol>
+    <li>Alter the DB2 table: <code>ALTER TABLE CARDDEMO.TRANSACTION_TYPE ADD COLUMN …</code> and update
+        <code>ddl/TRNTYPE.ddl</code>.</li>
+    <li>Regenerate the DCLGEN declarations and update <code>dcl/DCLTRTYP.dcl</code>.</li>
+    <li>Update BMS map <code>COTRTUP.bms</code> and its copybook <code>COTRTUP.cpy</code>.</li>
+    <li>Update COTRTUPC and COTRTLIC to bind/display the new field.</li>
+    <li>Update the TRANEXTR SQL to include the new column in its <code>CONCAT</code> expression and adjust the
+        output LRECL.</li>
+    <li>Update COBTUPDT input record layout if batch maintenance is needed for the new field.</li>
+    <li>Recompile all affected programs with the DB2 precompiler and re-bind the <code>CARDDEMO</code> plan.</li>
+</ol>
+
+<!-- ═══════════════════════════════════════════ USAGE EXAMPLES ══════════════════════════════ -->
+<h2 id="usage-examples">10. Usage Examples</h2>
+
+<h3>Example 1 – Adding a Transaction Type Online (CTTU)</h3>
+<pre><code>1. Log in as ADMIN001 / PASSWORD
+2. From CA00 main menu, press 6 (Transaction Type add/edit) → CTTU
+3. Screen CTRTUPA displays a blank form.
+
+   TRANSACTION TYPE CODE  : __
+   DESCRIPTION            : __________________________________________________
+
+   PF3=Exit  PF5=Confirm  PF12=Cancel
+
+4. Type:  TR_TYPE = "PU"  DESCRIPTION = "Purchase"
+5. Press Enter → program validates inputs and checks DB2 for existing record.
+   Message: "Enter new transaction type details."
+6. Press PF5 → INSERT issued:
+   EXEC SQL INSERT INTO CARDDEMO.TRANSACTION_TYPE
+            VALUES(:INPUT-TYPE-CODE, :INPUT-DESCRIPTION) END-EXEC
+   Message: "Changes committed to database"
+</code></pre>
+
+<h3>Example 2 – Browsing and Deleting via CTLI</h3>
+<pre><code>1. From CA00, press 5 → CTLI screen loads with 7 rows from DB2.
+2. Press PF8 to page forward.
+3. Enter "D" in the selection column next to type code "XX".
+4. Press Enter → program flags the row for delete.
+5. Press PF10 → DELETE executed:
+   EXEC SQL DELETE FROM CARDDEMO.TRANSACTION_TYPE
+             WHERE TR_TYPE = :WS-DELETE-TYPE-CODE END-EXEC
+   If no FK violation: "Delete successful."
+   If FK violation:    "Delete of record failed" (categories still reference it).
+</code></pre>
+
+<h3>Example 3 – Batch Maintenance (MNTTRDB2)</h3>
+<pre><code>// Create input file INPFILE with these records:
+APUPurchase (new add)
+URRReturn - Merchandise (update description)
+DXXObsolete type (delete)
+* This is a comment line
+
+// Submit MNTTRDB2.jcl pointing INPFILE to your dataset.
+// COBTUPDT processes each line:
+//   'A' → INSERT INTO CARDDEMO.TRANSACTION_TYPE
+//   'U' → UPDATE CARDDEMO.TRANSACTION_TYPE SET TR_DESCRIPTION = ...
+//   'D' → DELETE FROM CARDDEMO.TRANSACTION_TYPE WHERE TR_TYPE = ...
+//   '*' → DISPLAY 'IGNORING COMMENTED LINE' (no SQL)
+</code></pre>
+
+<h3>Example 4 – Nightly TRANEXTR Execution</h3>
+<pre><code>// Schedule TRANEXTR in CA-7 or Control-M after DB2 updates complete.
+// Expected dataset results:
+//   AWS.M2.CARDDEMO.TRANTYPE.PS    – 60-byte records, one per transaction type
+//   AWS.M2.CARDDEMO.TRANCATG.PS   – 60-byte records, one per category
+//   AWS.M2.CARDDEMO.TRANTYPE.BKUP(+1)    – previous day backup
+//   AWS.M2.CARDDEMO.TRANCATG.PS.BKUP(+1) – previous day backup
+
+// Once TRANEXTR completes, the CT00 (COTRN00C) transaction screens
+// automatically display updated type labels on next execution.
+</code></pre>
+
+<h3>Example 5 – CTLI Filter by Description</h3>
+<pre><code>// On the CTRTLIA screen:
+//   TYPE FILTER :    (leave blank)
+//   DESC FILTER : Purchase%   (SQL LIKE syntax supported)
+
+// Press Enter → COTRTLIC opens the forward cursor with:
+//   WHERE TR_DESCRIPTION LIKE TRIM(:WS-TYPE-DESC-FILTER)
+
+// Only rows matching "Purchase%" appear in the 7-row list.
+</code></pre>
+
+<!-- ═══════════════════════════════════════════ PERFORMANCE ═════════════════════════════════ -->
+<h2 id="performance">11. Performance Considerations</h2>
+
+<table>
+    <thead><tr><th>Operation</th><th>Budget</th><th>Notes</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>CTLI cursor open + 7 FETCHes</td>
+            <td>&lt; 2 seconds</td>
+            <td>The unique index on <code>TR_TYPE</code> ensures fast range scans. Filter by description uses LIKE which may require a table scan if many rows exist.</td>
+        </tr>
+        <tr>
+            <td>CTTU single SELECT / INSERT / UPDATE</td>
+            <td>&lt; 1 second</td>
+            <td>Single-row operations keyed on the primary key; always uses the unique index.</td>
+        </tr>
+        <tr>
+            <td>TRANEXTR full extract</td>
+            <td>&lt; 90 seconds</td>
+            <td>DSNTIAUL unloads all rows in TR_TYPE order. Dataset size is bounded by the number of transaction types (typically small). GDG backup adds one sequential copy step.</td>
+        </tr>
+        <tr>
+            <td>MNTTRDB2 batch run</td>
+            <td>Proportional to input file size</td>
+            <td>Each input record is one SQL statement. No bulk-insert optimization; suitable for small maintenance files (&lt;1000 records).</td>
+        </tr>
+        <tr>
+            <td>DB2 thread acquisition</td>
+            <td>THREADLIMIT(1)</td>
+            <td>The DB2ENTRY is configured with THREADLIMIT(1). In high-concurrency scenarios, consider increasing the thread limit or moving to a pool-based entry.</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="warning-box">
+    <h4>⚠️ Thread Limit Warning</h4>
+    <p>The CSD definition sets <code>THREADLIMIT(1)</code> on the <code>CARDDEMO</code> DB2ENTRY. Under concurrent
+    admin activity (e.g., two operators using CTLI simultaneously), one request will queue until the first
+    releases its thread. For production environments, increase THREADLIMIT or use a shared pool entry.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ TROUBLESHOOTING ═════════════════════════════ -->
+<h2 id="troubleshooting">12. Troubleshooting</h2>
+
+<table>
+    <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>CTLI / CTTU abend with SQLCODE -904 or -923</td>
+            <td>DB2 subsystem unavailable or CICS DB2 connection not established</td>
+            <td>Verify DB2 subsystem <code>DAZ1</code> is active; check CICS DB2ENTRY <code>CARDDEMO</code> is enabled; re-install CSD definitions if needed.</td>
+        </tr>
+        <tr>
+            <td>"Delete of record failed" on a type with no categories</td>
+            <td>Stale VSAM file still references the type code (core application constraint)</td>
+            <td>Run TRANEXTR to refresh VSAM files, then retry the delete after verifying the VSAM records are gone.</td>
+        </tr>
+        <tr>
+            <td>TRANEXTR fails at STEP40 / STEP50</td>
+            <td>DSNTIAUL plan not bound, or DB2 tables do not exist</td>
+            <td>Run CREADB21 first; verify DSNTIAUL is bound using <code>app/jcl/UTIL/BINDTIAD</code> JCL.</td>
+        </tr>
+        <tr>
+            <td>MNTTRDB2 abends with "TYPE NOT VALID"</td>
+            <td>Input file has a record where column 1 is not A/U/D/*</td>
+            <td>Inspect the INPFILE for blank or corrupt records; correct the file and resubmit.</td>
+        </tr>
+        <tr>
+            <td>CTTU message "Record changed by someone else"</td>
+            <td>Concurrent update; another user or batch job modified the record between the read and the commit</td>
+            <td>Press Enter to re-read the current record; review, then press PF5 again to commit your changes.</td>
+        </tr>
+        <tr>
+            <td>Options 5/6 missing from Admin Menu CA00</td>
+            <td>CICS transactions CTLI/CTTU not defined, or programs not compiled</td>
+            <td>Ensure CRDDEMOD.csd resources are installed and programs are compiled/linked into the LOADLIB.</td>
+        </tr>
+        <tr>
+            <td>COTRTLIC / COTRTUPC compile error on EXEC SQL</td>
+            <td>DB2 precompiler not run before COBOL compile</td>
+            <td>Use a two-step compile JCL: DSNHPC precompile first, then IGYCRCTL. Check DSNHPC return code ≤ 4.</td>
+        </tr>
+    </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>Related Documentation</h2>
+<ul>
+    <li><a href="../../index.html">← System Overview / Module Index</a></li>
+    <li><a href="../core-application/index.html">Core Application Module</a></li>
+    <li><a href="../authorization/index.html">Authorization Module</a></li>
+    <li><a href="../account-extractions/index.html">Account Extractions Module</a></li>
+</ul>
+
+<h2>Source Files</h2>
+<table>
+    <thead><tr><th>File</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr><td><code>app/app-transaction-type-db2/cbl/COTRTLIC.cbl</code></td><td>COBOL</td><td>CTLI list/update/delete program (2,098 lines)</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/cbl/COTRTUPC.cbl</code></td><td>COBOL</td><td>CTTU add/edit program (1,702 lines)</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/cbl/COBTUPDT.cbl</code></td><td>COBOL</td><td>Batch maintenance program (237 lines)</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/bms/COTRTLI.bms</code></td><td>BMS</td><td>List screen map definition</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/bms/COTRTUP.bms</code></td><td>BMS</td><td>Add/edit screen map definition</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/ddl/TRNTYPE.ddl</code></td><td>DDL</td><td>CREATE TABLE for TRANSACTION_TYPE</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/ddl/TRNTYCAT.ddl</code></td><td>DDL</td><td>CREATE TABLE for TRANSACTION_TYPE_CATEGORY</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/dcl/DCLTRTYP.dcl</code></td><td>DCL</td><td>DCLGEN for TRANSACTION_TYPE</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/dcl/DCLTRCAT.dcl</code></td><td>DCL</td><td>DCLGEN for TRANSACTION_TYPE_CATEGORY</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/cpy/CSDB2RWY.cpy</code></td><td>Copybook</td><td>Common DB2 working-storage variables</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/cpy/CSDB2RPY.cpy</code></td><td>Copybook</td><td>Common DB2 procedure paragraphs</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/csd/CRDDEMOD.csd</code></td><td>CSD</td><td>CICS resource definitions</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/jcl/CREADB21.jcl</code></td><td>JCL</td><td>One-time DB2 setup job</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/jcl/TRANEXTR.jcl</code></td><td>JCL</td><td>Nightly DB2-to-VSAM extract job</td></tr>
+        <tr><td><code>app/app-transaction-type-db2/jcl/MNTTRDB2.jcl</code></td><td>JCL</td><td>Batch DB2 maintenance job</td></tr>
+    </tbody>
+</table>
+
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #444; color: #888; font-size: 0.85em;">
+    Last reviewed: 2026-03-10T16:12:37Z
+    &nbsp;|&nbsp; Module: transaction-type &nbsp;|&nbsp; CardDemo Platform v1.0.0
+</footer>
+
 </body>
 </html>

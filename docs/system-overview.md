@@ -66,14 +66,34 @@
 
 ### 3. Transaction Type
 **ID:** `transaction-type`  
-**Purpose:** Demonstrate DB2 CRUD and cursor techniques for maintaining transaction type metadata while synchronizing reference data back to VSAM for the legacy transaction engine.  
-**Key Components:** CICS transactions `CTTU` (add/edit) and `CTLI` (list/update/delete), DB2 tables (`CARDDEMO.TRANSACTION_TYPE`, `TRANSACTION_TYPE_CATEGORY`), batch programs `TRANEXTR` (extract latest DB2 rows) and `MNTTRDB2` (batch maintenance), and precompiler artifacts (`app/app-transaction-type-db2/dcl`, `ddl`).  
+**Purpose:** Demonstrate DB2 CRUD and cursor techniques for maintaining transaction type metadata while synchronizing reference data back to VSAM for the legacy transaction engine. Provides admin-only green-screen transactions for full lifecycle management of `CARDDEMO.TRANSACTION_TYPE` and `CARDDEMO.TRANSACTION_TYPE_CATEGORY` DB2 tables, with a nightly batch extract that propagates changes to VSAM sequential files consumed by the core application's `CT00`/`COTRN` screens.  
+**Key Components:**
+- **CICS Programs:** `COTRTUPC` (transaction `CTTU`) – add/edit a single type record using static embedded SQL INSERT/SELECT/UPDATE with two-phase confirm flow; `COTRTLIC` (transaction `CTLI`) – list/update/delete using forward (`C-TR-TYPE-FORWARD`) and backward (`C-TR-TYPE-BACKWARD`) DB2 cursors with PF7/PF8 paging (7 rows/screen) and optional type-code or LIKE-based description filters.  
+- **Batch Programs:** `COBTUPDT` (job `MNTTRDB2`) – sequential-file-driven batch INSERT/UPDATE/DELETE using operation codes (A/U/D/*); `TRANEXTR` – nightly DSNTIAUL unload from DB2 into fixed-format VSAM PS files (`TRANTYPE.PS`, `TRANCATG.PS`, LRECL=60) with GDG backup of prior versions.  
+- **One-time Setup:** `CREADB21` – creates the CARDDEMO DB2 database, CARDSPC1 tablespace, both tables, unique indexes, and loads seed data via DSNTEP4.  
+- **DB2 Precompiler Artifacts:** DCLGEN declarations (`dcl/DCLTRTYP.dcl`, `dcl/DCLTRCAT.dcl`); DB2 common working-storage copybook (`cpy/CSDB2RWY.cpy`) and procedure copybook (`cpy/CSDB2RPY.cpy`) providing the `9998-PRIMING-QUERY` connectivity check and `9999-FORMAT-DB2-MESSAGE` DSNTIAC formatter.  
+- **CICS Resources:** `csd/CRDDEMOD.csd` defines mapsets (COTRTLI, COTRTUP), programs, transactions CTLI/CTTU, DB2ENTRY CARDDEMO (PLAN=CARDDEMO, THREADLIMIT=1), and DB2TRANs (CTLITRAN, CTTUTRAN).  
+- **BMS Maps:** `COTRTUP` (CTRTUPA) for single-record add/edit; `COTRTLI` (CTRTLIA) for 7-row tabular list with selection column.
+
 **Public APIs:**
-- `CTTU` / `CTLI` – admin CRUD screens utilizing embedded static SQL with SQLCA checks.  
-- `TRANEXTR` / `CREADB21` / `MNTTRDB2` – JCL-driven jobs that refresh reference data and load VSAM-compatible files consumed by `core-application`.  
+- `CTTU` (`COTRTUPC`) – admin add/edit screen; Enter to validate, PF5 to commit INSERT or UPDATE, PF12 to cancel, PF3 to exit to CA00.  
+- `CTLI` (`COTRTLIC`) – admin list/update/delete screen; Enter to apply filters, PF7/PF8 to page, enter `U`/`D` in selection column to update/delete a row, PF10 to confirm action, PF3 to exit.  
+- `CREADB21` – one-time JCL job to create DB2 objects and load seed data (DSNTIAD + DSNTEP4); parameterisable via `SET DB2S=` and `SET LBNM=`.  
+- `TRANEXTR` – nightly JCL job to unload DB2 to VSAM PS files; produces `&HLQ..TRANTYPE.PS` and `&HLQ..TRANCATG.PS`; parameterisable via `SET HLQ=`.  
+- `MNTTRDB2` (`COBTUPDT`) – batch maintenance JCL job; input is `INPFILE` sequential dataset with records: Col 1=A/U/D/*, Cols 2–3=TR_TYPE, Cols 4–53=TR_DESCRIPTION.
+
+**Data Models:**
+- `CARDDEMO.TRANSACTION_TYPE`: `TR_TYPE CHAR(2) PK`, `TR_DESCRIPTION VARCHAR(50)`.  
+- `CARDDEMO.TRANSACTION_TYPE_CATEGORY`: `TRC_TYPE_CODE CHAR(2)`, `TRC_TYPE_CATEGORY CHAR(4)` (composite PK), `TRC_CAT_DATA VARCHAR(50)`; FK `TRC_TYPE_CODE → TRANSACTION_TYPE.TR_TYPE ON DELETE RESTRICT`.  
+- VSAM output: `TRANTYPE.PS` (60-byte FB; cols 1–2 type, 3–52 description, 53–60 filler); `TRANCATG.PS` (60-byte FB; cols 1–2 type code, 3–6 category, 7–56 data, 57–60 filler).
+
+**Dependencies:** Base CardDemo application (VSAM datasets, Admin Menu CA00, shared copybooks); IBM DB2 subsystem (`DAZ1` default); CICS with DB2 support; DB2 utilities DSNTIAUL, DSNTEP4, DSNTIAD, DSNTIAC; STOGROUP `AWST1STG`.
+
 **User Story Examples:**
-- As an admin, I want to batch-approve a new transaction category via `CTTU` so downstream reporting groups can rely on a DB2-backed enum.  
-- As an operator, I want `TRANEXTR` to publish the refreshed file so `CT00` transactions can read consistent category labels.
+- As an admin, I want to add a new transaction type code via `CTTU` so downstream reporting groups can rely on a DB2-backed enum.  
+- As an admin, I want to use `CTLI` to browse, filter by description, and delete obsolete type codes so the reference table stays clean.  
+- As an operator, I want `TRANEXTR` to publish the refreshed VSAM files nightly so `CT00` transactions display consistent category labels without DB2 access at runtime.  
+- As a batch operator, I want to submit `MNTTRDB2` with an input file of changes so I can bulk-update transaction types without logging into a 3270 terminal.
 
 ### 4. Account Extractions
 **ID:** `account-extractions`  
