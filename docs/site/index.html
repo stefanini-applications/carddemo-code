@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo - User Story Documentation Hub</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.85; max-width: 700px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 40px; }
+        .stat-card { background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .stat-card .number { font-size: 2rem; font-weight: 700; color: #2b6cb0; }
+        .stat-card .label { font-size: 0.85rem; color: #718096; margin-top: 4px; }
+        .section-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: #1a365d; border-bottom: 2px solid #2b6cb0; padding-bottom: 8px; }
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .module-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); border-left: 4px solid #2b6cb0; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: block; }
+        .module-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .module-card .icon { font-size: 2rem; margin-bottom: 12px; }
+        .module-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #1a365d; }
+        .module-card p { font-size: 0.9rem; color: #718096; line-height: 1.5; }
+        .module-card .badge { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; background: #ebf8ff; color: #2b6cb0; margin-top: 8px; font-family: monospace; }
+        .optional { border-left-color: #805ad5; }
+        .optional .badge { background: #faf5ff; color: #805ad5; }
+        .links { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 40px; }
+        .links a { display: inline-block; padding: 10px 20px; background: #2b6cb0; color: white; border-radius: 6px; text-decoration: none; margin-right: 12px; margin-bottom: 8px; font-size: 0.9rem; }
+        .links a:hover { background: #1a365d; }
+        .arch-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 40px; }
+        .arch-section pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏦 CardDemo — User Story Documentation Hub</h1>
+        <p>IBM CICS/COBOL Credit Card Management System — Comprehensive reference for engineers and Product Owners writing well-structured User Stories</p>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card"><div class="number">10</div><div class="label">Modules</div></div>
+            <div class="stat-card"><div class="number">30+</div><div class="label">CICS Programs</div></div>
+            <div class="stat-card"><div class="number">21</div><div class="label">BMS Mapsets</div></div>
+            <div class="stat-card"><div class="number">10+</div><div class="label">Batch Jobs</div></div>
+            <div class="stat-card"><div class="number">5</div><div class="label">VSAM Datasets</div></div>
+            <div class="stat-card"><div class="number">3</div><div class="label">Optional Modules</div></div>
+        </div>
+
+        <div class="links">
+            <h2 class="section-title">📚 Documentation Resources</h2>
+            <a href="../../system-overview.md">📄 System Overview (Markdown)</a>
+            <a href="../../module-file-map.md">🗺️ Module File Map</a>
+        </div>
+
+        <h2 class="section-title">📦 Core Modules</h2>
+        <div class="modules-grid">
+            <a href="modules/authentication/index.html" class="module-card">
+                <div class="icon">🔐</div>
+                <h3>Authentication</h3>
+                <p>User login/logout and session security. COSGN00C + USRSEC VSAM.</p>
+                <span class="badge">CC00 · COSGN00C</span>
+            </a>
+            <a href="modules/account-management/index.html" class="module-card">
+                <div class="icon">🏦</div>
+                <h3>Account Management</h3>
+                <p>View and update credit card accounts: balances, limits, status.</p>
+                <span class="badge">CAVW/CAUP · ACCTDATA VSAM</span>
+            </a>
+            <a href="modules/card-management/index.html" class="module-card">
+                <div class="icon">💳</div>
+                <h3>Card Management</h3>
+                <p>List, view, and update credit cards. Encrypted card numbers + CARDAIX.</p>
+                <span class="badge">CCLI/CCDL/CCUP · CARDDATA VSAM</span>
+            </a>
+            <a href="modules/transaction-management/index.html" class="module-card">
+                <div class="icon">💰</div>
+                <h3>Transaction Management</h3>
+                <p>List, view, and add credit card transactions. Online real-time entry.</p>
+                <span class="badge">CT00/CT01/CT02 · TRANSACT VSAM</span>
+            </a>
+            <a href="modules/reports/index.html" class="module-card">
+                <div class="icon">📊</div>
+                <h3>Reports</h3>
+                <p>Aggregated transaction statistics by category from TCATBALF.</p>
+                <span class="badge">CR00 · CORPT00C</span>
+            </a>
+            <a href="modules/bill-payment/index.html" class="module-card">
+                <div class="icon">💸</div>
+                <h3>Bill Payment</h3>
+                <p>Process customer payments and apply to account balances.</p>
+                <span class="badge">CB00 · COBIL00C</span>
+            </a>
+            <a href="modules/user-management/index.html" class="module-card">
+                <div class="icon">👥</div>
+                <h3>User Management</h3>
+                <p>Admin-only: add, update, delete system users with role types.</p>
+                <span class="badge">CU00–CU03 · USRSEC VSAM</span>
+            </a>
+            <a href="modules/batch-processing/index.html" class="module-card">
+                <div class="icon">⚙️</div>
+                <h3>Batch Processing</h3>
+                <p>Nightly cycle: post transactions, calculate interest, generate statements.</p>
+                <span class="badge">POSTTRAN · INTCALC · CREASTMT</span>
+            </a>
+        </div>
+
+        <h2 class="section-title">🔌 Optional Extension Modules</h2>
+        <div class="modules-grid">
+            <a href="modules/authorization/index.html" class="module-card optional">
+                <div class="icon">🛡️</div>
+                <h3>Authorization (IMS+DB2+MQ)</h3>
+                <p>Real-time credit authorization via IBM MQ with IMS storage and DB2 fraud logging.</p>
+                <span class="badge">CP00/CPVS/CPVD · MQ · IMS · DB2</span>
+            </a>
+            <a href="modules/transaction-types/index.html" class="module-card optional">
+                <div class="icon">🏷️</div>
+                <h3>Transaction Types (DB2)</h3>
+                <p>Manage DB2-backed transaction type catalog via CICS online screens.</p>
+                <span class="badge">CTLI/CTTU · DB2 TRANSACTION_TYPE</span>
+            </a>
+        </div>
+
+        <div class="arch-section">
+            <h2 class="section-title">🏗️ Architecture Overview</h2>
+            <pre>
+┌─────────────────────────────────────────────────────────┐
+│                  IBM 3270 Terminal                       │
+└───────────────────────┬─────────────────────────────────┘
+                        │ SNA/TN3270
+┌───────────────────────▼─────────────────────────────────┐
+│              CICS Transaction Server                     │
+│  CC00(Auth) → CM00(Menu) → Feature Transactions         │
+│  CAVW/CAUP  CCLI/CCDL/CCUP  CT00-CT02  CU00-CU03       │
+└──────────┬──────────────────────────────┬───────────────┘
+           │ VSAM I/O                      │ Optional
+┌──────────▼──────────┐   ┌───────────────▼──────────────┐
+│   VSAM KSDS Files   │   │  DB2 + IMS + IBM MQ          │
+│  ACCTDATA CARDDATA  │   │  TRANSACTION_TYPE AUTHFRDS   │
+│  CUSTDATA TRANSACT  │   │  IMS PAUTSUM0 PAUTDTL1       │
+│  USRSEC CARDXREF    │   │  MQ PAUTH.REQUEST/REPLY      │
+└──────────┬──────────┘   └──────────────────────────────┘
+           │
+┌──────────▼──────────────────────────────────────────────┐
+│              JCL Batch Tier                              │
+│  POSTTRAN → INTCALC → CREASTMT  (Nightly Cycle)         │
+│  DALYTRAN(input) → TRANSACT VSAM → DALYREJS(+1)(rejects)│
+└─────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+    </div>
+
+    <footer>
+        <p>CardDemo Documentation · Last updated: 2026-03-11 · IBM CICS/COBOL Credit Card Management System</p>
+    </footer>
+</body>
+</html>

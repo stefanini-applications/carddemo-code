@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #234e52 0%, #285e61 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #234e52; margin-bottom: 16px; border-bottom: 2px solid #285e61; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #e6fffa; color: #234e52; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #e6fffa; color: #285e61; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Reports</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Display aggregated transaction statistics and summaries by category, sourced from the transaction category balance file (TCATBALF).</p>
+            <p><strong>Business Context:</strong> Managers and compliance officers need summary views of transaction activity. The report screen provides read-only aggregated views — not raw transaction listings. Category totals are pre-computed by batch processing.</p>
+            <p><strong>Transaction ID:</strong> <span class="badge">CR00</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">CORPT00C</span></p>
+            <p><strong>Key Data Sources:</strong> <code>TCATBALF.PS</code> (category balances), <code>TRANCATG.PS</code> (category descriptions)</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>branch manager</em>, I want to view transaction totals by category so that I can monitor daily spending patterns across the portfolio.</div>
+            <div class="us-template">As a <em>compliance officer</em>, I want to see aggregated transaction category counts so that I can verify daily processing totals match expected volumes.</div>
+            <div class="us-template">As a <em>data analyst</em>, I want category descriptions displayed alongside codes so that I can interpret report data without looking up codes separately.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Reports Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Add a new display column to existing report screen</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add date-range filter to report, add new summary total row</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>New report screen with different aggregation (by account group, by card type)</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Multi-page report with print support, batch-generated report files</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Report Display (CR00):</strong>
+                <ul>
+                    <li>Category codes and descriptions displayed side by side from TRANCATG file</li>
+                    <li>Transaction counts and amounts formatted (e.g., +99,999,999.99) from TCATBALF</li>
+                    <li>Report data reflects last completed batch cycle (POSTTRAN)</li>
+                    <li>Screen is read-only (all fields ASKIP) — no data entry</li>
+                    <li>PF3 returns to Main Menu</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>CORPT00C:</strong> Reads TCATBALF sequential file, joins with TRANCATG for descriptions, formats amounts, populates CORPT00 BMS map</li>
+                <li><strong>TCATBALF.PS:</strong> Category balance flat file — updated by batch POSTTRAN; contains count and amount per category code</li>
+                <li><strong>TRANCATG.PS:</strong> Transaction category master — static lookup for category descriptions</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>batch-processing (POSTTRAN):</strong> TCATBALF is populated by nightly batch; report data is batch-cycle current, not real-time</li>
+                <li><strong>transaction-management:</strong> Source transactions come from TRANSACT VSAM, summarized into TCATBALF by batch</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/CORPT00C.cbl</code> — Report program</li>
+                <li><code>app/bms/CORPT00.bms</code> — Report BMS mapset</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Types - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #744210 0%, #c05621 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .optional-tag { display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 2px 10px; font-size: 0.8rem; margin-left: 8px; vertical-align: middle; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #744210; margin-bottom: 16px; border-bottom: 2px solid #c05621; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #fffaf0; color: #744210; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #fffaf0; color: #c05621; font-family: monospace; margin: 2px; }
+        .prereq { background: #fffaf0; border: 1px solid #fbd38d; border-radius: 6px; padding: 14px 16px; margin: 12px 0; color: #744210; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏷️ Transaction Types <span class="optional-tag">Optional Module</span></h1>
+        <p>User Story Development Guide · CardDemo System · DB2-backed</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Online CICS management of the DB2-backed transaction type catalog. Allows admins to add, edit, and delete transaction type codes and categories via interactive CICS screens.</p>
+            <p><strong>Business Context:</strong> Transaction types define the nature of card transactions (e.g., purchase, refund, cash advance, fee, interest). When new product lines or transaction categories are introduced, admins need to add codes without code changes or batch updates. This module enables catalog management through the online system with DB2 providing referential integrity.</p>
+            <p><strong>Location:</strong> <code>app/app-transaction-type-db2/</code></p>
+            <p><strong>Transaction IDs:</strong> <span class="badge">CTLI (List)</span> <span class="badge">CTTU (Add/Edit)</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COTRTLIC</span> <span class="badge">COTRTUPC</span></p>
+            <p><strong>DB2 Tables:</strong> <code>TRANSACTION_TYPE</code>, <code>TRANSACTION_TYPE_CATEGORY</code> (schema: CARDDEMO)</p>
+            <div class="prereq">⚠️ <strong>Prerequisites:</strong> DB2 subsystem required. COADM01C (Admin Menu) options 5/6 enabled only with this module installed. Requires Admin user type (SEC-USR-TYPE = 'A').</div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As an <em>admin</em>, I want to add a new transaction type code so that card systems can process a new transaction category.</div>
+            <div class="us-template">As an <em>admin</em>, I want to update a transaction type description so that it reflects current business terminology without a code deployment.</div>
+            <div class="us-template">As an <em>admin</em>, I want to delete an obsolete transaction type so that it no longer appears in transaction entry dropdowns or validation.</div>
+            <div class="us-template">As an <em>admin</em>, I want to list all transaction types with paging so that I can review the complete catalog.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Transaction Types Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Update a type description, add display field to list</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add new DB2 column to TRANSACTION_TYPE, add category filter to list</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Add new table (e.g., TRANSACTION_TYPE_RULE), enforce new referential integrity constraint</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Migrate from flat-file TRANTYPE/TRANCATG to DB2 for core VSAM module</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Transaction Type List (CTLI):</strong>
+                <ul>
+                    <li>DB2 cursor pages forward (PF8) and backward (PF7) — different from VSAM STARTBR/READNEXT pattern</li>
+                    <li>Inline selection: 'U' on row navigates to CTTU edit; 'D' on row triggers delete confirmation</li>
+                    <li>At end of catalog, PF8 shows "NO MORE RECORDS"</li>
+                    <li>Admin user type required; non-admin users must see "NOT AUTHORIZED" message</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Add/Edit Type (CTTU):</strong>
+                <ul>
+                    <li>Type code is 2-character, unique in DB2 TRANSACTION_TYPE table</li>
+                    <li>Duplicate type code shows "TYPE CODE ALREADY EXISTS" error (DB2 PK violation handled)</li>
+                    <li>Description field required (VARCHAR 50); blank description shows validation error</li>
+                    <li>"RECORD SAVED SUCCESSFULLY" shown in GREEN on INSERT or UPDATE</li>
+                    <li>Delete requires confirmation — row must have no dependent transactions in TRANSACT VSAM</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COTRTLIC:</strong> Uses DB2 forward and backward cursors (two separate DECLARE CURSOR statements) for paging — distinguishes this from VSAM STARTBR/READNEXT pattern used elsewhere</li>
+                <li><strong>COTRTUPC:</strong> DB2 INSERT (new type) or UPDATE (existing type) with SQLCA error handling; validates SQLCODE for duplicate key (SQLCODE = -803)</li>
+                <li><strong>DCLTRTYP.dcl:</strong> DB2 host variable declaration copybook for TRANSACTION_TYPE</li>
+                <li><strong>DCLTRCAT.dcl:</strong> DB2 host variable declaration copybook for TRANSACTION_TYPE_CATEGORY</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>transaction-management:</strong> TRAN-TYPE-CD in CVTRA05Y references TRANSACTION_TYPE.TRAN_TYPE_CD when DB2 module installed; referential integrity enforced in DB2</li>
+                <li><strong>user-management:</strong> Admin user type (SEC-USR-TYPE = 'A') required; COADM01C checks this before showing menu options 5/6</li>
+                <li><strong>DB2 subsystem:</strong> DEFINE DB2ENTRY(DB201PLN) in CICS CSD required; CICS DB2 attachment must be configured</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/app-transaction-type-db2/cbl/COTRTLIC.cbl</code> — Transaction type list (DB2 cursor paging)</li>
+                <li><code>app/app-transaction-type-db2/cbl/COTRTUPC.cbl</code> — Add/edit transaction type</li>
+                <li><code>app/app-transaction-type-db2/bms/COTRTLI.bms</code> — List BMS mapset</li>
+                <li><code>app/app-transaction-type-db2/bms/COTRTUP.bms</code> — Add/edit BMS mapset</li>
+                <li><code>app/app-transaction-type-db2/ddl/TRNTYPE.ddl</code> — TRANSACTION_TYPE table DDL</li>
+                <li><code>app/app-transaction-type-db2/ddl/TRNTYCAT.ddl</code> — TRANSACTION_TYPE_CATEGORY table DDL</li>
+                <li><code>app/app-transaction-type-db2/dcl/DCLTRTYP.dcl</code> — Type host variable declarations</li>
+                <li><code>app/app-transaction-type-db2/dcl/DCLTRCAT.dcl</code> — Category host variable declarations</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

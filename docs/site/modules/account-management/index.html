@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #276749 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #1a365d; margin-bottom: 16px; border-bottom: 2px solid #276749; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul, ol { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #f0fff4; color: #276749; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #f0fff4; color: #276749; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏦 Account Management</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> View and update credit card accounts including balances, credit limits, and account status.</p>
+            <p><strong>Business Context:</strong> CSRs and credit officers need to look up account details to answer customer inquiries and make adjustments to credit limits or account status. Account data is the central entity linking customers, cards, and transactions.</p>
+            <p><strong>Transaction IDs:</strong> <span class="badge">CAVW (View)</span> <span class="badge">CAUP (Update)</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COACTVWC</span> <span class="badge">COACTUPC</span></p>
+            <p><strong>VSAM Dataset:</strong> <code>ACCTDATA.VSAM.KSDS</code> (key: ACCT-ID, 11 digits)</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>CSR</em>, I want to view an account's current balance and credit limit so that I can answer customer balance inquiries.</div>
+            <div class="us-template">As a <em>credit officer</em>, I want to update a customer's credit limit so that I can respond to approved limit increase requests.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to update an account's active status so that I can freeze or reactivate an account on customer request.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to see current cycle credits and debits so that I can explain a customer's statement activity.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Account Management Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Add a new display-only field to account view screen</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add credit limit change validation, new editable field in update screen</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Add account status change audit logging, integrate customer lookup from CUSTDATA</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Full account lifecycle workflow (open, freeze, close) with multi-step approvals</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>View Account:</strong>
+                <ul>
+                    <li>Given a valid Account ID, when CAVW is opened, then all account fields displayed: ID, status, current balance, credit limit, cash limit, cycle credits/debits, open/expiry dates</li>
+                    <li>Fields must be read-only (ASKIP attribute)</li>
+                    <li>PF3 must return to Main Menu without changes</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Update Account:</strong>
+                <ul>
+                    <li>Given modified credit limit on CAUP screen, when Enter pressed, then ACCTDATA VSAM updated and "RECORD UPDATED SUCCESSFULLY" shown in GREEN</li>
+                    <li>Credit limit must be numeric and positive; reject with error message if not</li>
+                    <li>Cash credit limit must be ≤ credit limit; reject otherwise</li>
+                    <li>Expiry date must be in YYYY-MM-DD format</li>
+                    <li>PF3 must discard changes and return to view screen</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COACTVWC:</strong> Read account from ACCTDATA VSAM by account ID, populate COACTVW BMS map, display read-only</li>
+                <li><strong>COACTUPC:</strong> Read, validate, and rewrite account record; enforces business rule validations before VSAM REWRITE</li>
+                <li><strong>CVACT01Y:</strong> Account record copybook (PIC definitions for all account fields)</li>
+                <li><strong>CVACT02Y:</strong> Account-card mapping record (links ACCT-ID to CARD-NUM)</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>authentication:</strong> Session must be established (CC00) before CAVW/CAUP access</li>
+                <li><strong>card-management:</strong> CARDDATA VSAM references ACCT-ID as foreign key</li>
+                <li><strong>transaction-management:</strong> TRANSACT VSAM references account via card number</li>
+                <li><strong>batch-processing:</strong> INTCALC and POSTTRAN update ACCTDATA; online updates should not run concurrently with batch</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/COACTVWC.cbl</code> — Account view program</li>
+                <li><code>app/cbl/COACTUPC.cbl</code> — Account update program</li>
+                <li><code>app/bms/COACTVW.bms</code> — View BMS mapset</li>
+                <li><code>app/bms/COACTUP.bms</code> — Update BMS mapset</li>
+                <li><code>app/cpy/CVACT01Y.cpy</code> — Account record copybook</li>
+                <li><code>app/cpy/CVACT02Y.cpy</code> — Account-card mapping copybook</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

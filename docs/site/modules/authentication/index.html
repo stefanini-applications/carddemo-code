@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #1a365d; margin-bottom: 16px; border-bottom: 2px solid #2b6cb0; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul, ol { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: #2d3748; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #ebf8ff; color: #1a365d; padding: 10px 14px; text-align: left; font-weight: 600; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .complexity-table tr:last-child td { border-bottom: none; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #ebf8ff; color: #2b6cb0; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Authentication</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> User login/logout and session security for all CICS transactions.</p>
+            <p><strong>Business Context:</strong> Every bank operator must authenticate before accessing any card, account, or transaction function. Authentication validates credentials against the USRSEC VSAM dataset and establishes the session context (user type) used for access control throughout the session.</p>
+            <p><strong>Transaction ID:</strong> <span class="badge">CC00</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COSGN00C</span> (signon), <span class="badge">COMEN01C</span> (main menu)</p>
+            <p><strong>Key BMS Mapsets:</strong> <span class="badge">COSGN00</span> <span class="badge">COMEN01</span></p>
+            <p><strong>VSAM Dataset:</strong> <code>USRSEC.VSAM.KSDS</code></p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+
+            <h3>📝 US Templates for Authentication</h3>
+            <div class="us-template">
+                <strong>Login Success:</strong><br>
+                As a <em>bank operator</em>, I want to log in with my User ID and password so that I can access authorized card management functions.
+            </div>
+            <div class="us-template">
+                <strong>Login Failure Feedback:</strong><br>
+                As a <em>bank operator</em>, I want to see a clear error message when my credentials are invalid so that I know my login failed and can retry.
+            </div>
+            <div class="us-template">
+                <strong>Session Exit:</strong><br>
+                As a <em>bank operator</em>, I want to exit the application by pressing PF3 so that my terminal session is properly closed.
+            </div>
+            <div class="us-template">
+                <strong>Admin Routing:</strong><br>
+                As a <em>system admin</em>, I want to be routed to the Admin Menu after login so that I can access user management and system administration functions.
+            </div>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>COSGN00C:</strong> Fully implemented signon program — changes are typically additive (e.g., adding 2FA) rather than replacement</li>
+                <li><strong>CSUSR01Y copybook:</strong> Reusable user record definition shared with user-management module</li>
+                <li><strong>COMMAREA pattern:</strong> Established state-passing mechanism; any new session attribute can be added to the existing COMMAREA structure</li>
+                <li><strong>RACF integration:</strong> OS-level security already integrated; application-level validation layers on top</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Authentication Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Update error message text, add field to login screen</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add login attempt counter, session timeout warning</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Add 2-factor authentication, integrate external LDAP/SSO</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Replace VSAM-based auth with RACF passphrase, full SSO integration</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Successful Login:</strong>
+                <ul>
+                    <li>Given valid User ID and password, when Enter is pressed, then the user is navigated to Main Menu (CM00)</li>
+                    <li>User type (Admin/User) must be stored in COMMAREA for use by subsequent screens</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Invalid Credentials:</strong>
+                <ul>
+                    <li>Given invalid credentials, when Enter is pressed, then error message "INVALID CREDENTIALS" displayed in RED on line 22</li>
+                    <li>Password field must be cleared; User ID field must remain populated</li>
+                    <li>Screen must remain on CC00 (no navigation)</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>PF3 Exit:</strong>
+                <ul>
+                    <li>Given any state of login screen, when PF3 is pressed, then the CICS session is terminated cleanly</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Empty Fields:</strong>
+                <ul>
+                    <li>Given blank User ID or Password, when Enter is pressed, then "USER ID REQUIRED" or "PASSWORD REQUIRED" message displayed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COSGN00C:</strong> Main signon CICS program — reads USRSEC VSAM, validates credentials, sets COMMAREA user type, routes to CM00</li>
+                <li><strong>COSGN00 (BMS mapset):</strong> Login screen definition — User ID field (USRIDINI), password field (PASSWDINI, masked), error message (ERRMSGI)</li>
+                <li><strong>CSUSR01Y (copybook):</strong> User security record layout (User ID, name, encrypted password, user type A/U)</li>
+                <li><strong>COMEN01C:</strong> Main menu — reads user type from COMMAREA to display appropriate options</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>USRSEC.VSAM.KSDS:</strong> User security file — must be initialized via DUSRSECJ batch job before first use</li>
+                <li><strong>RACF:</strong> OS-level resource security; COSGN00C validates at application layer on top of RACF</li>
+                <li><strong>COMMAREA:</strong> Must be correctly initialized on CC00 entry; shared by all downstream transactions</li>
+            </ul>
+
+            <h3>🌐 Screen Interface</h3>
+            <pre>
+Transaction: CC00  Program: COSGN00C  Mapset: COSGN00
+
+Fields:
+  USRIDINI   - User ID input (PIC X(08), FSET)
+  PASSWDINI  - Password input (PIC X(08), FSET, masked/DARK)
+  ERRMSGI    - Error message output (ASKIP, color RED/GREEN)
+  CURADATE   - Current date display (ASKIP)
+  TRNNAMEI   - Transaction name display (ASKIP)
+
+Navigation:
+  Enter → Validate credentials → CM00 (success) or redisplay (fail)
+  PF3   → EXEC CICS RETURN (terminate session)
+            </pre>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/COSGN00C.cbl</code> — Signon program</li>
+                <li><code>app/bms/COSGN00.bms</code> — Login BMS mapset</li>
+                <li><code>app/cpy/CSUSR01Y.cpy</code> — User security record copybook</li>
+                <li><code>app/cbl/COMEN01C.cbl</code> — Main menu program</li>
+                <li><code>app/jcl/DUSRSECJ.jcl</code> — User security data initialization job</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp;
+        <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

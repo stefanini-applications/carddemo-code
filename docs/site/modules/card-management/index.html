@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #44337a 0%, #6b46c1 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #44337a; margin-bottom: 16px; border-bottom: 2px solid #6b46c1; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #faf5ff; color: #44337a; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #faf5ff; color: #6b46c1; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💳 Card Management</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> List, view, and update credit cards associated with accounts. Cards are identified by 16-digit encrypted card numbers stored in CARDDATA VSAM with an alternate index (CARDAIX) for card-to-account lookups.</p>
+            <p><strong>Business Context:</strong> CSRs need to identify specific cards when customers call, view card details, and perform actions like blocking a card or updating limits. The alternate index (CARDAIX) enables lookups by card number when account ID is not known.</p>
+            <p><strong>Transaction IDs:</strong> <span class="badge">CCLI (List)</span> <span class="badge">CCDL (Detail)</span> <span class="badge">CCUP (Update)</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COCRDLIC</span> <span class="badge">COCRDSLC</span> <span class="badge">COCRDUPC</span></p>
+            <p><strong>VSAM Datasets:</strong> <code>CARDDATA.VSAM.KSDS</code>, <code>CARDXREF.VSAM.KSDS</code> (CARDAIX AIX)</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>CSR</em>, I want to list all cards for an account so that I can identify which card a customer is calling about.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to view card details (masked number, expiry, status) so that I can confirm the card identity without exposing the full number.</div>
+            <div class="us-template">As a <em>fraud analyst</em>, I want to set a card's active status to N so that I can immediately block a compromised card.</div>
+            <div class="us-template">As a <em>credit officer</em>, I want to update a card's credit limit so that it reflects an approved limit change.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Card Management Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Add display field to card detail screen, update label text</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add card block reason code field, new card lookup by card number</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Issue new card (VSAM write + cardxref update), card replacement workflow</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Card issuance with embossing print job, full card lifecycle management</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Card List Screen (CCLI):</strong>
+                <ul>
+                    <li>Must display up to 15 cards per page with PF7/PF8 pagination</li>
+                    <li>Card number must be masked (display only last 4 digits)</li>
+                    <li>Enter 'S' in selection field to navigate to card detail (CCDL)</li>
+                    <li>PF3 returns to Main Menu</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Card Update (CCUP):</strong>
+                <ul>
+                    <li>Card status field accepts only 'Y' (active) or 'N' (inactive)</li>
+                    <li>Expiry date must be in YYYY-MM-DD format and not in the past</li>
+                    <li>"RECORD UPDATED SUCCESSFULLY" shown in GREEN on successful VSAM REWRITE</li>
+                    <li>CARDXREF VSAM must be updated if card-account relationship changes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COCRDLIC:</strong> Reads CARDDATA VSAM sequentially for account (STARTBR/READNEXT), populates pageable list</li>
+                <li><strong>COCRDSLC:</strong> Direct VSAM READ by card key, maps to COCRDSL BMS display</li>
+                <li><strong>COCRDUPC:</strong> Read-validate-REWRITE pattern for CARDDATA VSAM updates</li>
+                <li><strong>CVCARD01Y:</strong> Card record layout (card number encrypted, account ID, CVV, embossed name, expiry, status)</li>
+                <li><strong>CARDAIX:</strong> Alternate index path — enables lookup by card number returning account ID</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>account-management:</strong> CARD-ACCT-ID must reference a valid account in ACCTDATA VSAM</li>
+                <li><strong>transaction-management:</strong> TRAN-CARD-NUM links transactions to cards</li>
+                <li><strong>CARDXREF.VSAM.KSDS:</strong> Must be rebuilt (TRANIDX job) after bulk card data loads</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/COCRDLIC.cbl</code> — Card list program</li>
+                <li><code>app/cbl/COCRDSLC.cbl</code> — Card detail/select program</li>
+                <li><code>app/cbl/COCRDUPC.cbl</code> — Card update program</li>
+                <li><code>app/cpy/CVCARD01Y.cpy</code> — Card record copybook</li>
+                <li><code>app/cpy/CVACT02Y.cpy</code> — Account-card mapping copybook</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

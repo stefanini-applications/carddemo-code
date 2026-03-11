@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Processing - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #2c3e50; margin-bottom: 16px; border-bottom: 2px solid #4a6741; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #f0f4f0; color: #2c3e50; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #f0f4f0; color: #2c3e50; font-family: monospace; margin: 2px; }
+        .flow { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin: 12px 0; font-family: monospace; font-size: 0.85rem; line-height: 2; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚙️ Batch Processing</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Nightly automated processing cycle: post daily transactions, calculate interest, generate customer statements, and maintain data files. The authoritative mechanism for daily transaction posting.</p>
+            <p><strong>Business Context:</strong> Every night, the batch cycle processes all transactions that came in through card POS systems, updates account balances, charges interest, and produces statements. This is the backbone of the card processing system — online CICS screens provide query/entry; batch provides the authoritative daily reconciliation.</p>
+            <p><strong>Key Jobs:</strong> <span class="badge">POSTTRAN</span> <span class="badge">INTCALC</span> <span class="badge">CREASTMT</span> <span class="badge">COMBTRAN</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">CBTRN02C</span> <span class="badge">CBSTM01B</span> <span class="badge">CBACT01C</span></p>
+        </div>
+
+        <div class="card">
+            <h2>🔄 Nightly Batch Flow</h2>
+            <div class="flow">
+                1. OPENFILE  → Open VSAM datasets for batch access<br>
+                2. COMBTRAN  → Sort + merge DALYTRAN.PS input<br>
+                3. POSTTRAN  → Post transactions: TRANSACT VSAM + TCATBALF update → DALYREJS(+1) rejects<br>
+                4. INTCALC   → Calculate interest on balances → update ACCTDATA VSAM<br>
+                5. CREASTMT  → Generate statements from TRANSACT VSAM + TCATBALF<br>
+                6. CLOSEFIL  → Close VSAM datasets
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>batch operator</em>, I want POSTTRAN to run automatically each night so that transactions are posted before business hours begin.</div>
+            <div class="us-template">As a <em>compliance officer</em>, I want rejected transactions written to DALYREJS with reason codes so that I can investigate and resubmit them.</div>
+            <div class="us-template">As an <em>IT operations engineer</em>, I want OPENFILE and CLOSEFIL jobs so that VSAM datasets are properly managed and not left open overnight.</div>
+            <div class="us-template">As a <em>data engineer</em>, I want COMBTRAN to sort the daily transaction file so that POSTTRAN receives records in the correct order for VSAM key sequence.</div>
+            <div class="us-template">As a <em>customer</em>, I want monthly statements generated by CREASTMT so that I receive an accurate summary of my card activity.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Batch Processing Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Add a new print field to statement output, change rejection code descriptions</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add new rejection reason code and handling, new balance calculation field</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>New batch report job, add GDG archiving for TRANSACT history</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>New daily batch program, change batch cycle order with new processing step</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>POSTTRAN Job:</strong>
+                <ul>
+                    <li>Job completes RC=0 (no ABENDs, no errors)</li>
+                    <li>All records from DALYTRAN.PS processed: count in SYSOUT matches input record count</li>
+                    <li>Records written to TRANSACT VSAM = input count minus rejected count</li>
+                    <li>Rejected records written to DALYREJS(+1) with rejection reason code and original record</li>
+                    <li>TCATBALF.PS updated with accumulated category totals</li>
+                    <li>Duplicate transaction IDs → rejection code 'DUP', invalid accounts → 'INV', over-limit → 'OVL'</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>INTCALC Job:</strong>
+                <ul>
+                    <li>Interest applied to all accounts with outstanding balance > 0</li>
+                    <li>Account ACCT-CURR-BAL updated in ACCTDATA VSAM</li>
+                    <li>Interest transaction written to TRANSACT VSAM with interest type code</li>
+                    <li>No duplicate interest charges for same cycle period</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>📁 Key Programs & JCL</h3>
+            <ul>
+                <li><code>app/cbl/CBTRN02C.cbl</code> — Core transaction poster (POSTTRAN step)</li>
+                <li><code>app/cbl/CBTRN01C.cbl</code> — Pre-processor / transaction validator</li>
+                <li><code>app/cbl/CBTRN03C.cbl</code> — Transaction detail processor</li>
+                <li><code>app/cbl/CBSTM01B.cbl</code> / <code>CBSTM01C.cbl</code> — Statement generation</li>
+                <li><code>app/cbl/CBACT01C.cbl</code> — Account batch processor (interest)</li>
+                <li><code>app/jcl/POSTTRAN.jcl</code> — Daily transaction posting job</li>
+                <li><code>app/jcl/INTCALC.jcl</code> — Interest calculation job</li>
+                <li><code>app/jcl/CREASTMT.jcl</code> — Statement generation job</li>
+                <li><code>app/jcl/COMBTRAN.jcl</code> — Sort/combine transaction file</li>
+                <li><code>app/asm/MVSWAIT.asm</code> — Assembler timer utility for batch delays</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>transaction-management:</strong> TRANSACT VSAM — shared with online CT00/CT01/CT02; coordinate access windows</li>
+                <li><strong>account-management:</strong> ACCTDATA VSAM — updated by INTCALC; coordinate with online CAUP</li>
+                <li><strong>VSAM dataset lifecycle:</strong> OPENFILE job must succeed before any batch program accesses VSAM; CLOSEFIL must run after</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

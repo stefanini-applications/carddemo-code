@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Payment - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #1a202c; margin-bottom: 16px; border-bottom: 2px solid #2d3748; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #f7fafc; color: #1a202c; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #edf2f7; color: #2d3748; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💸 Bill Payment</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> Process customer bill payments and apply them to account balances. Creates a corresponding transaction record and updates the account balance immediately.</p>
+            <p><strong>Business Context:</strong> When customers call to make a payment by phone, CSRs use this screen to process the payment in real time. The payment immediately reduces the account balance and creates an auditable transaction record.</p>
+            <p><strong>Transaction ID:</strong> <span class="badge">CB00</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COBIL00C</span> <span class="badge">LNKBILI</span> <span class="badge">LNKLBIL</span></p>
+            <p><strong>VSAM Datasets:</strong> <code>ACCTDATA.VSAM.KSDS</code>, <code>TRANSACT.VSAM.KSDS</code></p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>CSR</em>, I want to process a customer's phone payment so that their account balance is updated immediately.</div>
+            <div class="us-template">As a <em>CSR</em>, I want the payment date to default to today so that I don't need to manually enter the current date for standard payments.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to see the current balance before posting a payment so that I can confirm the payment does not exceed the outstanding balance.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Bill Payment Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Display current balance on payment screen before entry</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add payment confirmation step, add minimum payment validation</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Partial payment allocation (principal vs interest), scheduled future payment</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>ACH/EFT payment integration with external banking system</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Payment Processing (CB00):</strong>
+                <ul>
+                    <li>Payment amount must be positive numeric; reject non-numeric or zero amounts</li>
+                    <li>Payment must not exceed current outstanding balance; display error if over-payment attempted</li>
+                    <li>Account balance in ACCTDATA VSAM reduced by payment amount on successful posting</li>
+                    <li>Transaction record written to TRANSACT VSAM with payment transaction type code</li>
+                    <li>Payment date defaults to system date; must be in YYYY-MM-DD format if overridden</li>
+                    <li>"PAYMENT PROCESSED SUCCESSFULLY" shown in GREEN on success</li>
+                    <li>PF3 must discard input and return to Main Menu</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COBIL00C:</strong> Main bill payment CICS program — reads account, validates payment, calls linkage programs, updates ACCTDATA VSAM and TRANSACT VSAM</li>
+                <li><strong>LNKBILI / LNKLBIL:</strong> Linkage section programs for billing calculations (interest/timespan calculations using assembler COBDATFT)</li>
+                <li><strong>LNKBILI:</strong> Called via EXEC CICS LINK; handles billing date and timespan logic</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>account-management:</strong> ACCTDATA VSAM must have a valid record for the account ID</li>
+                <li><strong>transaction-management:</strong> Payment creates a record in TRANSACT VSAM; transaction type code for payment must exist in TRANTYPE</li>
+                <li><strong>batch-processing:</strong> INTCALC batch reads balances updated by CB00; avoid concurrent access</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/COBIL00C.cbl</code> — Bill payment program</li>
+                <li><code>app/bms/COBIL00.bms</code> — Bill payment BMS mapset</li>
+                <li><code>app/cbl/LNKBILI.cbl</code> — Billing linkage program</li>
+                <li><code>app/cbl/LNKLBIL.cbl</code> — Billing library program</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>

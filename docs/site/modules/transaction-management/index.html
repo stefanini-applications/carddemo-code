@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Management - User Story Development Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #7b341e 0%, #c05621 100%); color: white; padding: 40px 20px; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { font-size: 1rem; opacity: 0.85; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin-bottom: 28px; }
+        h2 { font-size: 1.4rem; color: #7b341e; margin-bottom: 16px; border-bottom: 2px solid #c05621; padding-bottom: 8px; }
+        h3 { font-size: 1.1rem; color: #2d3748; margin: 20px 0 10px; }
+        p { line-height: 1.7; margin-bottom: 12px; color: #4a5568; }
+        ul { margin: 12px 0 12px 24px; }
+        li { margin-bottom: 8px; line-height: 1.6; color: #4a5568; }
+        pre { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 12px 0; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .complexity-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .complexity-table th { background: #fffaf0; color: #7b341e; padding: 10px 14px; text-align: left; }
+        .complexity-table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        .us-template { background: #f0fff4; border-left: 4px solid #38a169; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .ac-template { background: #fffaf0; border-left: 4px solid #dd6b20; border-radius: 0 6px 6px 0; padding: 16px; margin: 12px 0; }
+        .badge { display: inline-block; font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; background: #fffaf0; color: #c05621; font-family: monospace; margin: 2px; }
+        footer { text-align: center; padding: 24px; color: #718096; font-size: 0.85rem; }
+        footer a { color: #2b6cb0; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Transaction Management</h1>
+        <p>User Story Development Guide · CardDemo System</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📋 Module Overview</h2>
+            <p><strong>Purpose:</strong> List, view, and add credit card transactions. Online entry populates TRANSACT VSAM; daily batch (POSTTRAN) is the authoritative posting mechanism for daily file transactions.</p>
+            <p><strong>Business Context:</strong> CSRs need to view transaction history for dispute resolution and credit analysts need to add manual transactions (fees, credits, adjustments). Transaction data is the core audit trail for all card activity.</p>
+            <p><strong>Transaction IDs:</strong> <span class="badge">CT00 (List)</span> <span class="badge">CT01 (View)</span> <span class="badge">CT02 (Add)</span></p>
+            <p><strong>Key Programs:</strong> <span class="badge">COTRN00C</span> <span class="badge">COTRN01C</span> <span class="badge">COTRN02C</span></p>
+            <p><strong>VSAM Dataset:</strong> <code>TRANSACT.VSAM.KSDS</code> (key: TRAN-ID, 16 chars)</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <div class="us-template">As a <em>CSR</em>, I want to view all transactions for a card so that I can help a customer dispute a charge.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to page through transaction history (PF7/PF8) so that I can find a specific transaction from a prior month.</div>
+            <div class="us-template">As a <em>credit analyst</em>, I want to add a manual transaction (fee or credit) so that I can apply a one-time adjustment to an account.</div>
+            <div class="us-template">As a <em>CSR</em>, I want to view full transaction details (merchant, amount, timestamps) so that I can provide complete information to a customer.</div>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <table class="complexity-table">
+                <tr><th>Complexity</th><th>Points</th><th>Transaction Management Examples</th></tr>
+                <tr><td>Simple</td><td>1–2</td><td>Add display field to transaction detail, change sort order of list</td></tr>
+                <tr><td>Medium</td><td>3–5</td><td>Add transaction search by date range, add new transaction type validation</td></tr>
+                <tr><td>Complex</td><td>5–8</td><td>Transaction reversal feature, date-filtered transaction summary</td></tr>
+                <tr><td>Epic</td><td>8+</td><td>Real-time fraud scoring on CT02 entry, transaction dispute workflow</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <div class="ac-template">
+                <strong>Transaction List (CT00):</strong>
+                <ul>
+                    <li>Must display 10–15 transactions per page with PF7/PF8 pagination</li>
+                    <li>Shows transaction ID, type, amount, merchant name, and original timestamp</li>
+                    <li>Enter 'S' in selection field to view detail (CT01)</li>
+                    <li>At first page, PF7 must show "NO MORE RECORDS" message; at last page, PF8 similar</li>
+                </ul>
+            </div>
+            <div class="ac-template">
+                <strong>Add Transaction (CT02):</strong>
+                <ul>
+                    <li>Transaction type code must exist in TRANTYPE file; reject with error if not</li>
+                    <li>Amount field must be numeric (S9(10)V99); reject non-numeric input</li>
+                    <li>Transaction ID generated by program (must be unique in TRANSACT VSAM)</li>
+                    <li>Processing timestamp set to current system timestamp on write</li>
+                    <li>Duplicate VSAM key must show "DUPLICATE TRANSACTION ID" error</li>
+                    <li>"TRANSACTION ADDED SUCCESSFULLY" shown in GREEN on success</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COTRN00C:</strong> Sequential VSAM STARTBR/READNEXT for paging; stores first-of-page key in COMMAREA for PF7 backward navigation</li>
+                <li><strong>COTRN01C:</strong> Direct VSAM READ by TRAN-ID key</li>
+                <li><strong>COTRN02C:</strong> VSAM WRITE with duplicate key checking; validates TRAN-TYPE-CD against TRANTYPE dataset</li>
+                <li><strong>CVTRA05Y:</strong> Transaction record copybook — 16-char ID, type code, category, amount (COMP-3), merchant fields, card number, dual timestamps</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>card-management:</strong> TRAN-CARD-NUM must reference a valid card</li>
+                <li><strong>transaction-types (optional):</strong> If DB2 module installed, type codes validated against DB2 table; otherwise validated against TRANTYPE flat file</li>
+                <li><strong>batch-processing (POSTTRAN):</strong> Batch daily transactions from DALYTRAN file; online CT02 entry writes directly to TRANSACT VSAM</li>
+            </ul>
+
+            <h3>📁 Source Files</h3>
+            <ul>
+                <li><code>app/cbl/COTRN00C.cbl</code>, <code>app/bms/COTRN00.bms</code> — Transaction list</li>
+                <li><code>app/cbl/COTRN01C.cbl</code>, <code>app/bms/COTRN01.bms</code> — Transaction view</li>
+                <li><code>app/cbl/COTRN02C.cbl</code>, <code>app/bms/COTRN02.bms</code> — Transaction add</li>
+                <li><code>app/cpy/CVTRA05Y.cpy</code> — Transaction record copybook</li>
+            </ul>
+        </div>
+    </div>
+    <footer>
+        <a href="../index.html">← Back to Index</a> &nbsp;|&nbsp; <a href="../../system-overview.md">📄 System Overview</a>
+        <p style="margin-top: 10px;">Last updated: 2026-03-11</p>
+    </footer>
+</body>
+</html>
