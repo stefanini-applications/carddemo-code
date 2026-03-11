@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Payment - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#2c7a7b 0%,#38b2ac 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#2c7a7b;margin-top:0;border-bottom:2px solid #b2f5ea;padding-bottom:8px}
+        h3{color:#319795}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#e6fffa;color:#2c7a7b;margin:3px 3px 3px 0}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#e6fffa;text-align:left;padding:10px 12px;color:#2c7a7b}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>💰 Bill Payment</h1><p>User Story Development Guide — CardDemo Mainframe Application</p></div>
+    <div class="container">
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>bill-payment</code></p>
+            <p><strong>Purpose:</strong> Online bill payment processing — pays the current account balance in full and records the payment as a transaction in the transaction file.</p>
+            <p><strong>Business Context:</strong> Simulates a customer paying their monthly credit card bill. The payment reduces the account balance to zero and creates an offsetting credit transaction.</p>
+            <p>
+                <span class="badge">Transaction: CB00</span>
+                <span class="badge">Program: COBIL00C</span>
+                <span class="badge">BMS Map: COBIL00</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As a <strong>regular user</strong>, I want to pay my current bill balance online so that I can settle my account</li>
+                <li>As a <strong>regular user</strong>, I want to see a payment confirmation so that I know my payment was processed</li>
+                <li>As a <strong>regular user</strong>, I want to see my current balance before paying so that I know the amount being charged</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>COBIL00C:</strong> Complete bill payment implementation as reference — shows full-balance payment pattern</li>
+                <li><strong>CVACT01Y:</strong> Account record layout used to read and update ACCT-CURR-BAL</li>
+                <li><strong>CVTRA05Y:</strong> Payment recorded as new TRAN-RECORD with credit amount</li>
+                <li>Combines account UPDATE (REWRITE to ACCTFILE) with transaction WRITE (to TRANSACT) in same CICS task</li>
+            </ul>
+            <h3>�� Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Display current balance from ACCTFILE for confirmation screen</li>
+                <li><strong>Medium (3-5 pts):</strong> Full payment processing — read account, create payment transaction, rewrite account balance (CB00)</li>
+                <li><strong>Complex (5-8 pts):</strong> Partial payment option, EFT account integration, payment scheduling</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>COBIL00C</td><td>CICS COBOL</td><td>Bill payment — reads account, creates payment transaction, REWRITEs account balance</td></tr>
+                <tr><td>COBIL00</td><td>BMS Map</td><td>Bill payment screen layout</td></tr>
+                <tr><td>CVACT01Y</td><td>Copybook</td><td>Account record — used to read ACCT-CURR-BAL and REWRITE after payment</td></tr>
+                <tr><td>CVTRA05Y</td><td>Copybook</td><td>Transaction record — payment recorded as new transaction entry</td></tr>
+                <tr><td>ACCTFILE</td><td>VSAM KSDS</td><td>Updated: ACCT-CURR-BAL and ACCT-CURR-CYC-CREDIT updated</td></tr>
+                <tr><td>TRANSACT</td><td>VSAM KSDS</td><td>Written: payment transaction record added</td></tr>
+            </table>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>Payment amount = current account balance (ACCT-CURR-BAL) — full balance payment only in base version</li>
+                <li>Payment generates a new transaction record in TRANSACT file with credit amount</li>
+                <li>ACCT-CURR-BAL set to 0.00 after successful payment processing</li>
+                <li>EFT account ID (CUST-EFT-ACCOUNT-ID from CUSTFILE) can be used as funding source reference</li>
+                <li>Account must be ACCT-ACTIVE-STATUS='Y' for payment to proceed</li>
+                <li>If account balance = 0, payment screen should indicate no balance due</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> an account with outstanding balance, <strong>when</strong> bill payment is submitted, <strong>then</strong> account balance is set to 0 and a payment transaction is written to TRANSACT</li>
+                <li><strong>Given</strong> a payment confirmation screen, <strong>when</strong> payment is confirmed, <strong>then</strong> ACCTFILE is rewritten and success message is displayed</li>
+                <li><strong>Given</strong> an account with zero balance, <strong>when</strong> bill payment screen is opened, <strong>then</strong> "No amount due" message is displayed</li>
+                <li><strong>Given</strong> ACCTFILE REWRITE fails, <strong>when</strong> payment is attempted, <strong>then</strong> an error message is shown and no transaction record is created</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#744210 0%,#d69e2e 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#744210;margin-top:0;border-bottom:2px solid #fefcbf;padding-bottom:8px}
+        h3{color:#975a16}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#fffff0;color:#744210;margin:3px 3px 3px 0}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#fffff0;text-align:left;padding:10px 12px;color:#744210}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>📊 Reports</h1><p>User Story Development Guide — CardDemo Mainframe Application</p></div>
+    <div class="container">
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>reports</code></p>
+            <p><strong>Purpose:</strong> Online initiation of transaction reports (CORPT00C via CR00) and batch production of transaction detail reports (CBTRN03C) and account statements in plain text and HTML (CBSTM03A/CBSTM03B).</p>
+            <p><strong>Business Context:</strong> Report generation bridges the online and batch worlds — users request reports online via CICS, which submits JCL to an extra-partition TDQ for batch execution. Statements are a key customer-facing deliverable.</p>
+            <p>
+                <span class="badge">CR00: CORPT00C (CICS initiation)</span>
+                <span class="badge">TRANREPT: CBTRN03C (batch report)</span>
+                <span class="badge">CREASTMT: CBSTM03A+B (batch statement)</span>
+                <span class="badge">TDQ: Extra-partition</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As a <strong>regular user</strong>, I want to generate a transaction report so that I can download a history of all transactions for a date range</li>
+                <li>As a <strong>regular user</strong>, I want to receive a monthly account statement so that I can review my billing cycle activity</li>
+                <li>As a <strong>system operator</strong>, I want batch transaction reports to run automatically so that report output is available each morning</li>
+                <li>As a <strong>regular user</strong>, I want my statement available in both text and HTML formats so that I can read it in different contexts</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>TDQ pattern:</strong> CORPT00C writes JCL to extra-partition TDQ which triggers batch execution — established pattern for CICS→batch bridge</li>
+                <li><strong>CBSTM03A:</strong> Demonstrates multiple COBOL techniques (control block addressing, ALTER/GOTO, COMP/COMP-3 variables, 2-D arrays, subroutine calls)</li>
+                <li><strong>CBTRN03C:</strong> Reads TRANSACT + XREFFILE + TRANTYPE + TRANCATG — reference for multi-file sequential processing</li>
+                <li><strong>HTML output:</strong> CBSTM03A generates both plain text (STMTFILE) and HTML (HTMLFILE) simultaneously</li>
+            </ul>
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Report request screen with date range input (CORPT00C screen)</li>
+                <li><strong>Medium (3-5 pts):</strong> TDQ submission of JCL, status feedback to user (CR00)</li>
+                <li><strong>Complex (5-8 pts):</strong> Batch report with multi-file cross-referencing, HTML/text output, pagination (CBTRN03C, CBSTM03A)</li>
+                <li><strong>Very Complex (8-13 pts):</strong> Real-time report status tracking, PDF generation (TXT2PDF JCL utility available)</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>CORPT00C</td><td>CICS COBOL</td><td>Report initiation — accepts date range, writes JCL to extra-partition TDQ</td></tr>
+                <tr><td>CBTRN03C</td><td>Batch COBOL</td><td>Transaction detail report — reads TRANSACT + XREFFILE + TRANTYPE + TRANCATG</td></tr>
+                <tr><td>CBSTM03A</td><td>Batch COBOL</td><td>Account statement main — plain text + HTML output, calls CBSTM03B subroutine</td></tr>
+                <tr><td>CBSTM03B</td><td>Batch COBOL</td><td>Statement subroutine — called from CBSTM03A for modular processing</td></tr>
+                <tr><td>CORPT00</td><td>BMS Map</td><td>Report request screen — date range input fields</td></tr>
+                <tr><td>TRANREPT.prc</td><td>JCL Proc</td><td>Proc called by TDQ submission to execute CBTRN03C</td></tr>
+            </table>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>CORPT00C accepts date range (from/to) and account ID for report scope</li>
+                <li>JCL submitted to extra-partition TDQ triggers asynchronous batch execution</li>
+                <li>Report output written to SYSOUT/report datasets — not displayed online</li>
+                <li>CBTRN03C reads TRANSACT sequentially and cross-references XREFFILE, TRANTYPE, TRANCATG for each record</li>
+                <li>CBSTM03A reads TRANSACT + ACCTFILE + CUSTFILE to produce customer-level statements</li>
+                <li>HTML statement output uses inline HTML generation from COBOL (no external template engine)</li>
+                <li>TXT2PDF JCL utility (TXT2PDF1.JCL) available for converting text output to PDF</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> a valid date range, <strong>when</strong> report request is submitted via CR00, <strong>then</strong> JCL is written to TDQ and a submission confirmation is displayed</li>
+                <li><strong>Given</strong> the TRANREPT batch job runs, <strong>when</strong> CBTRN03C completes, <strong>then</strong> all transactions in the date range are included in the report output with type and category descriptions</li>
+                <li><strong>Given</strong> the CREASTMT batch job runs, <strong>when</strong> CBSTM03A completes, <strong>then</strong> both plain text and HTML statement files are produced for each account with activity</li>
+                <li><strong>Given</strong> no transactions in the date range, <strong>when</strong> report is generated, <strong>then</strong> report contains "No transactions found" message with report header</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>

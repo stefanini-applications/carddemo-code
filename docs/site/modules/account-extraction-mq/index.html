@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Extraction MQ - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#285e61 0%,#319795 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#285e61;margin-top:0;border-bottom:2px solid #b2f5ea;padding-bottom:8px}
+        h3{color:#2c7a7b}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#e6fffa;color:#285e61;margin:3px 3px 3px 0}
+        .optional{background:#fff3cd;border-left:4px solid #d69e2e;padding:12px 16px;border-radius:6px;margin-bottom:16px}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#e6fffa;text-align:left;padding:10px 12px;color:#285e61}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>📡 Account Extraction MQ</h1><p>User Story Development Guide — CardDemo Optional Module</p></div>
+    <div class="container">
+        <div class="optional">⚠️ <strong>Optional Module</strong> — Requires IBM MQ and CICS-MQ connection configured.</div>
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>account-extraction-mq</code></p>
+            <p><strong>Purpose:</strong> Demonstrates asynchronous integration patterns using MQ — system date inquiry (CDRD) and account details inquiry (CDRA) via request/response message queuing.</p>
+            <p><strong>Business Context:</strong> Shows how external systems can query mainframe data asynchronously via MQ without direct VSAM access. Pattern commonly used for distributed application integration and service extraction during modernization.</p>
+            <p>
+                <span class="badge">CDRD: CODATE01 (date inquiry)</span>
+                <span class="badge">CDRA: COACCT01 (account inquiry)</span>
+                <span class="badge">MQ Request/Response pattern</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As an <strong>external system</strong>, I want to query the mainframe system date via MQ so that I can synchronize timestamps without direct system access</li>
+                <li>As an <strong>external system</strong>, I want to query account details via MQ so that I can retrieve account data for downstream processing</li>
+                <li>As a <strong>developer</strong>, I want MQ request/response correlation to work reliably so that responses are matched to the correct requesting system</li>
+                <li>As a <strong>system operator</strong>, I want MQ queues monitored for depth so that unprocessed messages are detected promptly</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>CODATE01/COACCT01:</strong> Complete MQ request/response implementations available as reference</li>
+                <li><strong>Message correlation:</strong> REQUEST-ID field in message format used for request/response matching</li>
+                <li><strong>MQ queue definitions:</strong> CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE patterns established</li>
+                <li><strong>CICS-MQ resources:</strong> MQCONN and MQQUEUE definitions available in CRDDEMOM.csd</li>
+            </ul>
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Date inquiry via MQ (CDRD) — simple request/response</li>
+                <li><strong>Medium (3-5 pts):</strong> Account data inquiry (CDRA) — VSAM read + MQ response packaging</li>
+                <li><strong>Complex (5-8 pts):</strong> Error handling for MQ unavailable, timeout scenarios, message dead-letter queue handling</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>CODATE01</td><td>CICS COBOL</td><td>CDRD transaction — receives date request via MQ, responds with system date</td></tr>
+                <tr><td>COACCT01</td><td>CICS COBOL</td><td>CDRA transaction — receives account inquiry via MQ, reads ACCTFILE, returns data</td></tr>
+                <tr><td>CRDDEMOM.csd</td><td>CSD</td><td>CICS resource definitions for MQCONN and MQQUEUE</td></tr>
+            </table>
+            <h3>�� MQ Message Formats</h3>
+            <pre>-- Date Request/Response:
+01 DATE-REQUEST-MSG.
+   05 REQUEST-TYPE  PIC X(4) VALUE 'DATE'.
+   05 REQUEST-ID    PIC X(8).
+
+01 DATE-RESPONSE-MSG.
+   05 RESPONSE-TYPE PIC X(4) VALUE 'DATE'.
+   05 RESPONSE-ID   PIC X(8).
+   05 SYSTEM-DATE   PIC X(10).  -- YYYY-MM-DD
+
+-- Account Request/Response:
+01 ACCT-REQUEST-MSG.
+   05 REQUEST-TYPE  PIC X(4) VALUE 'ACCT'.
+   05 REQUEST-ID    PIC X(8).
+   05 ACCOUNT-NUMBER PIC X(11).
+
+01 ACCT-RESPONSE-MSG.
+   05 RESPONSE-TYPE PIC X(4) VALUE 'ACCT'.
+   05 RESPONSE-ID   PIC X(8).
+   05 ACCOUNT-DATA  PIC X(300). -- Full ACCOUNT-RECORD</pre>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>REQUEST-ID in request message must be echoed in RESPONSE-ID for correlation</li>
+                <li>CDRD reads system date from CICS (EXEC CICS ASKTIME / FORMATTIME)</li>
+                <li>CDRA reads ACCTFILE by account number from request message; NOTFND returns error response</li>
+                <li>Response sent to reply-to queue specified in MQ MQMD header</li>
+                <li>MQ queues defined: CARDDEMO.REQUEST.QUEUE (requests in), CARDDEMO.RESPONSE.QUEUE (responses out)</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> a date request on CARDDEMO.REQUEST.QUEUE, <strong>when</strong> CDRD processes it, <strong>then</strong> a response with current system date is placed on the reply queue with matching REQUEST-ID</li>
+                <li><strong>Given</strong> a valid account number in the account request, <strong>when</strong> CDRA processes it, <strong>then</strong> full account data (300 bytes) is returned in the response message</li>
+                <li><strong>Given</strong> an account number not in ACCTFILE, <strong>when</strong> CDRA processes the request, <strong>then</strong> an error response with "Account not found" indication is sent to the reply queue</li>
+                <li><strong>Given</strong> MQ is unavailable, <strong>when</strong> CDRD or CDRA is invoked, <strong>then</strong> appropriate CICS error handling returns a non-zero condition code</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>

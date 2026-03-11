@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#702459 0%,#d53f8c 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#702459;margin-top:0;border-bottom:2px solid #fed7e2;padding-bottom:8px}
+        h3{color:#97266d}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#fff5f7;color:#702459;margin:3px 3px 3px 0}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#fff5f7;text-align:left;padding:10px 12px;color:#702459}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>👥 User Management</h1><p>User Story Development Guide — CardDemo Mainframe Application</p></div>
+    <div class="container">
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>user-management</code></p>
+            <p><strong>Purpose:</strong> Admin-only CRUD operations on the USRSEC VSAM file — list, add, update, and delete user records. Admin menu (CA00) is the entry point.</p>
+            <p><strong>Business Context:</strong> Controls who can access the CardDemo application and with what privileges. Separate from RACF (environment security) — this is application-level user management.</p>
+            <p>
+                <span class="badge">CA00: COADM01C (admin menu)</span>
+                <span class="badge">CU00: COUSR00C (list)</span>
+                <span class="badge">CU01: COUSR01C (add)</span>
+                <span class="badge">CU02: COUSR02C (update)</span>
+                <span class="badge">CU03: COUSR03C (delete)</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As an <strong>admin</strong>, I want to list all system users so that I can see who has access</li>
+                <li>As an <strong>admin</strong>, I want to add a new user account so that a new employee can access the system</li>
+                <li>As an <strong>admin</strong>, I want to update a user's password so that I can reset credentials when requested</li>
+                <li>As an <strong>admin</strong>, I want to change a user's type from regular to admin so that I can promote a user</li>
+                <li>As an <strong>admin</strong>, I want to delete a user account so that I can revoke access when an employee leaves</li>
+                <li>As an <strong>admin</strong>, I want confirmation before deleting a user so that I don't accidentally remove the wrong account</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>COUSR00C–COUSR03C:</strong> Complete CRUD implementation — all four operations available as reference</li>
+                <li><strong>CSUSR01Y copybook:</strong> 80-byte user record layout shared between all user management programs</li>
+                <li><strong>Admin-only access:</strong> SEC-USR-TYPE='A' check enforced by COSGN00C routing — no explicit check needed in user management programs (routing handles it)</li>
+                <li><strong>Full VSAM CRUD pattern:</strong> READ, WRITE, REWRITE, DELETE all demonstrated across the four programs</li>
+            </ul>
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> User list (browse USRSEC), user detail view</li>
+                <li><strong>Medium (3-5 pts):</strong> User add with duplicate check (CU01); user update (CU02); user delete with confirmation (CU03)</li>
+                <li><strong>Complex (5-8 pts):</strong> Bulk user import, password policy enforcement, audit logging of user management actions</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>COADM01C</td><td>CICS COBOL</td><td>Admin menu — routes to user management or optional transaction type management</td></tr>
+                <tr><td>COUSR00C</td><td>CICS COBOL</td><td>List users — browses USRSEC KSDS sequentially with pagination</td></tr>
+                <tr><td>COUSR01C</td><td>CICS COBOL</td><td>Add user — validates uniqueness, WRITEs to USRSEC</td></tr>
+                <tr><td>COUSR02C</td><td>CICS COBOL</td><td>Update user — REWRITEs existing USRSEC record</td></tr>
+                <tr><td>COUSR03C</td><td>CICS COBOL</td><td>Delete user — DELETEs from USRSEC with confirmation step</td></tr>
+                <tr><td>CSUSR01Y</td><td>Copybook</td><td>80-byte SEC-USER-DATA record layout</td></tr>
+                <tr><td>USRSEC</td><td>VSAM KSDS</td><td>User security file — 80-byte records, key SEC-USR-ID (8 chars)</td></tr>
+            </table>
+            <h3>📋 User Record Data Model</h3>
+            <pre>01  SEC-USER-DATA.         -- 80 bytes, VSAM KSDS
+    05  SEC-USR-ID     PIC X(08). -- Primary key (e.g. USER0001)
+    05  SEC-USR-FNAME  PIC X(20). -- First name
+    05  SEC-USR-LNAME  PIC X(20). -- Last name
+    05  SEC-USR-PWD    PIC X(08). -- Password (plain text - tech debt)
+    05  SEC-USR-TYPE   PIC X(01). -- 'U'=regular, 'A'=admin
+    05  SEC-USR-FILLER PIC X(23).</pre>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>Only admin users (SEC-USR-TYPE='A') can access the admin menu CA00 and user management functions</li>
+                <li>SEC-USR-ID must be unique — add fails with DUPREC if already exists</li>
+                <li>User type must be 'U' (regular) or 'A' (admin) — other values invalid</li>
+                <li>Passwords stored in plain text in USRSEC — known tech debt, flagged for modernization</li>
+                <li>Delete requires confirmation screen interaction (two-step pseudo-conversational pattern)</li>
+                <li>Admin cannot delete their own account while logged in (implementation-dependent)</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> the admin is on the user list screen, <strong>when</strong> the list loads, <strong>then</strong> all users in USRSEC are displayed with ID, name, and type</li>
+                <li><strong>Given</strong> valid new user data, <strong>when</strong> add user is submitted, <strong>then</strong> record is written to USRSEC and confirmation displayed</li>
+                <li><strong>Given</strong> a duplicate user ID, <strong>when</strong> add user is submitted, <strong>then</strong> "User ID already exists" error is displayed</li>
+                <li><strong>Given</strong> a user is selected for deletion, <strong>when</strong> admin confirms, <strong>then</strong> record is deleted from USRSEC and success message displayed</li>
+                <li><strong>Given</strong> a regular user attempts to access CA00, <strong>when</strong> the admin menu is requested, <strong>then</strong> access is denied or the user is never routed to that transaction</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>

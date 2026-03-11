@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization (IMS/DB2/MQ) - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#7b341e 0%,#e53e3e 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#7b341e;margin-top:0;border-bottom:2px solid #fed7d7;padding-bottom:8px}
+        h3{color:#c53030}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#fff5f5;color:#7b341e;margin:3px 3px 3px 0}
+        .optional{background:#fff3cd;border-left:4px solid #d69e2e;padding:12px 16px;border-radius:6px;margin-bottom:16px}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#fff5f5;text-align:left;padding:10px 12px;color:#7b341e}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>🛡️ Authorization <small style="font-size:0.6em">(IMS/DB2/MQ)</small></h1><p>User Story Development Guide — CardDemo Optional Module</p></div>
+    <div class="container">
+        <div class="optional">⚠️ <strong>Optional Module</strong> — Requires IMS DB, DB2, and MQ infrastructure in addition to the base CardDemo application.</div>
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>authorization</code></p>
+            <p><strong>Purpose:</strong> Real-time credit card authorization processing via MQ, with IMS hierarchical database for authorization storage and DB2 for fraud analytics. Simulates end-to-end authorization flow from POS request to approval/decline.</p>
+            <p><strong>Business Context:</strong> Extends CardDemo with real-world authorization patterns: incoming MQ request → CICS processing → IMS DB insert → DB2 fraud logging → MQ response. Includes manual fraud flagging and batch purge of expired authorizations.</p>
+            <p>
+                <span class="badge">CPVS: COPAUS0C (summary)</span>
+                <span class="badge">CPVD: COPAUS1C (detail)</span>
+                <span class="badge">CP00: COPAUA0C (MQ processor)</span>
+                <span class="badge">IMS HIDAM + DB2 + MQ</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As a <strong>regular user</strong>, I want to view pending authorizations on my account so that I can track unmatched charges</li>
+                <li>As a <strong>regular user</strong>, I want to see authorization details (merchant, amount, status) so that I can verify a specific authorization</li>
+                <li>As a <strong>regular user</strong>, I want to flag a suspicious authorization as fraudulent so that it can be investigated</li>
+                <li>As a <strong>system</strong>, I want authorization requests processed in real time via MQ so that merchants receive immediate approve/decline responses</li>
+                <li>As a <strong>system operator</strong>, I want expired authorizations purged daily so that available credit is restored for customers</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>COPAUA0C:</strong> Complete MQ trigger processor — MQ GET → business logic → IMS insert → MQ PUT response</li>
+                <li><strong>IMS DBD definitions:</strong> DBPAUTP0 (HIDAM primary) and DBPAUTX0 (HIDAM index) pre-defined in <code>app/app-authorization-ims-db2-mq/ims/</code></li>
+                <li><strong>DB2 DDL:</strong> AUTHFRDS table and index pre-defined in <code>ddl/AUTHFRDS.ddl</code> for fraud storage</li>
+                <li><strong>MQ queues:</strong> CARDDEMO.AUTH.REQUEST.QUEUE and CARDDEMO.AUTH.RESPONSE.QUEUE patterns established</li>
+                <li><strong>Copybooks CCPAURQY/CCPAURLY:</strong> MQ message request/response structures defined</li>
+            </ul>
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Authorization summary view (CPVS) — read and display IMS records</li>
+                <li><strong>Medium (3-5 pts):</strong> Authorization detail with fraud flag update (CPVD) — IMS update + DB2 insert</li>
+                <li><strong>Complex (5-8 pts):</strong> MQ request processor with business rules and two-phase IMS+DB2 commit (CP00)</li>
+                <li><strong>Very Complex (8-13 pts):</strong> Batch purge with credit restoration across IMS + VSAM (CBPAUP0C/CBPAUP0J)</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>COPAUA0C</td><td>CICS COBOL</td><td>MQ-triggered auth processor — GET request, process, INSERT to IMS, PUT response</td></tr>
+                <tr><td>COPAUS0C</td><td>CICS COBOL</td><td>Auth summary screen — reads IMS and VSAM to display pending authorizations</td></tr>
+                <tr><td>COPAUS1C</td><td>CICS COBOL</td><td>Auth detail screen — UPDATE IMS + INSERT to DB2 for fraud flagging</td></tr>
+                <tr><td>COPAUS2C</td><td>CICS COBOL</td><td>Additional authorization processing program</td></tr>
+                <tr><td>CBPAUP0C</td><td>Batch COBOL</td><td>Purge expired authorizations from IMS, restore credit in ACCTFILE</td></tr>
+                <tr><td>CCPAURQY</td><td>Copybook</td><td>MQ authorization request message structure</td></tr>
+                <tr><td>CCPAURLY</td><td>Copybook</td><td>MQ authorization response message structure</td></tr>
+                <tr><td>DBPAUTP0</td><td>IMS DBD</td><td>HIDAM primary database for authorization storage</td></tr>
+                <tr><td>AUTHFRDS</td><td>DB2 Table</td><td>Fraud analytics table — stores flagged authorizations</td></tr>
+            </table>
+            <h3>⚙️ Authorization Flow</h3>
+            <pre>External POS → MQ Request Queue
+    → COPAUA0C (CICS MQ trigger)
+    → Validate: VSAM XREFFILE + ACCTFILE
+    → Apply business rules (credit check, account status)
+    → INSERT IMS HIDAM (authorization record)
+    → MQ Response Queue (APPROVE/DECLINE)
+
+User reviews pending auths (COPAUS0C/COPAUS1C):
+    → Read IMS authorization records
+    → Flag fraud → INSERT DB2 AUTHFRDS + UPDATE IMS
+
+Batch purge (CBPAUP0C daily):
+    → READ IMS expired records
+    → UPDATE ACCTFILE (restore available credit)
+    → DELETE IMS records</pre>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>Authorization approved if: account active + available credit ≥ request amount</li>
+                <li>Authorization response sent to reply-to queue specified in MQ request message</li>
+                <li>IMS uses HIDAM structure with PSBPAUTB PSB for DL/I calls</li>
+                <li>Fraud flag set via COPAUS1C → fraud record inserted in DB2 AUTHFRDS table</li>
+                <li>Expired authorizations purged by CBPAUP0C; available credit restored to account</li>
+                <li>Two-phase commit required for IMS + DB2 simultaneous updates</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> a valid MQ authorization request, <strong>when</strong> COPAUA0C processes it, <strong>then</strong> authorization is stored in IMS and response sent to reply queue within SLA</li>
+                <li><strong>Given</strong> insufficient available credit, <strong>when</strong> authorization request is processed, <strong>then</strong> DECLINE response is sent and no IMS record is created</li>
+                <li><strong>Given</strong> a pending authorization, <strong>when</strong> user flags it as fraud via CPVD, <strong>then</strong> IMS record is updated and DB2 AUTHFRDS record is inserted</li>
+                <li><strong>Given</strong> expired authorizations exist in IMS, <strong>when</strong> CBPAUP0C runs, <strong>then</strong> expired records are deleted and corresponding account available credit is restored</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>
