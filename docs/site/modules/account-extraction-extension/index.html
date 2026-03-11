@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Extraction Extension - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #fdf2f8; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); color: white; padding: 30px; border-radius: 8px; }
+        section { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        ul { padding-left: 20px; }
+        pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 6px; overflow-x: auto; }
+        footer { text-align: center; padding: 20px 0; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📦 Account Extraction Extension</h1>
+            <p>Guide for Developing User Stories</p>
+        </header>
+
+        <section class="overview">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Demonstrates MQ-driven account and date inquiries that read VSAM data without forcing clients into the 3270 UI.</p>
+            <p><strong>Business Context:</strong> Highlights asynchronous MQ patterns and message correlation while exposing VSAM records to downstream services.</p>
+        </section>
+
+        <section class="us-guide">
+            <h2>🎯 User Story Development Guide</h2>
+
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>System date query:</strong> As an automation script, I want `CDRD` to return the current date via MQ so that nightly processes stay synchronized.</li>
+                <li><strong>Account inquiry:</strong> As an external service, I want `CDRA` to fetch VSAM-backed account details through `CARDDEMO.RESPONSE.QUEUE` without logging into CICS.</li>
+                <li><strong>Extraction resilience:</strong> As an operator, I want error handling on MQ listeners so transient queue outages do not leave requests hanging.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>Message formats:</strong> Borrow structures from `app/app-vsam-mq/README.md` such as `DATE-REQUEST`/`ACCT-REQUEST` blocks to keep payloads consistent.</li>
+                <li><strong>MQ samples:</strong> Existing definitions under `csd/` show `MQCONN`, `MQQUEUE`, and correlation ID usage that can be reused.</li>
+                <li><strong>BMS fallback:</strong> If MQ needs to show data on-screen, reuse the forms from base module to mirror layout while the request is processed asynchronously.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Update the `ACCT-RESPONSE` payload to include one extra field with no MQ logic change.</li>
+                <li><strong>Medium (3-5 pts):</strong> Add new correlation ID handling or queue attributes to `CDRA` so multi-threaded clients are supported.</li>
+                <li><strong>Complex (5-8 pts):</strong> Build a new extraction transaction that streams VSAM rows into an MQ batch file with chunking support.</li>
+            </ul>
+
+            <h3>✅ Acceptance Criteria Examples</h3>
+            <ul>
+                <li>`CDRD` sends `DATE-REQUEST`, waits for `DATE-RESPONSE`, and returns `SYSTEM-DATE` on-screen if the MQ reply arrives within a single CICS unit of work.</li>
+                <li>`CDRA` handles missing account numbers by returning a response with `RESPONSE-TYPE = 'ACCT'` and a clear error indicator.</li>
+                <li>MQ connection definitions (`MQCONN`, `MQQUEUE`) remain registered even after a return code <> 0, avoiding orphaned channel handles.</li>
+            </ul>
+        </section>
+
+        <section class="technical">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>CICS programs:</strong> `CODATE01` (`CDRD`) and `COACCT01` (`CDRA`) that wrap MQ request/response sequences.</li>
+                <li><strong>MQ resources:</strong> `CARDDEMO.REQUEST.QUEUE` / `CARDDEMO.RESPONSE.QUEUE`, MQCONN, and correlation IDs described in the README.</li>
+                <li><strong>Message structures:</strong> `DATE-REQUEST`, `DATE-RESPONSE`, `ACCT-REQUEST`, `ACCT-RESPONSE` with fixed-length fields.</li>
+                <li><strong>VSAM access:</strong> These programs read from `AWS.M2.CARDDEMO.ACCTDATA.PS` using existing copybooks.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>IBM MQ subsystem</strong> with defined queues and channels accessible from CICS.</li>
+                <li><strong>Base CardDemo</strong> for the underlying VSAM files and account copybooks.</li>
+                <li><strong>CICS MQ support</strong> (the runtime must have MQCONN/MQOPEN privileges for queue access).</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>
+CICS:
+- CDRD / CODATE01 -> System Date MQ request/response
+- CDRA / COACCT01 -> Account inquiry MQ request/response
+MQ:
+- CARDDEMO.REQUEST.QUEUE -> Receives DATE/ACCT requests
+- CARDDEMO.RESPONSE.QUEUE -> Delivers DATE/ACCT responses
+</code></pre>
+        </section>
+
+        <footer>
+            <p><a href="../index.html">← Back to Index</a></p>
+            <p><em>Last updated: March 11, 2026</em></p>
+        </footer>
+    </div>
+</body>
+</html>

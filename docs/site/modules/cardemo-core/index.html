@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo Core - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f5f7fb; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; }
+        h1 { margin: 0; }
+        section { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        ul { padding-left: 20px; }
+        pre { background: #0b1b33; color: #c7d2fe; padding: 12px; border-radius: 6px; overflow-x: auto; }
+        footer { text-align: center; padding: 20px 0; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📦 CardDemo Core</h1>
+            <p>Guide for Developing User Stories</p>
+        </header>
+
+        <section class="overview">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> The base CardDemo module powers sign-on, account/card management, transactions, statements, and the administrator menu inside CICS.</p>
+            <p><strong>Business Context:</strong> Provides the working data store and workflow for credit card lifecycle management that optional extensions build upon (transaction types, authorizations, MQ extracts).</p>
+        </section>
+
+        <section class="us-guide">
+            <h2>🎯 User Story Development Guide</h2>
+
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Account Management:</strong> As a cardholder, I want to view and edit my contact information so that future statements land at my preferred address.</li>
+                <li><strong>Transaction Posting:</strong> As an operator, I want to run the nightly posting job and see clean JES output so that daily balances reflect today’s activity.</li>
+                <li><strong>Admin Maintenance:</strong> As an admin, I want to manage user records (CU00-CU03) to ensure support staff can log in with appropriate permissions.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>BMS map reuse:</strong> Most screens follow the PF-key pattern (Enter, PF3/PF12, PF7/PF8) so new forms can copy structure from `app/bms`/`app/cpy-bms`.</li>
+                <li><strong>Copybooks:</strong> Data layouts such as `CVACT01Y` and `CVTRAN06Y` are shared across `cbl` programs, reducing duplication when adding fields.</li>
+                <li><strong>Scripts:</strong> `scripts/run_full_batch.sh` sequences dataset refreshes and posting jobs, so story acceptance can include re-running the script rather than manually submitting multiple JCL files.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> CRUD changes on an existing BMS screen or validation rule within a single COBOL program (e.g., add a warning message on `COACTVW`).</li>
+                <li><strong>Medium (3-5 pts):</strong> Add new business logic that affects multiple transactions or update copybooks plus maps (e.g., new date format in account update plus `ACCTFILE` refresh). </li>
+                <li><strong>Complex (5-8 pts):</strong> Introduce a new dataset or modify the batch pipeline (e.g., new sequence after `TRANBKP` that reorganizes VSAM indexes or integrates DB2 metadata).</li>
+            </ul>
+
+            <h3>✅ Acceptance Criteria Examples</h3>
+            <ul>
+                <li>Sign-on (`CC00`) validates credentials and routes to `CM00` within one CICS transaction; rejects invalid passwords with descriptive BMS message.</li>
+                <li>`COACTUPC` persists updates to `AWS.M2.CARDDEMO.ACCTDATA.PS` and leaves the user on the detail screen with a success banner.</li>
+                <li>Running `scripts/run_full_batch.sh` replays the 16-job sequence, waits 5–10 seconds between submissions, and ends with JES return code 0000 for each job.</li>
+            </ul>
+        </section>
+
+        <section class="technical">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COBOL programs (`app/cbl/`):</strong> Each transaction has its own entrypoint (e.g., `COACTVW`, `COCRDLIC`, `CORPT00`).</li>
+                <li><strong>BMS mapsets (`app/bms/`, `app/cpy-bms/`):</strong> Define 3270 screens rendered inside CICS.</li>
+                <li><strong>VSAM datasets (`app/data/`):</strong> `AWS.M2.CARDDEMO.ACCTDATA.PS`, `CARDDATA.PS`, `DALYTRAN.PS`, and supporting cross-reference files.</li>
+                <li><strong>Batch JCL (`app/jcl/`):</strong> `ACCTFILE`, `CARDFILE`, `TRANBKP`, `POSTTRAN`, `INTCALC`, `TRANIDX`, `OPENFIL`, among others.</li>
+                <li><strong>Automation scripts:</strong> `scripts/run_full_batch.sh` for sequential JES submission and helper templates like `scripts/compile_batch.jcl.template`.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>CICS region</strong> with the CardDemo group (`CARDDEMO`).</li>
+                <li><strong>VSAM files</strong> provisioned with the provided HLQs (e.g., `AWS.M2.CARDDEMO.ACCTDATA.PS`).</li>
+                <li><strong>JCL/PROCs</strong> configured to compile and execute COBOL/CICS jobs.</li>
+                <li><strong>Optional MQ/DB2/IMS</strong> (when dependent modules are enabled).</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>
+CICS:
+- CC00 (COSGN00C) Sign-on
+- CM00 (COMEN01C) Main menu
+- CAVW/CAUP (COACTVWC/COACTUPC) Account view/update
+- CCLI/CCDL (COCRDLIC/COCRDSLC) Card list/detail
+- CT00-CT02 (COTRN00C/COTRN01C/COTRN02C) Transaction lifecycle
+- CB00 (COBIL00C) Bill payment
+- CA00 (COADM01C) Admin menu
+- CU00-CU03 (COUSR00C-COUSR03C) User management
+Batch:
+- ACCTFILE, CARDFILE, TRANBKP, POSTTRAN, INTCALC, TRANIDX, OPENFIL, WAITSTEP, TRANEXTR
+</code></pre>
+        </section>
+
+        <footer>
+            <p><a href="../index.html">← Back to Index</a></p>
+            <p><em>Last updated: March 11, 2026</em></p>
+        </footer>
+    </div>
+</body>
+</html>

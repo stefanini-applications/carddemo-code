@@ -1,0 +1,20 @@
+# Module File Map
+<!-- MODULE_FILE_MAP_START -->
+app/bms/** = carddemo-core
+app/cbl/** = carddemo-core
+app/cpy/** = carddemo-core
+app/cpy-bms/** = carddemo-core
+app/csd/** = carddemo-core
+app/ctl/** = carddemo-core
+app/data/** = carddemo-core
+app/jcl/** = carddemo-core
+app/asm/** = carddemo-core
+app/catlg/** = carddemo-core
+app/proc/** = carddemo-core
+app/scheduler/** = carddemo-core
+samples/** = carddemo-core
+scripts/** = carddemo-core
+app/app-authorization-ims-db2-mq/** = authorization-extension
+app/app-transaction-type-db2/** = transaction-type-extension
+app/app-vsam-mq/** = account-extraction-extension
+<!-- MODULE_FILE_MAP_END -->

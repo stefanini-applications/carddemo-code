@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Extension - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #fdf5f0; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f97316 0%, #c026d3 100%); color: white; padding: 30px; border-radius: 8px; }
+        section { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        ul { padding-left: 20px; }
+        pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 6px; overflow-x: auto; }
+        footer { text-align: center; padding: 20px 0; font-size: 0.9em; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📦 Authorization Extension</h1>
+            <p>Guide for Developing User Stories</p>
+        </header>
+
+        <section class="overview">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Adds an IMS/DB2/MQ-based authorization simulator that processes merchant requests, logs decisions, and surfaces fraud markings.</p>
+            <p><strong>Business Context:</strong> Ideal for teams validating MQ-based credit card authorizations, two-phase commit behavior, and fraud reporting in modernization exercises.</p>
+        </section>
+
+        <section class="us-guide">
+            <h2>🎯 User Story Development Guide</h2>
+
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>MQ request/response:</strong> As a payment gateway integrator, I want to send `AUTH-CARD` requests to `AWS.M2.CARDDEMO.PAUTH.REQUEST` and receive approval codes so that downstream systems can finish the sale.</li>
+                <li><strong>Fraud tagging:</strong> As a fraud analyst, I want to flag a suspicious authorization from `CPVD` and push it into `AUTHFRDS` for reporting.</li>
+                <li><strong>Data cleanup:</strong> As an operator, I want to run `CBPAUP0J` after hours to purge expired authorizations and reset credit buffers.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>MQ payload templates:</strong> Copy the request/response structures defined in `app/app-authorization-ims-db2-mq/README.md` to keep correlation IDs consistent.</li>
+                <li><strong>IMS/DB2 scaffolding:</strong> Existing DBDs (`DBPAUTP0`, `DBPAUTX0`) and PSBs (`PSBPAUTB`, `PSBPAUTL`) provide a ready-made schema for new segments.</li>
+                <li><strong>Shared purge job:</strong> `CBPAUP0J` already exists and can be extended if new cleanup logic is required.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Update a BMS map (`COPAU00`, `COPAU01`) to surface a new field, provided MQ payload remains unchanged.</li>
+                <li><strong>Medium (3-5 pts):</strong> Adjust IMS segments or DB2 table columns and ensure `COPAUA0C`/`COPAUS2C` handle the extra fields.</li>
+                <li><strong>Complex (5-8 pts):</strong> Introduce a new MQ queue or call into an external fraud engine, requiring message transformation and CICS/MQ resource definitions.</li>
+            </ul>
+
+            <h3>✅ Acceptance Criteria Examples</h3>
+            <ul>
+                <li>`CP00` reads an MQ `AUTH-DATE` request, applies business rules, and writes IMS `PAUTSUM0`/`PAUTDTL1` segments with no abends.</li>
+                <li>`CPVD` marks fraud (PF5) and ensures `AUTHFRDS` has a corresponding row with `FRAUD_RPT_DATE` and `MATCH_STATUS = 'F'`.</li>
+                <li>`CBPAUP0J` purges all authorizations older than the current system date and releases MQ queue resources.</li>
+            </ul>
+        </section>
+
+        <section class="technical">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>CICS programs:</strong> `COPAUA0C`, `COPAUS0C`, `COPAUS1C`, `COPAUS2C`, `CBPAUP0C` orchestrate MQ inflight requests, summary/detail browsing, fraud marking, and batch purge.</li>
+                <li><strong>IMS artifacts:</strong> DBDs `DBPAUTP0`, `DBPAUTX0`; segments `PAUTSUM0`, `PAUTDTL1`; PSBs `PSBPAUTB`, `PSBPAUTL`.</li>
+                <li><strong>DB2 schema:</strong> Table `AUTHFRDS` plus index `XAUTHFRD`; used for analytics on fraud-marked cases.</li>
+                <li><strong>MQ queues:</strong> `AWS.M2.CARDDEMO.PAUTH.REQUEST`, `AWS.M2.CARDDEMO.PAUTH.REPLY` with comma-separated payloads (authorization, approval, reason).</li>
+                <li><strong>BMS screens:</strong> `COPAU00` (summary), `COPAU01` (details) which reuse PF key conventions.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>Base CardDemo (`carddemo-core`)</strong> for account/card detail lookups.</li>
+                <li><strong>IMS DB</strong> to persist hierarchical authorization data.</li>
+                <li><strong>DB2 subsystem</strong> for fraud reporting.</li>
+                <li><strong>IBM MQ</strong> for request/response communication.</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>
+CICS:
+- CP00 / COPAUA0C  -> Authorization request processor (MQ trigger)
+- CPVS / COPAUS0C  -> Authorization summary screen (scroll with PF7/PF8)
+- CPVD / COPAUS1C  -> Authorization detail and fraud tagging (PF5)
+Batch:
+- CBPAUP0J / CBPAUP0C -> Purge expired authorizations
+MQ:
+- AWS.M2.CARDDEMO.PAUTH.REQUEST -> Accepts AUTH-DATE, CARD-NUM, etc.
+- AWS.M2.CARDDEMO.PAUTH.REPLY   -> Sends CARD-NUM, TRANSACTION-ID, AUTH-RESP-CODE, APPROVED-AMT
+</code></pre>
+        </section>
+
+        <footer>
+            <p><a href="../index.html">← Back to Index</a></p>
+            <p><em>Last updated: March 11, 2026</em></p>
+        </footer>
+    </div>
+</body>
+</html>
