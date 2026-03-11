@@ -1,110 +1,1274 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Credit Cards - User Story Development Guide</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="last-updated" content="2026-03-11T12:16:37Z">
+    <title>credit-cards - Module Documentation</title>
     <style>
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
-        .header{background:linear-gradient(135deg,#553c9a 0%,#805ad5 100%);color:white;padding:32px 20px}
-        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
-        .container{max-width:960px;margin:0 auto;padding:30px 20px}
-        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
-        h2{color:#553c9a;margin-top:0;border-bottom:2px solid #e9d8fd;padding-bottom:8px}
-        h3{color:#6b46c1}
-        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
-        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#faf5ff;color:#553c9a;margin:3px 3px 3px 0}
-        ul li{margin-bottom:6px}
-        table{width:100%;border-collapse:collapse}
-        th{background:#faf5ff;text-align:left;padding:10px 12px;color:#553c9a}
-        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
-        tr:last-child td{border-bottom:none}
-        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 { color: #4fc3f7; border-bottom: 2px solid #4fc3f7; padding-bottom: 10px; }
+        h2 { color: #81c784; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        h3 { color: #ffb74d; margin-top: 24px; }
+        h4 { color: #ce93d8; }
+        code {
+            background-color: #2d2d2d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.92em;
+            color: #f48fb1;
+        }
+        pre {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #4fc3f7;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88em;
+            line-height: 1.5;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e0e0e0;
+        }
+        a { color: #4fc3f7; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        th {
+            background-color: #2d2d2d;
+            color: #81c784;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #444;
+        }
+        td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #333;
+            vertical-align: top;
+        }
+        tr:hover td { background-color: #222; }
+        .badge {
+            display: inline-block;
+            background-color: #2d2d2d;
+            border: 1px solid #4fc3f7;
+            color: #4fc3f7;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.82em;
+            margin: 2px;
+        }
+        .badge-green {
+            border-color: #81c784;
+            color: #81c784;
+        }
+        .badge-orange {
+            border-color: #ffb74d;
+            color: #ffb74d;
+        }
+        .note {
+            background-color: #1e3a2f;
+            border-left: 4px solid #81c784;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+        .warning {
+            background-color: #3a2a1e;
+            border-left: 4px solid #ffb74d;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+        nav {
+            margin-bottom: 24px;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        .toc {
+            background-color: #222;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+        .toc ul { margin: 0; padding-left: 20px; }
+        .toc li { margin: 4px 0; }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            color: #888;
+            font-size: 0.85em;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h1>💳 Credit Cards</h1><p>User Story Development Guide — CardDemo Mainframe Application</p></div>
-    <div class="container">
-        <section>
-            <h2>📋 Overview</h2>
-            <p><strong>Module ID:</strong> <code>credit-cards</code></p>
-            <p><strong>Purpose:</strong> List, view, and update credit card records. Cards are linked to accounts via the CARDXREF cross-reference VSAM file.</p>
-            <p><strong>Business Context:</strong> Each account can have multiple cards. The cross-reference (CVACT03Y) maps card number → customer ID + account ID, enabling navigation from card to account and vice versa.</p>
-            <p>
-                <span class="badge">CCLI: COCRDLIC (list)</span>
-                <span class="badge">CCDL: COCRDSLC (view)</span>
-                <span class="badge">CCUP: COCRDUPC (update)</span>
-                <span class="badge">VSAM: CARDFILE + XREFFILE</span>
-            </p>
-        </section>
-        <section>
-            <h2>🎯 User Story Development Guide</h2>
-            <h3>📝 US Templates</h3>
-            <ul>
-                <li>As a <strong>regular user</strong>, I want to list all cards on my account so that I can see which cards are active</li>
-                <li>As a <strong>regular user</strong>, I want to view card details (number, expiry, CVV, status) so that I can verify my card information</li>
-                <li>As a <strong>regular user</strong>, I want to update my card active status so that I can activate or deactivate a card</li>
-                <li>As a <strong>regular user</strong>, I want to see the embossed name on my card so that I can confirm it is correct</li>
-            </ul>
-            <h3>⚡ Development Acceleration Factors</h3>
-            <ul>
-                <li><strong>CVACT02Y copybook:</strong> Complete 150-byte CARD-RECORD layout — card number, account ID, CVV, name, expiry, status</li>
-                <li><strong>CVACT03Y copybook:</strong> 50-byte CARD-XREF-RECORD — maps card to customer and account (XREF-CARD-NUM → XREF-CUST-ID + XREF-ACCT-ID)</li>
-                <li><strong>AIX (Alternate Index):</strong> XREFFILE supports lookup by account ID as well as card number for list operations</li>
-            </ul>
-            <h3>📊 Complexity Guidelines</h3>
-            <ul>
-                <li><strong>Simple (1-2 pts):</strong> Card detail view from single VSAM read (CCDL)</li>
-                <li><strong>Medium (3-5 pts):</strong> Card list via XREFFILE AIX browse + pagination (CCLI); card status update (CCUP)</li>
-                <li><strong>Complex (5-8 pts):</strong> Cross-module — card deactivation triggering account available credit recalculation</li>
-            </ul>
-        </section>
-        <section>
-            <h2>🔧 Technical Foundation</h2>
-            <h3>🏗️ Key Components</h3>
-            <table>
-                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
-                <tr><td>COCRDLIC</td><td>CICS COBOL</td><td>Credit card list — browses XREFFILE AIX by account ID</td></tr>
-                <tr><td>COCRDSLC</td><td>CICS COBOL</td><td>Credit card view — reads CARDFILE by CARD-NUM</td></tr>
-                <tr><td>COCRDUPC</td><td>CICS COBOL</td><td>Credit card update — validates and REWRITEs CARDFILE record</td></tr>
-                <tr><td>CVACT02Y</td><td>Copybook</td><td>150-byte CARD-RECORD (key = CARD-NUM PIC X(16))</td></tr>
-                <tr><td>CVACT03Y</td><td>Copybook</td><td>50-byte CARD-XREF-RECORD (key = XREF-CARD-NUM)</td></tr>
-                <tr><td>CARDFILE</td><td>VSAM KSDS</td><td>Card master file — 150-byte records, key CARD-NUM</td></tr>
-                <tr><td>XREFFILE</td><td>VSAM KSDS+AIX</td><td>Cross-reference: card → customer + account. AIX on XREF-ACCT-ID for list by account</td></tr>
-            </table>
-            <h3>📋 Card Data Model</h3>
-            <pre>01  CARD-RECORD.                   -- 150 bytes
-    05  CARD-NUM              PIC X(16). -- Primary key
-    05  CARD-ACCT-ID          PIC 9(11).
-    05  CARD-CVV-CD           PIC 9(03).
-    05  CARD-EMBOSSED-NAME    PIC X(50).
-    05  CARD-EXPIRAION-DATE   PIC X(10). -- YYYY-MM-DD (typo preserved)
-    05  CARD-ACTIVE-STATUS    PIC X(01). -- 'Y'=active
-    05  FILLER                PIC X(59).
 
-01  CARD-XREF-RECORD.             -- 50 bytes
-    05  XREF-CARD-NUM         PIC X(16). -- Primary key
-    05  XREF-CUST-ID          PIC 9(09).
-    05  XREF-ACCT-ID          PIC 9(11).
-    05  FILLER                PIC X(14).</pre>
-            <h3>⚙️ Business Rules</h3>
-            <ul>
-                <li>Card list filtered by account ID using XREFFILE AIX browse</li>
-                <li>CARD-ACTIVE-STATUS controls card usability; 'Y'=active, 'N'=inactive</li>
-                <li>Cross-reference (XREFFILE) must be consistent with CARDFILE — updated together</li>
-                <li>CVV stored as 3-digit numeric in source data</li>
-                <li>CARD-EXPIRAION-DATE field name has intentional typo — preserved for compatibility</li>
-            </ul>
-        </section>
-        <section>
-            <h2>✅ Acceptance Criteria Patterns</h2>
-            <ul>
-                <li><strong>Given</strong> a valid account ID, <strong>when</strong> credit card list is requested, <strong>then</strong> all cards for that account are displayed with card number and status</li>
-                <li><strong>Given</strong> a valid card number, <strong>when</strong> card view is requested, <strong>then</strong> full card details are displayed</li>
-                <li><strong>Given</strong> updated card active status, <strong>when</strong> card update is submitted, <strong>then</strong> CARDFILE is rewritten and success message displayed</li>
-                <li><strong>Given</strong> no cards on file for an account, <strong>when</strong> card list is requested, <strong>then</strong> "No cards found" message is displayed</li>
-            </ul>
-        </section>
-        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
-    </div>
+<nav>
+    <a href="../../index.html">← Back to Index</a>
+</nav>
+
+<h1>💳 credit-cards</h1>
+<p>
+    <span class="badge">CICS Online</span>
+    <span class="badge badge-green">CCLI</span>
+    <span class="badge badge-green">CCDL</span>
+    <span class="badge badge-green">CCUP</span>
+    <span class="badge badge-orange">VSAM KSDS + AIX</span>
+</p>
+
+<div class="toc">
+    <strong>Contents</strong>
+    <ul>
+        <li><a href="#overview">Overview and Purpose</a></li>
+        <li><a href="#architecture">Architectural Context</a></li>
+        <li><a href="#components">Key Components</a></li>
+        <li><a href="#dependencies">Dependencies</a></li>
+        <li><a href="#transactions">CICS Transactions and Screen Flow</a></li>
+        <li><a href="#data-models">Data Models</a></li>
+        <li><a href="#business-rules">Business Rules</a></li>
+        <li><a href="#vsam-files">VSAM File Access Patterns</a></li>
+        <li><a href="#commarea">COMMAREA and State Management</a></li>
+        <li><a href="#screens">Screen Layouts (BMS Maps)</a></li>
+        <li><a href="#validation">Input Validation Logic</a></li>
+        <li><a href="#error-handling">Error Handling</a></li>
+        <li><a href="#patterns">Development Patterns</a></li>
+        <li><a href="#examples">Usage Examples and Code Snippets</a></li>
+        <li><a href="#user-stories">User Story Templates</a></li>
+        <li><a href="#testing">Testing Guidelines</a></li>
+        <li><a href="#tech-debt">Technical Debt and Known Issues</a></li>
+    </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview">Overview and Purpose</h2>
+
+<p>
+    The <strong>credit-cards</strong> module provides the complete online CICS interface for listing, viewing, and
+    updating credit card records within the CardDemo mainframe application. It is one of the core functional modules
+    available to regular (non-admin) users after successful authentication.
+</p>
+<p>
+    Each credit card is stored as a record in <code>CARDFILE</code> (VSAM KSDS) and is linked to an account
+    via the <code>XREFFILE</code> cross-reference file. The cross-reference also maps each card to its owner
+    customer, enabling efficient navigation across the accounts–cards–customers relationship.
+</p>
+
+<div class="note">
+    <strong>Module ID:</strong> <code>credit-cards</code><br>
+    <strong>Layer:</strong> Online CICS Business Logic<br>
+    <strong>User Role:</strong> Regular User (authenticated via <code>COSGN00C</code>, <code>SEC-USR-TYPE = 'U'</code>)<br>
+    <strong>Source version:</strong> CardDemo_v1.0-15-g27d6c6f-68 (2022-07-19)
+</div>
+
+<!-- ============================================================ -->
+<h2 id="architecture">Architectural Context</h2>
+
+<p>
+    The credit-cards module follows the <strong>pseudo-conversational CICS</strong> pattern used throughout
+    CardDemo. Each user interaction triggers a transaction, the program processes the request, sends a BMS map
+    to the terminal, and returns with a COMMAREA preserving state for the next interaction.
+</p>
+
+<pre><code>Terminal ──CCLI──► COCRDLIC ──XCTL──► COCRDSLC (view)
+                                   ──XCTL──► COCRDUPC (update)
+                                   ──XCTL──► COMEN01C (main menu on PF3)
+
+COCRDSLC ──XCTL──► COCRDLIC (back to list)
+                ──XCTL──► COCRDUPC (direct update from detail)
+                ──XCTL──► COMEN01C (main menu on PF3)
+
+COCRDUPC ──XCTL──► COCRDSLC (back to detail)
+                ──XCTL──► COMEN01C (main menu on PF3)
+</code></pre>
+
+<h3>Position in the System Architecture</h3>
+<table>
+    <tr>
+        <th>Layer</th>
+        <th>Components</th>
+    </tr>
+    <tr>
+        <td>Presentation</td>
+        <td>BMS maps: <code>COCRDLI</code> (list), <code>COCRDSL</code> (view), <code>COCRDUP</code> (update)</td>
+    </tr>
+    <tr>
+        <td>Business Logic</td>
+        <td>COBOL programs: <code>COCRDLIC</code>, <code>COCRDSLC</code>, <code>COCRDUPC</code></td>
+    </tr>
+    <tr>
+        <td>Data</td>
+        <td>VSAM KSDS: <code>CARDFILE</code> (primary), <code>XREFFILE</code> (cross-reference + AIX)</td>
+    </tr>
+    <tr>
+        <td>Copybooks</td>
+        <td><code>CVACT02Y</code> (card record), <code>CVACT03Y</code> (xref record), <code>CVCRD01Y</code> (work areas), <code>COCOM01Y</code> (commarea)</td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="components">Key Components</h2>
+
+<table>
+    <tr>
+        <th>Component</th>
+        <th>Type</th>
+        <th>Transaction</th>
+        <th>Responsibility</th>
+        <th>Source File</th>
+    </tr>
+    <tr>
+        <td><code>COCRDLIC</code></td>
+        <td>CICS COBOL Program</td>
+        <td><code>CCLI</code></td>
+        <td>Lists credit cards. Browses XREFFILE AIX by account ID (regular user) or all cards (admin). Supports pagination (PF7/PF8), filtering by account ID and card number, and selection for view (S) or update (U).</td>
+        <td><code>app/cbl/COCRDLIC.cbl</code> (1,459 lines)</td>
+    </tr>
+    <tr>
+        <td><code>COCRDSLC</code></td>
+        <td>CICS COBOL Program</td>
+        <td><code>CCDL</code></td>
+        <td>Displays full detail for a single card. Reads CARDFILE by CARD-NUM. Accepts account ID + card number as search keys. Validates input and handles NOTFND condition.</td>
+        <td><code>app/cbl/COCRDSLC.cbl</code> (887 lines)</td>
+    </tr>
+    <tr>
+        <td><code>COCRDUPC</code></td>
+        <td>CICS COBOL Program</td>
+        <td><code>CCUP</code></td>
+        <td>Edits card fields: embossed name, active status (Y/N), expiry month/year. Validates all changes, presents confirmation step (PF5 to confirm), and REWRITEs CARDFILE record.</td>
+        <td><code>app/cbl/COCRDUPC.cbl</code> (1,560 lines)</td>
+    </tr>
+    <tr>
+        <td><code>COCRDLI</code> (BMS)</td>
+        <td>BMS Map Set</td>
+        <td>CCLI</td>
+        <td>24×80 terminal map for card listing. Fields: ACCTSID (account filter), CARDID (card filter), up to 7 rows of card data with selection field (CRDSEL1–CRDSEL7).</td>
+        <td><code>app/bms/COCRDLI.bms</code></td>
+    </tr>
+    <tr>
+        <td><code>COCRDSL</code> (BMS)</td>
+        <td>BMS Map Set</td>
+        <td>CCDL</td>
+        <td>24×80 terminal map for card detail view. Fields: account ID, card number, CVV, name, expiry date, active status.</td>
+        <td><code>app/bms/COCRDSL.bms</code></td>
+    </tr>
+    <tr>
+        <td><code>COCRDUP</code> (BMS)</td>
+        <td>BMS Map Set</td>
+        <td>CCUP</td>
+        <td>24×80 terminal map for card update. Editable fields: card name, active status, expiry month, expiry year.</td>
+        <td><code>app/bms/COCRDUP.bms</code></td>
+    </tr>
+    <tr>
+        <td><code>CVACT02Y</code></td>
+        <td>COBOL Copybook</td>
+        <td>—</td>
+        <td>Defines <code>CARD-RECORD</code> — 150-byte VSAM record layout. Shared by all three programs and batch jobs.</td>
+        <td><code>app/cpy/CVACT02Y.cpy</code></td>
+    </tr>
+    <tr>
+        <td><code>CVACT03Y</code></td>
+        <td>COBOL Copybook</td>
+        <td>—</td>
+        <td>Defines <code>CARD-XREF-RECORD</code> — 50-byte cross-reference layout mapping card → customer + account.</td>
+        <td><code>app/cpy/CVACT03Y.cpy</code></td>
+    </tr>
+    <tr>
+        <td><code>CVCRD01Y</code></td>
+        <td>COBOL Copybook</td>
+        <td>—</td>
+        <td>Defines <code>CC-WORK-AREAS</code> with AID key values, next program/map routing, error/return messages, and context fields (CC-ACCT-ID, CC-CARD-NUM, CC-CUST-ID). Used for intra-module COMMAREA passing.</td>
+        <td><code>app/cpy/CVCRD01Y.cpy</code></td>
+    </tr>
+    <tr>
+        <td><code>COCOM01Y</code></td>
+        <td>COBOL Copybook</td>
+        <td>—</td>
+        <td>Defines <code>CARDDEMO-COMMAREA</code> — the system-wide commarea structure shared across all CardDemo modules.</td>
+        <td><code>app/cpy/COCOM01Y.cpy</code></td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="dependencies">Dependencies</h2>
+
+<h3>Internal Module Dependencies</h3>
+<table>
+    <tr>
+        <th>Module</th>
+        <th>Dependency Type</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><strong>authentication</strong></td>
+        <td>Prerequisite</td>
+        <td><code>COSGN00C</code> authenticates user and populates <code>CARDDEMO-COMMAREA</code> with user ID and type before credit-cards can be accessed.</td>
+    </tr>
+    <tr>
+        <td><strong>accounts</strong></td>
+        <td>Navigational / Data Dependency</td>
+        <td>Account context (ACCT-ID) is often passed in COMMAREA from the accounts module. <code>CVACT01Y</code> (account record) may be read to verify account existence.</td>
+    </tr>
+    <tr>
+        <td><strong>transactions</strong></td>
+        <td>Downstream</td>
+        <td>Transaction records reference <code>TRAN-CARD-NUM</code>. Card status affects transaction posting in batch.</td>
+    </tr>
+    <tr>
+        <td><strong>batch-processing</strong></td>
+        <td>Data Consumer</td>
+        <td>POSTTRAN (<code>CBTRN02C</code>) validates card records during transaction posting. CBSTM03A reads card data for statement generation.</td>
+    </tr>
+</table>
+
+<h3>VSAM File Dependencies</h3>
+<table>
+    <tr>
+        <th>File DDname</th>
+        <th>Access</th>
+        <th>Programs</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>CARDDAT</code></td>
+        <td>READ, REWRITE</td>
+        <td>COCRDSLC, COCRDUPC</td>
+        <td>CARDFILE primary path — keyed by CARD-NUM (16 chars)</td>
+    </tr>
+    <tr>
+        <td><code>CARDAIX</code></td>
+        <td>STARTBR, READNEXT, READPREV, ENDBR</td>
+        <td>COCRDLIC</td>
+        <td>CARDFILE alternate index path — keyed by account ID for listing cards per account</td>
+    </tr>
+    <tr>
+        <td><code>XREFFILE</code></td>
+        <td>READ, STARTBR, READNEXT</td>
+        <td>COCRDSLC</td>
+        <td>Cross-reference KSDS — keyed by XREF-CARD-NUM; maps card to customer and account</td>
+    </tr>
+</table>
+
+<h3>Copybook Dependencies</h3>
+<table>
+    <tr>
+        <th>Copybook</th>
+        <th>Used In</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td><code>CVACT02Y</code></td>
+        <td>All three CBL programs</td>
+        <td>CARD-RECORD layout (150 bytes)</td>
+    </tr>
+    <tr>
+        <td><code>CVACT03Y</code></td>
+        <td>COCRDLIC, COCRDSLC</td>
+        <td>CARD-XREF-RECORD layout (50 bytes)</td>
+    </tr>
+    <tr>
+        <td><code>CVCRD01Y</code></td>
+        <td>All three CBL programs</td>
+        <td>CC-WORK-AREAS — module-local context passed in COMMAREA extension</td>
+    </tr>
+    <tr>
+        <td><code>COCOM01Y</code></td>
+        <td>All three CBL programs</td>
+        <td>CARDDEMO-COMMAREA — system-wide application state</td>
+    </tr>
+    <tr>
+        <td><code>COCRDLI.CPY</code></td>
+        <td>COCRDLIC</td>
+        <td>Generated BMS map fields for CCRDLIAI/CCRDLIAO</td>
+    </tr>
+    <tr>
+        <td><code>COCRDSL.CPY</code></td>
+        <td>COCRDSLC</td>
+        <td>Generated BMS map fields for CCRDSLAI/CCRDSLAO</td>
+    </tr>
+    <tr>
+        <td><code>COCRDUP.CPY</code></td>
+        <td>COCRDUPC</td>
+        <td>Generated BMS map fields for CCRDUPAI/CCRDUPAO</td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="transactions">CICS Transactions and Screen Flow</h2>
+
+<table>
+    <tr>
+        <th>Transaction ID</th>
+        <th>Program</th>
+        <th>BMS Map Set</th>
+        <th>Map Name</th>
+        <th>Function</th>
+        <th>Entry Point</th>
+    </tr>
+    <tr>
+        <td><code>CCLI</code></td>
+        <td>COCRDLIC</td>
+        <td>COCRDLI</td>
+        <td>CCRDLIA</td>
+        <td>List credit cards with filtering and pagination</td>
+        <td>Main menu → option 3</td>
+    </tr>
+    <tr>
+        <td><code>CCDL</code></td>
+        <td>COCRDSLC</td>
+        <td>COCRDSL</td>
+        <td>CCRDSLA</td>
+        <td>View card detail (single card)</td>
+        <td>From list (S selection) or direct transaction</td>
+    </tr>
+    <tr>
+        <td><code>CCUP</code></td>
+        <td>COCRDUPC</td>
+        <td>COCRDUP</td>
+        <td>CCRDUPA</td>
+        <td>Update card fields (name, status, expiry)</td>
+        <td>From list (U selection) or from view screen</td>
+    </tr>
+</table>
+
+<h3>PF Key Navigation</h3>
+<table>
+    <tr>
+        <th>Key</th>
+        <th>CCLI (List)</th>
+        <th>CCDL (View)</th>
+        <th>CCUP (Update)</th>
+    </tr>
+    <tr>
+        <td>Enter</td>
+        <td>Process selection / filter</td>
+        <td>Search / display card</td>
+        <td>Validate changes</td>
+    </tr>
+    <tr>
+        <td>PF3</td>
+        <td>Return to main menu (COMEN01C)</td>
+        <td>Return to main menu</td>
+        <td>Return to main menu</td>
+    </tr>
+    <tr>
+        <td>PF5</td>
+        <td>—</td>
+        <td>—</td>
+        <td>Confirm and save validated changes</td>
+    </tr>
+    <tr>
+        <td>PF7</td>
+        <td>Page backward through card list</td>
+        <td>—</td>
+        <td>—</td>
+    </tr>
+    <tr>
+        <td>PF8</td>
+        <td>Page forward through card list</td>
+        <td>—</td>
+        <td>—</td>
+    </tr>
+    <tr>
+        <td>PF12</td>
+        <td>Return to main menu</td>
+        <td>Return to card list (COCRDLIC)</td>
+        <td>Return to detail view (COCRDSLC)</td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="data-models">Data Models</h2>
+
+<h3>CARD-RECORD — <code>CVACT02Y</code> (150 bytes, VSAM KSDS)</h3>
+<pre><code>01  CARD-RECORD.
+    05  CARD-NUM                PIC X(16).     *> Primary key — 16-char card number
+    05  CARD-ACCT-ID            PIC 9(11).     *> Owning account (links to ACCTFILE)
+    05  CARD-CVV-CD             PIC 9(03).     *> Card Verification Value (3 digits)
+    05  CARD-EMBOSSED-NAME      PIC X(50).     *> Name printed on physical card
+    05  CARD-EXPIRAION-DATE     PIC X(10).     *> YYYY-MM-DD (note: intentional typo)
+    05  CARD-ACTIVE-STATUS      PIC X(01).     *> 'Y' = active, 'N' = inactive
+    05  FILLER                  PIC X(59).     *> Reserved for future expansion
+</code></pre>
+
+<div class="warning">
+    <strong>Known typo:</strong> <code>CARD-EXPIRAION-DATE</code> — "expiration" is misspelled as "expiraion". This typo is intentional in the source and must be preserved for VSAM record compatibility. All programs and batch jobs use this exact field name.
+</div>
+
+<h3>CARD-XREF-RECORD — <code>CVACT03Y</code> (50 bytes, VSAM KSDS)</h3>
+<pre><code>01  CARD-XREF-RECORD.
+    05  XREF-CARD-NUM           PIC X(16).     *> Primary key = card number
+    05  XREF-CUST-ID            PIC 9(09).     *> Links to CUSTFILE
+    05  XREF-ACCT-ID            PIC 9(11).     *> Links to ACCTFILE
+    05  FILLER                  PIC X(14).     *> Reserved
+</code></pre>
+
+<h3>CC-WORK-AREAS — <code>CVCRD01Y</code> (Module COMMAREA Extension)</h3>
+<pre><code>01  CC-WORK-AREAS.
+  05 CC-WORK-AREA.
+     10 CCARD-AID              PIC X(5).      *> Attention Identifier (ENTER/PFKxx)
+        88  CCARD-AID-ENTER    VALUE 'ENTER'.
+        88  CCARD-AID-PFK03    VALUE 'PFK03'.
+        88  CCARD-AID-PFK05    VALUE 'PFK05'.
+        88  CCARD-AID-PFK07    VALUE 'PFK07'.
+        88  CCARD-AID-PFK08    VALUE 'PFK08'.
+        88  CCARD-AID-PFK12    VALUE 'PFK12'.
+     10 CCARD-NEXT-PROG        PIC X(8).      *> Program to XCTL to
+     10 CCARD-NEXT-MAPSET      PIC X(7).      *> Map set for next screen
+     10 CCARD-NEXT-MAP         PIC X(7).      *> Map name for next screen
+     10 CCARD-ERROR-MSG        PIC X(75).     *> Error message for display
+     10 CCARD-RETURN-MSG       PIC X(75).     *> Return/info message
+     10 CC-ACCT-ID             PIC X(11).     *> Active account context
+     10 CC-CARD-NUM            PIC X(16).     *> Active card context
+     10 CC-CUST-ID             PIC X(09).     *> Active customer context
+</code></pre>
+
+<h3>CARDDEMO-COMMAREA — <code>COCOM01Y</code> (System-Wide Application State)</h3>
+<pre><code>*> System-wide commarea shared by all CardDemo modules
+01  CARDDEMO-COMMAREA.
+    05  CDEMO-FROM-TRANID      PIC X(4).
+    05  CDEMO-FROM-PROGRAM     PIC X(8).
+    05  CDEMO-TO-TRANID        PIC X(4).
+    05  CDEMO-TO-PROGRAM       PIC X(8).
+    05  CDEMO-USER-ID          PIC X(8).
+    05  CDEMO-USER-TYPE        PIC X(1).      *> 'U' regular / 'A' admin
+    05  CDEMO-PGM-CONTEXT      PIC X(...).    *> Additional context
+</code></pre>
+
+<h3>VSAM File Structure</h3>
+<table>
+    <tr>
+        <th>File Name</th>
+        <th>DDname (Primary)</th>
+        <th>DDname (AIX)</th>
+        <th>Record Length</th>
+        <th>Key Field</th>
+        <th>Key Length/Offset</th>
+    </tr>
+    <tr>
+        <td>CARDFILE</td>
+        <td>CARDDAT</td>
+        <td>CARDAIX</td>
+        <td>150 bytes</td>
+        <td>CARD-NUM</td>
+        <td>16 bytes, offset 0</td>
+    </tr>
+    <tr>
+        <td>XREFFILE</td>
+        <td>XREFFILE</td>
+        <td>—</td>
+        <td>50 bytes</td>
+        <td>XREF-CARD-NUM</td>
+        <td>16 bytes, offset 0</td>
+    </tr>
+</table>
+
+<p>
+    The <strong>Alternate Index (AIX)</strong> on CARDFILE is built over <code>XREF-ACCT-ID</code>, allowing
+    <code>COCRDLIC</code> to browse cards by account using <code>EXEC CICS STARTBR</code> with an account ID
+    key on the <code>CARDAIX</code> path.
+</p>
+
+<!-- ============================================================ -->
+<h2 id="business-rules">Business Rules</h2>
+
+<h3>Card Listing (COCRDLIC / CCLI)</h3>
+<ul>
+    <li>A <strong>regular user</strong> sees only cards linked to their own account — XREFFILE AIX is browsed using the account ID from COMMAREA.</li>
+    <li>An <strong>admin user</strong> can list all cards across all accounts — browse starts from the beginning of CARDFILE.</li>
+    <li>Up to <strong>7 cards</strong> are displayed per page; PF7 (backward) and PF8 (forward) enable pagination.</li>
+    <li>Optional filter fields: <strong>Account ID</strong> (ACCTSID) and <strong>Card Number</strong> (CARDID) can narrow the list.</li>
+    <li>Selection action codes: <strong>S</strong> = view detail (routes to COCRDSLC), <strong>U</strong> = update (routes to COCRDUPC).</li>
+    <li>Only one selection is allowed per page; selecting multiple rows triggers an error message.</li>
+    <li>The filter account ID must be a non-zero 11-digit numeric value when provided.</li>
+    <li>The filter card number must be a 16-digit numeric value when provided.</li>
+</ul>
+
+<h3>Card Detail View (COCRDSLC / CCDL)</h3>
+<ul>
+    <li>The user must provide a valid <strong>account number</strong> (non-zero, 11-digit numeric).</li>
+    <li>An optional <strong>card number</strong> (16-digit numeric) further narrows the search.</li>
+    <li>When only account ID is supplied, the first matching card is found by browsing CARDAIX.</li>
+    <li>When both account and card number are supplied, CARDFILE is read directly by card number, then validated against the account.</li>
+    <li>If no card is found for the given search condition, a "Did not find cards for this search condition" message is displayed.</li>
+    <li>The screen displays: card number, account ID, CVV, embossed name, expiry date (YYYY-MM-DD), and active status.</li>
+</ul>
+
+<h3>Card Update (COCRDUPC / CCUP)</h3>
+<ul>
+    <li>Editable fields: <code>CARD-EMBOSSED-NAME</code>, <code>CARD-ACTIVE-STATUS</code>, <code>CARD-EXPIRAION-DATE</code> (month and year separately).</li>
+    <li>Card number and account ID are <strong>display-only</strong> — they cannot be changed after lookup.</li>
+    <li><code>CARD-ACTIVE-STATUS</code> must be <code>'Y'</code> or <code>'N'</code> only.</li>
+    <li><code>CARD-EMBOSSED-NAME</code> can contain only alphabetic characters and spaces (no digits or special characters).</li>
+    <li>Expiry month must be between 1 and 12 inclusive.</li>
+    <li>Expiry year must be between 1950 and 2099 inclusive.</li>
+    <li>Changes are validated on <strong>Enter</strong>; the user must press <strong>PF5</strong> to confirm and commit the update.</li>
+    <li>If no changes are detected compared to the fetched record, a "No change detected" message is shown and no REWRITE occurs.</li>
+    <li>A successful update displays "Changes committed to database"; a failure shows "Changes unsuccessful. Please try again".</li>
+</ul>
+
+<h3>Cross-Reference Consistency</h3>
+<ul>
+    <li>CARDFILE and XREFFILE must remain in sync — each CARD-NUM in CARDFILE should have a corresponding XREF-CARD-NUM in XREFFILE.</li>
+    <li>The current online programs only update CARDFILE (REWRITE). XREFFILE updates are handled during data loading (batch JCL: <code>XREFFILE.jcl</code>).</li>
+    <li>CVV is stored as plain numeric in CARDFILE — no encryption in the base application.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="vsam-files">VSAM File Access Patterns</h2>
+
+<h3>COCRDLIC — Browse by Account (AIX Path)</h3>
+<pre><code>*> Start browse on CARDAIX (AIX keyed by XREF-ACCT-ID + XREF-CARD-NUM)
+EXEC CICS STARTBR
+     DATASET  (LIT-CARDFILENAME-ACCT-PATH)   *> 'CARDAIX '
+     RIDFLD   (WS-CARD-RID)                  *> ACCT-ID || CARD-NUM
+     KEYLENGTH(WS-CARD-RID-ACCT-ID)
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+*> Read forward through matching records
+EXEC CICS READNEXT
+     DATASET  (LIT-CARDFILENAME-ACCT-PATH)
+     INTO     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RIDFLD   (WS-CARD-RID)
+     KEYLENGTH(LENGTH OF WS-CARD-RID)
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+*> Read backward for PF7 (previous page)
+EXEC CICS READPREV
+     DATASET  (LIT-CARDFILENAME-ACCT-PATH)
+     INTO     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RIDFLD   (WS-CARD-RID)
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+*> End browse when done
+EXEC CICS ENDBR
+     DATASET  (LIT-CARDFILENAME-ACCT-PATH)
+END-EXEC
+</code></pre>
+
+<h3>COCRDSLC — Direct Read by Card Number</h3>
+<pre><code>*> Direct read from CARDFILE primary path by CARD-NUM
+EXEC CICS READ
+     DATASET  (LIT-CARDFILENAME)             *> 'CARDDAT '
+     INTO     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RIDFLD   (WS-CARD-RID-CARDNUM)
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+IF WS-RESP-CD = DFHRESP(NOTFND)
+   SET DID-NOT-FIND-ACCTCARD-COMBO TO TRUE
+END-IF
+</code></pre>
+
+<h3>COCRDUPC — Update (REWRITE)</h3>
+<pre><code>*> Read for update
+EXEC CICS READ
+     DATASET  (LIT-CARDFILENAME)
+     INTO     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RIDFLD   (WS-CARD-RID-CARDNUM)
+     UPDATE
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+*> Apply validated changes to CARD-RECORD fields...
+
+*> Write back
+EXEC CICS REWRITE
+     DATASET  (LIT-CARDFILENAME)
+     FROM     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RESP     (WS-RESP-CD)
+END-EXEC
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="commarea">COMMAREA and State Management</h2>
+
+<p>
+    Credit-cards programs use a <strong>two-part COMMAREA</strong>:
+</p>
+<ol>
+    <li><strong>CARDDEMO-COMMAREA</strong> (from <code>COCOM01Y</code>) — system-wide state including user ID, user type, and cross-module routing fields. Occupies the first <em>N</em> bytes.</li>
+    <li><strong>WS-THIS-PROGCOMMAREA</strong> (from <code>CVCRD01Y</code>) — module-specific context including the current account ID (<code>CC-ACCT-ID</code>), card number (<code>CC-CARD-NUM</code>), customer ID (<code>CC-CUST-ID</code>), AID key, error messages, and next-program routing. Appended after CARDDEMO-COMMAREA.</li>
+</ol>
+
+<pre><code>*> COMMAREA layout:
+*> |--- CARDDEMO-COMMAREA (system, fixed length) ---|--- CC-WORK-AREAS (module) ---|
+
+*> On CICS RETURN:
+MOVE CARDDEMO-COMMAREA    TO WS-COMMAREA
+MOVE WS-THIS-PROGCOMMAREA TO
+     WS-COMMAREA(LENGTH OF CARDDEMO-COMMAREA + 1 :
+                 LENGTH OF WS-THIS-PROGCOMMAREA)
+
+EXEC CICS RETURN
+     TRANSID  (LIT-THISTRANID)
+     COMMAREA (WS-COMMAREA)
+     LENGTH   (LENGTH OF WS-COMMAREA)
+END-EXEC
+
+*> On re-entry, split COMMAREA back:
+MOVE DFHCOMMAREA(1:LENGTH OF CARDDEMO-COMMAREA) TO CARDDEMO-COMMAREA
+MOVE DFHCOMMAREA(LENGTH OF CARDDEMO-COMMAREA + 1:
+                 LENGTH OF WS-THIS-PROGCOMMAREA) TO WS-THIS-PROGCOMMAREA
+</code></pre>
+
+<p>
+    The <code>EIBCALEN</code> register is checked at entry to distinguish the first invocation from subsequent
+    pseudo-conversational re-entries:
+</p>
+<pre><code>IF EIBCALEN = 0
+    *> First invocation — fresh start, initialize COMMAReas
+    INITIALIZE CARDDEMO-COMMAREA
+               WS-THIS-PROGCOMMAREA
+ELSE
+    *> Subsequent invocation — restore state from COMMAREA
+    MOVE DFHCOMMAREA... TO ...
+END-IF
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="screens">Screen Layouts (BMS Maps)</h2>
+
+<h3>CCRDLIA — Card Listing Screen (COCRDLI)</h3>
+<pre><code>Row 1:  Tran: CCLI        [Title centered 40 chars]        Date: mm/dd/yy
+Row 2:  Prog: COCRDLIC    [Subtitle]                        Time: hh:mm:ss
+Row 3:  (blank)
+Row 4:                    List Credit Cards                 Page NNN
+Row 5:  (blank)
+Row 6:             Account Number    : [ACCTSID  11 chars, editable]
+Row 7:             Credit Card Number: [CARDID   16 chars, editable]
+Row 8:  (blank)
+Row 9:  (header: Sel  Account#     Card#             Name    Status  Expiry)
+Rows10-16: [CRDSEL1-7] [ACCTNO1-7] [CARDNO1-7] [CNAME1-7] [CSTAT1-7] [CEXP1-7]
+...
+Row 23: (blank)
+Row 24: [INFOMSG 45 chars]                    [ERRMSGO 75 chars]
+</code></pre>
+
+<h3>CCRDSLA — Card Detail View Screen (COCRDSL)</h3>
+<pre><code>Row 1:  Tran: CCDL        [Title]                          Date: mm/dd/yy
+Row 2:  Prog: COCRDSLC    [Subtitle]                        Time: hh:mm:ss
+Row 4:                    Credit Card Details
+Row 6:  Account Number   : [ACCTNUM  11 chars, editable]
+Row 7:  Credit Card Number: [CARDNUM  16 chars, editable]
+Row 9:  Card CVV Code     : [CVV      3 chars, protected]
+Row 10: Embossed Name     : [NAME     50 chars, protected]
+Row 11: Card Expiry Date  : [EXPIRY   10 chars YYYY-MM-DD, protected]
+Row 12: Card Active Status: [STATUS   1 char, protected]
+...
+Row 24: [INFOMSG]                                          [ERRMSGO]
+</code></pre>
+
+<h3>CCRDUPA — Card Update Screen (COCRDUP)</h3>
+<pre><code>Row 1:  Tran: CCUP        [Title]                          Date: mm/dd/yy
+Row 2:  Prog: COCRDUPC    [Subtitle]                        Time: hh:mm:ss
+Row 4:                    Update Credit Card
+Row 6:  Account Number   : [ACCTNUM  11 chars, protected]
+Row 7:  Credit Card Number: [CARDNUM  16 chars, protected]
+Row 9:  Card CVV Code     : [CVV      3 chars, protected]
+Row 10: Embossed Name     : [NAME     50 chars, EDITABLE]
+Row 11: Expiry Month      : [EXPM     2 chars, EDITABLE]
+Row 12: Expiry Year       : [EXPY     4 chars, EDITABLE]
+Row 13: Card Active Status: [STATUS   1 char,  EDITABLE]
+...
+Row 24: [INFOMSG]                                          [ERRMSGO]
+        Press ENTER to validate. Press PF5 to confirm save. PF3/PF12 to cancel.
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="validation">Input Validation Logic</h2>
+
+<h3>Account ID Validation</h3>
+<pre><code>*> From COCRDSLC / COCRDUPC
+IF CC-ACCT-ID = SPACES OR LOW-VALUES
+   SET WS-PROMPT-FOR-ACCT TO TRUE       *> 'Account number not provided'
+ELSE IF CC-ACCT-ID-N = 0
+   SET SEARCHED-ACCT-ZEROES TO TRUE     *> 'Account number must be a non zero 11 digit number'
+ELSE IF CC-ACCT-ID NOT NUMERIC
+   SET SEARCHED-ACCT-NOT-NUMERIC TO TRUE
+END-IF
+</code></pre>
+
+<h3>Card Number Validation</h3>
+<pre><code>*> Card number, if provided, must be 16-digit numeric
+IF CC-CARD-NUM NOT = SPACES
+   IF CC-CARD-NUM NOT NUMERIC
+      SET SEARCHED-CARD-NOT-NUMERIC TO TRUE
+      *> 'Card number if supplied must be a 16 digit number'
+   END-IF
+END-IF
+</code></pre>
+
+<h3>Card Name Validation (Update only)</h3>
+<pre><code>*> Name must be alphabetic characters and spaces only
+MOVE CARD-EMBOSSED-NAME TO CARD-NAME-CHECK
+INSPECT CARD-NAME-CHECK
+    REPLACING ALL SPACES BY 'A'
+IF CARD-NAME-CHECK NOT ALPHABETIC
+   SET WS-NAME-MUST-BE-ALPHA TO TRUE
+   *> 'Card name can only contain alphabets and spaces'
+END-IF
+</code></pre>
+
+<h3>Active Status Validation (Update only)</h3>
+<pre><code>*> Must be 'Y' or 'N'
+IF CARD-ACTIVE-STATUS NOT = 'Y' AND
+   CARD-ACTIVE-STATUS NOT = 'N'
+   SET CARD-STATUS-MUST-BE-YES-NO TO TRUE
+   *> 'Card Active Status must be Y or N'
+END-IF
+</code></pre>
+
+<h3>Expiry Date Validation (Update only)</h3>
+<pre><code>*> Month: 1-12
+MOVE CARD-EXPIRY-MONTH TO CARD-MONTH-CHECK
+IF NOT VALID-MONTH      *> 88-level: VALUES 1 THRU 12
+   SET CARD-EXPIRY-MONTH-NOT-VALID TO TRUE
+
+*> Year: 1950-2099
+MOVE CARD-EXPIRY-YEAR TO CARD-YEAR-CHECK
+IF NOT VALID-YEAR       *> 88-level: VALUES 1950 THRU 2099
+   SET CARD-EXPIRY-YEAR-NOT-VALID TO TRUE
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="error-handling">Error Handling</h2>
+
+<h3>VSAM Response Code Handling</h3>
+<pre><code>*> Standard pattern for all file operations:
+EVALUATE WS-RESP-CD
+    WHEN DFHRESP(NORMAL)
+         *> Success — process data
+    WHEN DFHRESP(NOTFND)
+         *> Record not found — set appropriate message
+         SET DID-NOT-FIND-ACCTCARD-COMBO TO TRUE
+    WHEN DFHRESP(ENDFILE)
+         *> End of file during browse — normal termination condition
+         SET READ-LOOP-EXIT TO TRUE
+    WHEN OTHER
+         *> Unexpected error — build file error message
+         MOVE 'READ' TO ERROR-OPNAME
+         MOVE 'CARDDAT ' TO ERROR-FILE
+         MOVE WS-RESP-CD TO ERROR-RESP
+         MOVE WS-REAS-CD TO ERROR-RESP2
+         *> WS-FILE-ERROR-MESSAGE is set and displayed
+END-EVALUATE
+</code></pre>
+
+<h3>User-Facing Error Messages</h3>
+<table>
+    <tr>
+        <th>Condition</th>
+        <th>Error Message Text</th>
+        <th>Program</th>
+    </tr>
+    <tr>
+        <td>No records found for search</td>
+        <td>'NO RECORDS FOUND FOR THIS SEARCH CONDITION.'</td>
+        <td>COCRDLIC</td>
+    </tr>
+    <tr>
+        <td>Multiple selections on list screen</td>
+        <td>'PLEASE SELECT ONLY ONE RECORD TO VIEW OR UPDATE'</td>
+        <td>COCRDLIC</td>
+    </tr>
+    <tr>
+        <td>Invalid action code (not S or U)</td>
+        <td>'INVALID ACTION CODE'</td>
+        <td>COCRDLIC</td>
+    </tr>
+    <tr>
+        <td>Account not found in card cross-reference</td>
+        <td>'Did not find this account in cards database'</td>
+        <td>COCRDSLC</td>
+    </tr>
+    <tr>
+        <td>Card not found for search condition</td>
+        <td>'Did not find cards for this search condition'</td>
+        <td>COCRDSLC</td>
+    </tr>
+    <tr>
+        <td>Card name has invalid characters</td>
+        <td>'Card name can only contain alphabets and spaces'</td>
+        <td>COCRDUPC</td>
+    </tr>
+    <tr>
+        <td>Active status not Y or N</td>
+        <td>'Card Active Status must be Y or N'</td>
+        <td>COCRDUPC</td>
+    </tr>
+    <tr>
+        <td>Invalid expiry month</td>
+        <td>'Card expiry month must be between 1 and 12'</td>
+        <td>COCRDUPC</td>
+    </tr>
+    <tr>
+        <td>Invalid expiry year</td>
+        <td>'Invalid card expiry year'</td>
+        <td>COCRDUPC</td>
+    </tr>
+    <tr>
+        <td>No changes detected</td>
+        <td>'No change detected with respect to values fetched.'</td>
+        <td>COCRDUPC</td>
+    </tr>
+    <tr>
+        <td>Update successful</td>
+        <td>'Changes committed to database'</td>
+        <td>COCRDUPC</td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="patterns">Development Patterns</h2>
+
+<h3>Pseudo-Conversational CICS Pattern</h3>
+<p>All three programs follow the same entry/exit pattern:</p>
+<ol>
+    <li>Check <code>EIBCALEN</code> — if 0, first invocation; initialize COMMAReas and display initial screen.</li>
+    <li>Otherwise, restore state from COMMAREA (CARDDEMO + module-specific).</li>
+    <li>Read the incoming BMS map (<code>EXEC CICS RECEIVE MAP</code>).</li>
+    <li>Identify the AID key (<code>EIBAID</code>) and route to the appropriate processing paragraph.</li>
+    <li>Validate inputs, access VSAM files, prepare output.</li>
+    <li>Send the output BMS map (<code>EXEC CICS SEND MAP</code>).</li>
+    <li>Save state back to combined COMMAREA and <code>EXEC CICS RETURN TRANSID(...) COMMAREA(...)</code>.</li>
+</ol>
+
+<h3>AIX Browse Pattern (Pagination)</h3>
+<p>COCRDLIC maintains two read-direction routines:</p>
+<ul>
+    <li><strong>9000-READ-FORWARD</strong> — STARTBR then READNEXT loop, stops when 7 records collected or ENDFILE.</li>
+    <li><strong>9100-READ-BACKWARDS</strong> — STARTBR then READPREV loop, reads backwards for PF7 (page up).</li>
+</ul>
+<p>
+    The RID field (<code>WS-CARD-RID</code>) stores the composite key (ACCT-ID + CARD-NUM) to resume browsing
+    from the correct position on the next page.
+</p>
+
+<h3>Two-Pass Update Pattern</h3>
+<p>COCRDUPC uses a confirm-before-commit approach to prevent accidental updates:</p>
+<ol>
+    <li><strong>Pass 1 (Enter):</strong> Validate all input fields. If valid, display confirmation prompt ("Changes validated. Press F5 to save").</li>
+    <li><strong>Pass 2 (PF5):</strong> Re-read CARDFILE with UPDATE intent, apply changes, REWRITE.</li>
+</ol>
+<p>This pattern prevents partial updates and gives users a chance to review changes before they are committed.</p>
+
+<!-- ============================================================ -->
+<h2 id="examples">Usage Examples and Code Snippets</h2>
+
+<h3>Example: Full CICS XCTL from List to Detail</h3>
+<pre><code>*> In COCRDLIC, after user presses Enter with 'S' on a card row:
+MOVE SELECTED-CARD-NUM    TO CC-CARD-NUM
+MOVE SELECTED-ACCT-ID     TO CC-ACCT-ID
+MOVE 'COCRDSLC'           TO CCARD-NEXT-PROG
+MOVE 'COCRDSL '           TO CCARD-NEXT-MAPSET
+MOVE 'CCRDSLA'            TO CCARD-NEXT-MAP
+
+EXEC CICS XCTL
+     PROGRAM  (CCARD-NEXT-PROG)
+     COMMAREA (WS-COMMAREA)
+     LENGTH   (LENGTH OF WS-COMMAREA)
+END-EXEC
+</code></pre>
+
+<h3>Example: Browse Cards for an Account</h3>
+<pre><code>*> Set up composite RID: account ID right-justified + low card number
+MOVE ACCT-ID TO WS-CARD-RID-ACCT-ID
+MOVE LOW-VALUES TO WS-CARD-RID-CARDNUM
+
+EXEC CICS STARTBR
+     DATASET  ('CARDAIX ')
+     RIDFLD   (WS-CARD-RID)
+     KEYLENGTH(LENGTH OF WS-CARD-RID-ACCT-ID)
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+PERFORM UNTIL READ-LOOP-EXIT OR SCREEN-FULL
+    EXEC CICS READNEXT
+         DATASET  ('CARDAIX ')
+         INTO     (CARD-RECORD)
+         RIDFLD   (WS-CARD-RID)
+         RESP     (WS-RESP-CD)
+    END-EXEC
+
+    EVALUATE WS-RESP-CD
+        WHEN DFHRESP(NORMAL)
+             *> Filter: only include records matching the account
+             IF CARD-ACCT-ID = ACCT-ID-FILTER
+                 ADD 1 TO SCREEN-ROW-COUNT
+                 IF SCREEN-ROW-COUNT > 7
+                     SET SCREEN-FULL TO TRUE
+                 END-IF
+             END-IF
+        WHEN DFHRESP(ENDFILE)
+             SET READ-LOOP-EXIT TO TRUE
+        WHEN OTHER
+             *> Handle error
+             SET READ-LOOP-EXIT TO TRUE
+    END-EVALUATE
+END-PERFORM
+
+EXEC CICS ENDBR DATASET('CARDAIX ') END-EXEC
+</code></pre>
+
+<h3>Example: Updating a Card Record</h3>
+<pre><code>*> Step 1: Read with UPDATE intent (holds exclusive lock)
+EXEC CICS READ
+     DATASET  ('CARDDAT ')
+     INTO     (CARD-RECORD)
+     LENGTH   (LENGTH OF CARD-RECORD)
+     RIDFLD   (WS-CARD-RID-CARDNUM)
+     UPDATE
+     RESP     (WS-RESP-CD)
+END-EXEC
+
+IF WS-RESP-CD = DFHRESP(NORMAL)
+    *> Apply validated updates
+    MOVE NEW-EMBOSSED-NAME  TO CARD-EMBOSSED-NAME
+    MOVE NEW-ACTIVE-STATUS  TO CARD-ACTIVE-STATUS
+    MOVE NEW-EXPIRY-YYYY    TO CARD-EXPIRAION-DATE(1:4)
+    MOVE '-'                TO CARD-EXPIRAION-DATE(5:1)
+    MOVE NEW-EXPIRY-MM      TO CARD-EXPIRAION-DATE(6:2)
+    MOVE '-01'              TO CARD-EXPIRAION-DATE(8:3)
+
+    *> Step 2: Write back
+    EXEC CICS REWRITE
+         DATASET  ('CARDDAT ')
+         FROM     (CARD-RECORD)
+         LENGTH   (LENGTH OF CARD-RECORD)
+         RESP     (WS-RESP-CD)
+    END-EXEC
+
+    IF WS-RESP-CD = DFHRESP(NORMAL)
+        SET CONFIRM-UPDATE-SUCCESS TO TRUE
+    ELSE
+        SET INFORM-FAILURE TO TRUE
+    END-IF
+END-IF
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="user-stories">User Story Templates</h2>
+
+<table>
+    <tr>
+        <th>Story</th>
+        <th>Points</th>
+        <th>Acceptance Criteria Summary</th>
+    </tr>
+    <tr>
+        <td>As a regular user, I want to list all cards on my account so I can see which cards are active</td>
+        <td>3–5</td>
+        <td>
+            - CCLI transaction accessible from main menu<br>
+            - Cards filtered by user's account ID (CC-ACCT-ID from COMMAREA)<br>
+            - Up to 7 cards per page; PF7/PF8 navigates pages<br>
+            - Inactive cards displayed with status 'N'<br>
+            - "No records found" shown if account has no cards
+        </td>
+    </tr>
+    <tr>
+        <td>As a regular user, I want to view card details so I can verify card number, expiry, and CVV</td>
+        <td>1–2</td>
+        <td>
+            - CCDL accessible from list screen (S) or direct transaction<br>
+            - All CARD-RECORD fields displayed (card#, account#, CVV, name, expiry, status)<br>
+            - NOTFND condition shows descriptive error message<br>
+            - PF3/PF12 returns to previous screen or main menu
+        </td>
+    </tr>
+    <tr>
+        <td>As a regular user, I want to update my card status so I can activate or deactivate a card</td>
+        <td>3–5</td>
+        <td>
+            - CCUP accessible from list (U) or detail screen<br>
+            - CARD-ACTIVE-STATUS field editable; accepts only 'Y' or 'N'<br>
+            - Two-step confirm: Enter validates, PF5 commits<br>
+            - "Changes committed to database" on success<br>
+            - "No change detected" shown if value unchanged
+        </td>
+    </tr>
+    <tr>
+        <td>As a regular user, I want to update the embossed name on my card so it reflects my current name</td>
+        <td>3–5</td>
+        <td>
+            - CARD-EMBOSSED-NAME (up to 50 chars) editable in CCUP screen<br>
+            - Only alphabetic characters and spaces accepted<br>
+            - Validation error shown for numeric or special chars<br>
+            - Confirmed update stored in CARDFILE via REWRITE
+        </td>
+    </tr>
+    <tr>
+        <td>As a regular user, I want to update my card expiry date so I can record a newly issued card</td>
+        <td>3–5</td>
+        <td>
+            - Separate month (1–12) and year (1950–2099) input fields<br>
+            - Both fields validated before confirm step<br>
+            - Stored as YYYY-MM-DD in CARD-EXPIRAION-DATE
+        </td>
+    </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="testing">Testing Guidelines</h2>
+
+<h3>VSAM Test Data</h3>
+<p>
+    Sample card records are in <code>app/data/ASCII/carddata.txt</code> and
+    <code>app/data/ASCII/cardxref.txt</code>. EBCDIC versions are in
+    <code>app/data/EBCDIC/AWS.M2.CARDDEMO.CARDDATA.PS</code> and
+    <code>app/data/EBCDIC/AWS.M2.CARDDEMO.CARDXREF.PS</code>.
+</p>
+
+<h3>Key Test Scenarios</h3>
+<table>
+    <tr>
+        <th>Scenario</th>
+        <th>Expected Outcome</th>
+    </tr>
+    <tr>
+        <td>Enter CCLI with a valid account ID that has cards</td>
+        <td>List of cards displayed, up to 7 per page</td>
+    </tr>
+    <tr>
+        <td>Enter CCLI with account ID having no cards</td>
+        <td>"NO RECORDS FOUND FOR THIS SEARCH CONDITION."</td>
+    </tr>
+    <tr>
+        <td>Navigate multiple pages with PF7/PF8</td>
+        <td>Correct card set shown for each page</td>
+    </tr>
+    <tr>
+        <td>Enter CCDL with valid account + card number</td>
+        <td>Card details displayed correctly</td>
+    </tr>
+    <tr>
+        <td>Enter CCDL with non-existent card number</td>
+        <td>"Did not find cards for this search condition"</td>
+    </tr>
+    <tr>
+        <td>Update card status from 'Y' to 'N' in CCUP</td>
+        <td>Validation pass → confirm prompt → PF5 → "Changes committed"</td>
+    </tr>
+    <tr>
+        <td>Update card status to invalid value 'X'</td>
+        <td>"Card Active Status must be Y or N"</td>
+    </tr>
+    <tr>
+        <td>Update embossed name to name with digits</td>
+        <td>"Card name can only contain alphabets and spaces"</td>
+    </tr>
+    <tr>
+        <td>Update expiry month to 13</td>
+        <td>"Card expiry month must be between 1 and 12"</td>
+    </tr>
+    <tr>
+        <td>PF3 from any screen</td>
+        <td>Routes to COMEN01C (main menu)</td>
+    </tr>
+</table>
+
+<h3>CICS Test Setup Requirements</h3>
+<ul>
+    <li>VSAM files initialized: <code>CARDFILE.jcl</code> (load CARDFILE) and <code>XREFFILE.jcl</code> (load XREFFILE)</li>
+    <li>USRSEC loaded for authentication to reach main menu</li>
+    <li>CICS CSD must include entries for transactions CCLI, CCDL, CCUP and programs COCRDLIC, COCRDSLC, COCRDUPC</li>
+    <li>Refer to <code>app/csd/CARDDEMO.CSD</code> for CSD definitions</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="tech-debt">Technical Debt and Known Issues</h2>
+
+<ul>
+    <li>
+        <strong>Typo in field name:</strong> <code>CARD-EXPIRAION-DATE</code> (missing 't' in expiration).
+        This appears in <code>CVACT02Y</code> and all programs. Must be preserved for binary compatibility with
+        existing VSAM data files.
+    </li>
+    <li>
+        <strong>CVV plain-text storage:</strong> <code>CARD-CVV-CD</code> is stored as an unencrypted 3-digit
+        numeric. This is a security concern for any modernization effort.
+    </li>
+    <li>
+        <strong>No real-time account balance link:</strong> Card activation/deactivation in COCRDUPC does not
+        trigger any real-time recalculation of available credit. Balance remains as-is until next batch cycle
+        (POSTTRAN).
+    </li>
+    <li>
+        <strong>XREFFILE not updated online:</strong> The update program (COCRDUPC) only REWRITEs CARDFILE.
+        If a card-to-account mapping change were needed, XREFFILE would require a separate update — not currently
+        implemented in the online path.
+    </li>
+    <li>
+        <strong>Single-user session model:</strong> CICS pseudo-conversational pattern with COMMAREA provides
+        no concurrent session management. Simultaneous updates to the same card by two users could result in
+        last-write-wins behaviour.
+    </li>
+    <li>
+        <strong>Mixed COBOL coding styles:</strong> The application intentionally uses varied COBOL patterns
+        and coding styles to exercise modernization tooling coverage. Some paragraphs use GO TO, others use
+        PERFORM; some use 88-level conditions extensively while others use inline IF chains.
+    </li>
+</ul>
+
+<!-- ============================================================ -->
+<h2>Configuration and Environment</h2>
+
+<h3>CICS CSD Definitions</h3>
+<p>Required CICS resource definitions (from <code>app/csd/CARDDEMO.CSD</code>):</p>
+<pre><code>DEFINE TRANSACTION(CCLI) PROGRAM(COCRDLIC) GROUP(CARDDEMO)
+DEFINE TRANSACTION(CCDL) PROGRAM(COCRDSLC) GROUP(CARDDEMO)
+DEFINE TRANSACTION(CCUP) PROGRAM(COCRDUPC) GROUP(CARDDEMO)
+DEFINE PROGRAM(COCRDLIC) GROUP(CARDDEMO) LANGUAGE(COBOL)
+DEFINE PROGRAM(COCRDSLC) GROUP(CARDDEMO) LANGUAGE(COBOL)
+DEFINE PROGRAM(COCRDUPC) GROUP(CARDDEMO) LANGUAGE(COBOL)
+DEFINE FILE(CARDDAT)  GROUP(CARDDEMO)  DSNAME(...)  RLSACCESS(YES)
+DEFINE FILE(CARDAIX)  GROUP(CARDDEMO)  ...          *> AIX path
+DEFINE FILE(XREFFILE) GROUP(CARDDEMO)  DSNAME(...)
+</code></pre>
+
+<h3>JCL for VSAM Load</h3>
+<p>
+    CARDFILE is loaded via <code>app/jcl/CARDFILE.jcl</code> (IDCAMS REPRO from flat file).
+    XREFFILE is loaded similarly. These jobs must run before CICS can open the files.
+</p>
+
+<h3>RACF Security</h3>
+<p>
+    Access to CCLI, CCDL, and CCUP transactions is controlled by RACF. Regular users
+    (<code>SEC-USR-TYPE = 'U'</code>) have access to all three. The CARDFILE and XREFFILE VSAM datasets
+    must be profiled in RACF for CICS access.
+</p>
+
+<footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #444; color: #888; font-size: 0.85em;">
+    Last reviewed: 2026-03-11T12:16:37Z &nbsp;|&nbsp;
+    Module: credit-cards &nbsp;|&nbsp;
+    Project: CardDemo &nbsp;|&nbsp;
+    <a href="../../index.html">← Back to Index</a>
+</footer>
+
 </body>
 </html>

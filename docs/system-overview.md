@@ -70,14 +70,38 @@
 
 ### 3. Credit Cards
 **ID:** `credit-cards`  
-**Purpose:** List, view, and update credit card records linked to accounts  
-**Key Components:** `COCRDLIC` (list, CCLI), `COCRDSLC` (view, CCDL), `COCRDUPC` (update, CCUP), `CVACT02Y` (card record), `CVACT03Y` (cross-reference)  
+**Purpose:** List, view, and update credit card records linked to accounts via the CARDXREF cross-reference VSAM file. Each account can hold multiple cards; the cross-reference maps card number → customer ID + account ID enabling bi-directional navigation.  
+**Key Components:**
+- `COCRDLIC` (CICS program, transaction `CCLI`) — Lists cards for an account; browses XREFFILE AIX by account ID; supports pagination (PF7/PF8) and optional filtering by card number; allows selection for view (S) or update (U)
+- `COCRDSLC` (CICS program, transaction `CCDL`) — Displays full detail for a single card (number, account, CVV, embossed name, expiry, status); reads CARDFILE directly by card number
+- `COCRDUPC` (CICS program, transaction `CCUP`) — Updates editable card fields (embossed name, active status, expiry month/year) using a two-pass validate-then-confirm pattern (Enter to validate, PF5 to commit REWRITE)
+- `CVACT02Y` — `CARD-RECORD` copybook (150 bytes, VSAM KSDS, key = `CARD-NUM` PIC X(16))
+- `CVACT03Y` — `CARD-XREF-RECORD` copybook (50 bytes; `XREF-CARD-NUM` → `XREF-CUST-ID` + `XREF-ACCT-ID`)
+- `CVCRD01Y` — `CC-WORK-AREAS` copybook — module COMMAREA extension (AID key, routing fields, context IDs)
+- `COCRDLI`, `COCRDSL`, `COCRDUP` — BMS map sets (24×80 3270 terminal screens)
+
 **Transactions:** `CCLI` (list), `CCDL` (view), `CCUP` (update)  
-**Data Model:** See `CARD-RECORD` (CVACT02Y) — 150-byte record; `CARDXREF-RECORD` (CVACT03Y) — 50-byte cross-reference  
+**VSAM Files:**
+- `CARDDAT` — CARDFILE primary path (READ, REWRITE by card number)
+- `CARDAIX` — CARDFILE alternate index path (STARTBR/READNEXT/READPREV by account ID)
+- `XREFFILE` — Card cross-reference (READ by card number; maps card → customer + account)
+
+**Data Model:** `CARD-RECORD` (CVACT02Y) — 150-byte VSAM KSDS record, key = `CARD-NUM` (PIC X(16)); `CARD-XREF-RECORD` (CVACT03Y) — 50-byte cross-reference  
+**Internal Dependencies:** `authentication` (user context in COMMAREA), `accounts` (ACCT-ID context passed via COMMAREA)  
+**Business Rules:**
+- Regular users see only cards linked to their own account; admin users can list all cards
+- `CARD-ACTIVE-STATUS` must be `'Y'` (active) or `'N'` (inactive) — controls card usability
+- `CARD-EMBOSSED-NAME` accepts only alphabetic characters and spaces (max 50 chars)
+- Expiry month must be 1–12; expiry year must be 1950–2099
+- CVV (`CARD-CVV-CD`) is stored as plain 3-digit numeric — no encryption in base application
+- Field name typo `CARD-EXPIRAION-DATE` ("expiraion" not "expiration") must be preserved for VSAM binary compatibility
+
 **User Story Examples:**
-- As a user, I want to list my credit cards so I can see all cards on my account
-- As a user, I want to view card details so I can see the card number, expiry, and status
-- As a user, I want to update my card status so I can activate or deactivate a card
+- As a regular user, I want to list all cards on my account so I can see which are active
+- As a regular user, I want to view card details so I can see the card number, expiry, and status
+- As a regular user, I want to update my card active status so I can activate or deactivate a card
+- As a regular user, I want to update the embossed name on my card so it reflects my current name
+- As a regular user, I want to update my card expiry date to record a newly issued card
 
 ---
 
