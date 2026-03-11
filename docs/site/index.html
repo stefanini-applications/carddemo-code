@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo Documentation</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background: #f5f6fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { margin: 0 0 10px; font-size: 2.2em; }
+        .header p { margin: 0; opacity: 0.85; font-size: 1.1em; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #2b6cb0; text-decoration: none; color: inherit; display: block; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+        .card.optional { border-left-color: #d69e2e; }
+        .card h3 { margin: 0 0 8px; color: #2b6cb0; font-size: 1.1em; }
+        .card.optional h3 { color: #b7791f; }
+        .card p { margin: 0; font-size: 0.92em; color: #4a5568; }
+        .card .badge { display: inline-block; font-size: 0.75em; padding: 2px 8px; border-radius: 20px; background: #ebf8ff; color: #2b6cb0; margin-top: 10px; }
+        .card.optional .badge { background: #fffbeb; color: #b7791f; }
+        h2 { color: #1a365d; border-bottom: 2px solid #bee3f8; padding-bottom: 8px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+        .stat { background: white; border-radius: 8px; padding: 18px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+        .stat .num { font-size: 2em; font-weight: bold; color: #2b6cb0; }
+        .stat .label { font-size: 0.82em; color: #718096; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏦 CardDemo Documentation</h1>
+        <p>Mainframe Credit Card Management Application — User Story Development Guide</p>
+    </div>
+    <div class="container">
+        <div class="stats">
+            <div class="stat"><div class="num">COBOL</div><div class="label">Primary Language</div></div>
+            <div class="stat"><div class="num">CICS</div><div class="label">Transaction Monitor</div></div>
+            <div class="stat"><div class="num">20+</div><div class="label">Online Transactions</div></div>
+            <div class="stat"><div class="num">25+</div><div class="label">Batch Jobs</div></div>
+            <div class="stat"><div class="num">11</div><div class="label">Modules</div></div>
+            <div class="stat"><div class="num">VSAM</div><div class="label">Primary Storage</div></div>
+        </div>
+
+        <h2>📦 Core Modules</h2>
+        <div class="grid">
+            <a class="card" href="modules/authentication/index.html">
+                <h3>🔐 Authentication</h3>
+                <p>User signon, credential validation, and role-based menu routing via USRSEC VSAM file.</p>
+                <span class="badge">Transaction: CC00</span>
+            </a>
+            <a class="card" href="modules/accounts/index.html">
+                <h3>🏦 Accounts</h3>
+                <p>View and update credit card account information including balances, limits, and dates.</p>
+                <span class="badge">Transactions: CAVW, CAUP</span>
+            </a>
+            <a class="card" href="modules/credit-cards/index.html">
+                <h3>💳 Credit Cards</h3>
+                <p>List, view, and update credit card records linked to accounts via cross-reference.</p>
+                <span class="badge">Transactions: CCLI, CCDL, CCUP</span>
+            </a>
+            <a class="card" href="modules/transactions/index.html">
+                <h3>💸 Transactions</h3>
+                <p>List, view, and add credit card transactions against the TRANSACT VSAM KSDS.</p>
+                <span class="badge">Transactions: CT00, CT01, CT02</span>
+            </a>
+            <a class="card" href="modules/bill-payment/index.html">
+                <h3>💰 Bill Payment</h3>
+                <p>Process online bill payments — pay account balance in full with transaction recording.</p>
+                <span class="badge">Transaction: CB00</span>
+            </a>
+            <a class="card" href="modules/reports/index.html">
+                <h3>📊 Reports</h3>
+                <p>Generate transaction reports and account statements via batch job submission from CICS.</p>
+                <span class="badge">Transaction: CR00</span>
+            </a>
+            <a class="card" href="modules/user-management/index.html">
+                <h3>👥 User Management</h3>
+                <p>Admin CRUD operations on the USRSEC user security file.</p>
+                <span class="badge">Transactions: CU00–CU03</span>
+            </a>
+            <a class="card" href="modules/batch-processing/index.html">
+                <h3>⚙️ Batch Processing</h3>
+                <p>Nightly transaction posting, interest calculation, data loading, and reporting jobs.</p>
+                <span class="badge">JCL / COBOL Batch</span>
+            </a>
+        </div>
+
+        <h2>🔌 Optional Modules</h2>
+        <div class="grid">
+            <a class="card optional" href="modules/authorization/index.html">
+                <h3>🛡️ Authorization (IMS/DB2/MQ)</h3>
+                <p>Real-time credit card authorization via MQ with IMS storage and DB2 fraud analytics.</p>
+                <span class="badge">Optional: IMS DB2 MQ</span>
+            </a>
+            <a class="card optional" href="modules/transaction-type-db2/index.html">
+                <h3>🗃️ Transaction Type DB2</h3>
+                <p>Admin maintenance of transaction type reference data in DB2 with VSAM integration.</p>
+                <span class="badge">Optional: DB2</span>
+            </a>
+            <a class="card optional" href="modules/account-extraction-mq/index.html">
+                <h3>📡 Account Extraction MQ</h3>
+                <p>Asynchronous account data extraction and inquiry via MQ request/response pattern.</p>
+                <span class="badge">Optional: MQ</span>
+            </a>
+        </div>
+
+        <p style="margin-top: 40px; text-align: center; color: #718096; font-size: 0.9em;">
+            <a href="../system-overview.md">📄 Full System Overview (Markdown)</a> &nbsp;|&nbsp; Last updated: 2026-03-11
+        </p>
+    </div>
+</body>
+</html>

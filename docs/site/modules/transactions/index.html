@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - User Story Development Guide</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f5f6fa;color:#2d3748}
+        .header{background:linear-gradient(135deg,#c05621 0%,#ed8936 100%);color:white;padding:32px 20px}
+        .header h1{margin:0 0 6px;font-size:1.8em}.header p{margin:0;opacity:.85}
+        .container{max-width:960px;margin:0 auto;padding:30px 20px}
+        section{background:white;border-radius:10px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+        h2{color:#c05621;margin-top:0;border-bottom:2px solid #feebc8;padding-bottom:8px}
+        h3{color:#dd6b20}
+        pre{background:#2d3748;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:.88em}
+        .badge{display:inline-block;font-size:.8em;padding:3px 10px;border-radius:20px;background:#fffaf0;color:#c05621;margin:3px 3px 3px 0}
+        ul li{margin-bottom:6px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#fffaf0;text-align:left;padding:10px 12px;color:#c05621}
+        td{padding:9px 12px;border-bottom:1px solid #e2e8f0}
+        tr:last-child td{border-bottom:none}
+        footer{text-align:center;color:#718096;font-size:.9em;margin-top:30px}
+    </style>
+</head>
+<body>
+    <div class="header"><h1>💸 Transactions</h1><p>User Story Development Guide — CardDemo Mainframe Application</p></div>
+    <div class="container">
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>transactions</code></p>
+            <p><strong>Purpose:</strong> Online listing, viewing, and adding of credit card transactions stored in the TRANSACT VSAM KSDS file. Daily transactions from external sources land in DALYTRAN (sequential) and are posted via batch.</p>
+            <p><strong>Business Context:</strong> Transactions are the financial heart of CardDemo. Each transaction references a card number, transaction type, and category. Online addition goes directly to TRANSACT; batch posting processes the DALYTRAN daily file.</p>
+            <p>
+                <span class="badge">CT00: COTRN00C (list)</span>
+                <span class="badge">CT01: COTRN01C (view)</span>
+                <span class="badge">CT02: COTRN02C (add)</span>
+                <span class="badge">VSAM: TRANSACT KSDS + DALYTRAN</span>
+            </p>
+        </section>
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As a <strong>regular user</strong>, I want to see a list of my transactions so that I can review recent activity</li>
+                <li>As a <strong>regular user</strong>, I want to view detailed transaction information so that I can verify a specific charge</li>
+                <li>As a <strong>regular user</strong>, I want to add a new transaction manually so that I can record a purchase immediately</li>
+                <li>As a <strong>regular user</strong>, I want to filter transactions by date so that I can find transactions from a specific period</li>
+            </ul>
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>CVTRA05Y copybook:</strong> Complete 350-byte TRAN-RECORD with all fields pre-defined</li>
+                <li><strong>CVTRA06Y copybook:</strong> Daily transaction record (same 350-byte structure) for batch processing</li>
+                <li><strong>Transaction types and categories:</strong> TRANTYPE and TRANCATG VSAM files provide reference data for validation</li>
+                <li><strong>TRAN-ID generation:</strong> Must be unique 16-char ID — review COTRN02C for existing generation logic</li>
+            </ul>
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Transaction view by ID (CT01)</li>
+                <li><strong>Medium (3-5 pts):</strong> Transaction list with pagination and browse (CT00); transaction add with type/category validation (CT02)</li>
+                <li><strong>Complex (5-8 pts):</strong> Filtered list by date range; cross-reference lookup to include merchant information</li>
+            </ul>
+        </section>
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>COTRN00C</td><td>CICS COBOL</td><td>Transaction list — browses TRANSACT KSDS with pagination</td></tr>
+                <tr><td>COTRN01C</td><td>CICS COBOL</td><td>Transaction view — reads TRANSACT by TRAN-ID</td></tr>
+                <tr><td>COTRN02C</td><td>CICS COBOL</td><td>Transaction add — validates type/category, WRITEs to TRANSACT</td></tr>
+                <tr><td>CBTRN02C</td><td>Batch COBOL</td><td>POSTTRAN — posts DALYTRAN records to TRANSACT, updates account balances</td></tr>
+                <tr><td>CVTRA05Y</td><td>Copybook</td><td>350-byte TRAN-RECORD (key = TRAN-ID PIC X(16))</td></tr>
+                <tr><td>CVTRA06Y</td><td>Copybook</td><td>350-byte daily transaction record (same structure as TRAN-RECORD)</td></tr>
+                <tr><td>TRANSACT</td><td>VSAM KSDS</td><td>Online transaction file — key TRAN-ID, AIX on TRAN-CARD-NUM</td></tr>
+                <tr><td>DALYTRAN</td><td>VSAM / Sequential</td><td>Daily transaction input for batch posting</td></tr>
+                <tr><td>TRANTYPE</td><td>VSAM KSDS</td><td>Transaction type reference (key TRAN-TYPE PIC X(02))</td></tr>
+                <tr><td>TRANCATG</td><td>VSAM KSDS</td><td>Transaction category reference (key TRAN-TYPE-CD + TRAN-CAT-CD)</td></tr>
+            </table>
+            <h3>📋 Transaction Data Model</h3>
+            <pre>01  TRAN-RECORD.                   -- 350 bytes, VSAM KSDS
+    05  TRAN-ID             PIC X(16).   -- Primary key (unique)
+    05  TRAN-TYPE-CD        PIC X(02).   -- Must exist in TRANTYPE
+    05  TRAN-CAT-CD         PIC 9(04).   -- Must exist in TRANCATG
+    05  TRAN-SOURCE         PIC X(10).
+    05  TRAN-DESC           PIC X(100).
+    05  TRAN-AMT            PIC S9(09)V99.
+    05  TRAN-MERCHANT-ID    PIC 9(09).
+    05  TRAN-MERCHANT-NAME  PIC X(50).
+    05  TRAN-MERCHANT-CITY  PIC X(50).
+    05  TRAN-MERCHANT-ZIP   PIC X(10).
+    05  TRAN-CARD-NUM       PIC X(16).   -- Links to CARDFILE
+    05  TRAN-ORIG-TS        PIC X(26).   -- Original timestamp
+    05  TRAN-PROC-TS        PIC X(26).   -- Processing timestamp
+    05  FILLER              PIC X(20).</pre>
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>TRAN-TYPE-CD must match a valid record in TRANTYPE VSAM file</li>
+                <li>TRAN-CAT-CD must match a valid record in TRANCATG VSAM file (keyed by TRAN-TYPE-CD + TRAN-CAT-CD)</li>
+                <li>TRAN-ID must be unique within TRANSACT file (DUPREC response from WRITE = duplicate)</li>
+                <li>Batch POSTTRAN (CBTRN02C) updates account balances based on TRAN-AMT; invalid records go to DALYREJS</li>
+                <li>Online CT02 writes directly to TRANSACT; does NOT update account balance (batch does)</li>
+                <li>TRAN-CARD-NUM must correspond to a valid card in CARDFILE/XREFFILE</li>
+            </ul>
+        </section>
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> an account with transactions, <strong>when</strong> transaction list is requested, <strong>then</strong> transactions are displayed in chronological order with ID, amount, and description</li>
+                <li><strong>Given</strong> a valid transaction ID, <strong>when</strong> transaction view is requested, <strong>then</strong> all 14 transaction fields are displayed</li>
+                <li><strong>Given</strong> valid transaction data, <strong>when</strong> transaction add is submitted, <strong>then</strong> a new record is written to TRANSACT and a confirmation is displayed</li>
+                <li><strong>Given</strong> an invalid TRAN-TYPE-CD, <strong>when</strong> transaction add is submitted, <strong>then</strong> a validation error "Invalid transaction type" is displayed</li>
+                <li><strong>Given</strong> a duplicate TRAN-ID, <strong>when</strong> transaction add is submitted, <strong>then</strong> a "Duplicate transaction ID" error is displayed</li>
+            </ul>
+        </section>
+        <footer><p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p></footer>
+    </div>
+</body>
+</html>

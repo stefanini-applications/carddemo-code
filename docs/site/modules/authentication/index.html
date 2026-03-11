@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; background: #f5f6fa; color: #2d3748; }
+        .header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 32px 20px; }
+        .header h1 { margin: 0 0 6px; font-size: 1.8em; }
+        .header p { margin: 0; opacity: 0.85; }
+        .container { max-width: 960px; margin: 0 auto; padding: 30px 20px; }
+        section { background: white; border-radius: 10px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+        h2 { color: #1a365d; margin-top: 0; border-bottom: 2px solid #bee3f8; padding-bottom: 8px; }
+        h3 { color: #2b6cb0; }
+        pre { background: #2d3748; color: #e2e8f0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.88em; }
+        .badge { display: inline-block; font-size: 0.8em; padding: 3px 10px; border-radius: 20px; background: #ebf8ff; color: #2b6cb0; margin: 3px 3px 3px 0; }
+        ul li { margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #ebf8ff; text-align: left; padding: 10px 12px; color: #1a365d; }
+        td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; }
+        tr:last-child td { border-bottom: none; }
+        footer { text-align: center; color: #718096; font-size: 0.9em; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Authentication</h1>
+        <p>User Story Development Guide — CardDemo Mainframe Application</p>
+    </div>
+    <div class="container">
+
+        <section>
+            <h2>📋 Overview</h2>
+            <p><strong>Module ID:</strong> <code>authentication</code></p>
+            <p><strong>Purpose:</strong> User signon, credential validation against VSAM USRSEC file, and role-based routing to user main menu (CM00) or admin menu (CA00).</p>
+            <p><strong>Business Context:</strong> Entry point for all CardDemo users. Authenticates both regular users (card management) and admin users (user management). Uses RACF for environment-level security; USRSEC VSAM for application-level credentials.</p>
+            <p>
+                <span class="badge">CICS Transaction: CC00</span>
+                <span class="badge">Program: COSGN00C</span>
+                <span class="badge">BMS Map: COSGN00</span>
+                <span class="badge">Data: USRSEC VSAM KSDS</span>
+            </p>
+        </section>
+
+        <section>
+            <h2>🎯 User Story Development Guide</h2>
+
+            <h3>📝 US Templates</h3>
+            <ul>
+                <li>As a <strong>user</strong>, I want to log in with my user ID and password so that I can access the CardDemo application securely</li>
+                <li>As an <strong>admin</strong>, I want invalid login attempts to display a clear error message so that I know when I've entered incorrect credentials</li>
+                <li>As an <strong>admin user</strong>, I want to be routed to the admin menu after login so that I can manage users and system settings</li>
+                <li>As a <strong>regular user</strong>, I want to be routed to the main menu after login so that I can manage my credit cards and transactions</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>COSGN00C:</strong> Complete working signon implementation available as reference</li>
+                <li><strong>COCOM01Y:</strong> Common communication area copybook shared across all CICS programs — reuse for COMMAREA definitions</li>
+                <li><strong>CSUSR01Y:</strong> User record copybook with 80-byte layout — reuse for any user data access</li>
+                <li><strong>Pseudo-conversational pattern:</strong> Check <code>EIBCALEN = 0</code> for first invocation; return via <code>EXEC CICS RETURN TRANSID COMMAREA</code></li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Display signon screen, read user record from VSAM</li>
+                <li><strong>Medium (3-5 pts):</strong> Validate credentials, check user type, route to appropriate menu with COMMAREA</li>
+                <li><strong>Complex (5-8 pts):</strong> Add login attempt tracking, session timeout, or RACF integration changes</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🔧 Technical Foundation</h2>
+
+            <h3>🏗️ Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Type</th><th>Description</th></tr>
+                <tr><td>COSGN00C</td><td>CICS COBOL</td><td>Main signon program — validates credentials, routes user</td></tr>
+                <tr><td>COSGN00</td><td>BMS Map</td><td>Screen definition for signon display</td></tr>
+                <tr><td>CSUSR01Y</td><td>Copybook</td><td>80-byte user security record layout</td></tr>
+                <tr><td>COCOM01Y</td><td>Copybook</td><td>Common area structure for inter-program communication</td></tr>
+                <tr><td>USRSEC</td><td>VSAM KSDS</td><td>User security file — key = SEC-USR-ID (8 chars)</td></tr>
+            </table>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li><strong>USRSEC VSAM file:</strong> Must be open in CICS and initialized (DUSRSECJ batch job)</li>
+                <li><strong>CICS COMMAREA:</strong> Passes user context to downstream programs (COMEN01C, COADM01C)</li>
+                <li><strong>RACF:</strong> Environment-level security must be configured</li>
+            </ul>
+
+            <h3>📋 Data Model</h3>
+            <pre>01  SEC-USER-DATA.
+    05  SEC-USR-ID    PIC X(08).  -- VSAM key
+    05  SEC-USR-FNAME PIC X(20).
+    05  SEC-USR-LNAME PIC X(20).
+    05  SEC-USR-PWD   PIC X(08).
+    05  SEC-USR-TYPE  PIC X(01).  -- 'U'=user, 'A'=admin
+    05  SEC-USR-FILLER PIC X(23).</pre>
+
+            <h3>⚙️ Business Rules</h3>
+            <ul>
+                <li>User ID and password validated against USRSEC VSAM KSDS via EXEC CICS READ</li>
+                <li>Response code NOTFND or password mismatch → error message, re-display signon</li>
+                <li><code>SEC-USR-TYPE = 'U'</code> → route to CM00 (COMEN01C) with COMMAREA</li>
+                <li><code>SEC-USR-TYPE = 'A'</code> → route to CA00 (COADM01C) with COMMAREA</li>
+                <li>No account lockout in base version; each invalid attempt shows error immediately</li>
+                <li>Default test credentials: ADMIN001/PASSWORD (admin), USER0001/PASSWORD (regular user)</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>✅ Acceptance Criteria Patterns</h2>
+            <ul>
+                <li><strong>Given</strong> a valid user ID and password, <strong>when</strong> the user submits the signon screen, <strong>then</strong> they are routed to the appropriate menu (CM00 or CA00) based on their user type</li>
+                <li><strong>Given</strong> an invalid password, <strong>when</strong> the user submits signon, <strong>then</strong> an error message is displayed and the signon screen is re-presented</li>
+                <li><strong>Given</strong> a non-existent user ID, <strong>when</strong> the user submits signon, <strong>then</strong> an appropriate "user not found" error message is displayed</li>
+                <li><strong>Given</strong> blank user ID or password fields, <strong>when</strong> the user submits signon, <strong>then</strong> a validation error is displayed before any VSAM access is attempted</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="../../index.html">← Back to Index</a> | <em>Last updated: 2026-03-11</em></p>
+        </footer>
+    </div>
+</body>
+</html>
