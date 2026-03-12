@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Extractions - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#0f172a; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { padding: 24px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #047857); color:#fff; }
+        section { margin-top: 24px; }
+        ul { margin-left: 20px; }
+        .card { background:#fff; border-radius: 12px; padding:20px; box-shadow:0 15px 30px rgba(15,23,42,.1); }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        footer { margin-top: 32px; font-size: 0.9rem; color:#475569; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>⚡ Account Extractions</h1>
+            <p>Guide for stories driven by MQ request/response patterns that surface VSAM data asynchronously.</p>
+        </header>
+
+        <section class="overview card">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Reveal how MQ-driven request/response flows (`CDRD`/`CDRA`) fetch system dates and account snapshots from VSAM so distributed systems can stay synchronized.</p>
+            <p><strong>Business Context:</strong> Mirrors modern asynchronous APIs by using MQ queues (`CARDDEMO.REQUEST.QUEUE`, `CARDDEMO.RESPONSE.QUEUE`) together with COBOL responders.</p>
+        </section>
+
+        <section class="us-guide card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Time sync:</strong> As a scheduler, I want to call `CDRD` so downstream jobs know the mainframe system date without querying the clock manually.</li>
+                <li><strong>Account lookup:</strong> As an integration partner, I want `CDRA` to return account data via MQ so I can show customer details in a portal.</li>
+                <li><strong>MQ extension:</strong> As an engineer, I want to add a new field to the `ACCT-RESPONSE-MSG` so outbound services consume extra metadata.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>Message specs:</strong> `app/app-vsam-mq/README.md` documents `DATE-REQUEST-MSG`, `ACCT-REQUEST-MSG`, `DATE-RESPONSE-MSG`, `ACCT-RESPONSE-MSG` with fixed lengths.</li>
+                <li><strong>MQ definitions:</strong> Connection (`MQ01`) and queue (`CARDREQ`, `CARDRES`) definitions minimize configuration work for new request types.</li>
+                <li><strong>VSAM reference:</strong> Account data reuses copybook `CVACT01Y`, so extra fields map directly to existing structures.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Change the text on the `CDRD` map to explain how to use PF keys or display the queue name.</li>
+                <li><strong>Medium (3-5 pts):</strong> Add a new data field to the `ACCT-RESPONSE-MSG` and update the COBOL parser to reorder the CSV payload.</li>
+                <li><strong>Complex (5-8 pts):</strong> Introduce a new MQ requester that reuses the same queues but aggregates multiple `ACCT-REQUEST-MSG` responses.</li>
+            </ul>
+        </section>
+
+        <section class="technical card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COBOL programs:</strong> `CODATE01` (system date responder) and `COACCT01` (account detail responder).</li>
+                <li><strong>MQ definitions:</strong> `MQ01` (connection), `CARDREQ`/`CARDRES` (queues) defined under `app/app-vsam-mq/csd`.</li>
+                <li><strong>Message formats:</strong> `DATE-REQUEST-MSG`, `ACCT-REQUEST-MSG`, `DATE-RESPONSE-MSG`, `ACCT-RESPONSE-MSG` (fixed-length structures in the module README).</li>
+                <li><strong>VSAM dataset:</strong> `AWS.M2.CARDDEMO.ACCTDATA.PS` and `CARDXREF` provide the account data payload.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>IBM MQ plus CICS-MQ support (`DEFINE MQCONN`, `DEFINE MQQUEUE`).</li>
+                <li>VSAM account files and cross-reference datasets.</li>
+                <li>MQ listeners that reply on the same queues (any MQ client/partner can be wired to the request queue).</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>CDRD  (CODATE01) - Sends DATE-REQUEST-MSG to CARDDEMO.REQUEST.QUEUE and reads DATE-RESPONSE-MSG
+CDRA  (COACCT01) - Sends ACCT-REQUEST-MSG with account number and receives ACCT-RESPONSE-MSG containing 300-byte ACCOUNT-DATA
+CARDDEMO.REQUEST.QUEUE - Input queue for asynchronous requests
+CARDDEMO.RESPONSE.QUEUE - Output queue for replies
+</code></pre>
+        </section>
+
+        <section class="card">
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>CDRD must emit a DATE-RESPONSE-MSG with the current system date and the matching REQUEST-ID.</li>
+                <li>CDRA must populate `ACCOUNT-DATA` fields using `CVACT01Y` and correlate replies via the MQ `REQUEST-ID`/`RESPONSE-ID`.</li>
+                <li>MQ queues must be defined with the names in the README and respond within 5 seconds to avoid timeouts.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="../../system-overview.md">← Back to System Overview</a></p>
+            <p><em>Last updated: 2026-03-12</em></p>
+        </footer>
+    </div>
+</body>
+</html>

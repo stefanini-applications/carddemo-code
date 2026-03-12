@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorizations - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#0f172a; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { padding: 24px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color:#fff; }
+        section { margin-top: 24px; }
+        ul { margin-left: 20px; }
+        .card { background:#fff; border-radius: 12px; padding:20px; box-shadow:0 15px 30px rgba(15,23,42,.1); }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        footer { margin-top: 32px; font-size: 0.9rem; color:#475569; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚨 Authorizations</h1>
+            <p>Guide for crafting stories around MQ-triggered authorizations, IMS history, and fraud analytics.</p>
+        </header>
+
+        <section class="overview card">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Deliver the MQ → CICS → IMS/DB2 lifecycle that simulates credit card authorization requests, displays pending/ detail screens, and marks fraudulent activity.</p>
+            <p><strong>Business Context:</strong> Mirrors modern authorization flows so teams understand how to trace requests through MQ queues, IMS segments, and DB2 fraud tables when defining product stories.</p>
+        </section>
+
+        <section class="us-guide card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Monitoring:</strong> As a fraud analyst, I want to view `CPVS` so I can flag pending authorizations before settlement.</li>
+                <li><strong>Investigation:</strong> As an integration engineer, I want to send MQ requests to `CP00` with the documented CSV payload and inspect the response.</li>
+                <li><strong>Maintenance:</strong> As an ops lead, I want to run `CBPAUP0J` to purge expirations and adjust credit availability.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>MQ format reuse:</strong> The request/response CSV order is documented and the COBOL copybooks (`CCPAURQY`, `CCPAURLY`) already parse it.</li>
+                <li><strong>IMS &amp; DB2 templates:</strong> DBD/PSB (`DBPAUTP0`, `PSBPAUTL/B`) definitions plus DB2 schema `AUTHFRDS` exist, so new segments follow the same structure.</li>
+                <li><strong>Event queue wiring:</strong> MQ connections (`MQ01`, `CARDREQ`, `CARDRES`) are pre-defined in `app/app-authorization-ims-db2-mq/csd`.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Add a new display field to the `COPAU00` map or adjust the PF-key prompt.</li>
+                <li><strong>Medium (3-5 pts):</strong> Tweak the CSV parser in `COPAUA0C` to accept a new merchant field and ensure the response still includes the original columns.</li>
+                <li><strong>Complex (5-8 pts):</strong> Extend the two-phase commit across IMS and DB2 so that a fraud flag in `AUTHFRDS` only persists if both DB2 and IMS updates succeed.</li>
+            </ul>
+        </section>
+
+        <section class="technical card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COBOL programs:</strong> `COPAUA0C` (MQ trigger), `COPAUS0C`, `COPAUS1C`, and `COPAUS2C` (fraud flag updates).</li>
+                <li><strong>Copybooks:</strong> `CIPAUSMY`, `CIPAUDTY`, `CCPAURQY`, `CCPAURLY` provide IMS segments and MQ payload parsing.</li>
+                <li><strong>Persisted stores:</strong> IMS HIDAM `DBPAUTP0` with segments `PAUTSUM0`/`PAUTDTL1` and DB2 table `AUTHFRDS`.</li>
+                <li><strong>MQ queues:</strong> `AWS.M2.CARDDEMO.PAUTH.REQUEST/REPLY` (requests, replies).</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>IMS HIDAM (DBDs/PSBs defined under `app/app-authorization-ims-db2-mq/ims`).</li>
+                <li>DB2 schema + plans (`app/app-authorization-ims-db2-mq/ddl` and `csd` entries).</li>
+                <li>MQ connection definitions (`app/app-authorization-ims-db2-mq/csd` and `app/app-authorization-ims-db2-mq/mq`).</li>
+                <li>VSAM datasets for accounts/customers referenced by the authorization programs.</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>CP00  (COPAUA0C) - MQ trigger that reads AWS.M2.CARDDEMO.PAUTH.REQUEST and replies to AWS.M2.CARDDEMO.PAUTH.REPLY
+CPVS  (COPAUS0C) - Summary screen over IMS PAUTSUM0 segments (PF7/PF8 paging)
+CPVD  (COPAUS1C) - Detail screen with PF5 fraud marking that calls COPAUS2C
+CBPAUP0J - Batch purge job (CBPAUP0C) that expires authorizations and recalculates credit
+</code></pre>
+        </section>
+
+        <section class="card">
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>MQ requests must parse the documented CSV payload, correlate with `REQUEST-ID`, and write a reply containing `AUTH-RESP-CODE` and `APPROVED-AMT`.</li>
+                <li>The authorization detail screen must allow PF5 to toggle `AUTH_FRAUD='Y'` in DB2 and mark the corresponding IMS segment.</li>
+                <li>`CBPAUP0J` must delete expired entries and ensure VSAM/IMS resources remain consistent.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="../../system-overview.md">← Back to System Overview</a></p>
+            <p><em>Last updated: 2026-03-12</em></p>
+        </footer>
+    </div>
+</body>
+</html>

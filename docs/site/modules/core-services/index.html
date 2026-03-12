@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Services - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#0f172a; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { padding: 24px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; }
+        section { margin-top: 24px; }
+        h2 { margin-bottom: 12px; }
+        ul { margin-left: 20px; }
+        .card { background:#fff; border-radius: 12px; padding:20px; box-shadow:0 15px 30px rgba(15,23,42,.1); }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        footer { margin-top: 32px; font-size: 0.9rem; color:#475569; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📦 Core Services</h1>
+            <p>Guide for developing user stories grounded on the base CardDemo experience.</p>
+        </header>
+
+        <section class="overview card">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Ship the core credit card lifecycle: sign-on, account/card maintenance, transactions, billing, and statement generation backed by VSAM, COBOL, BMS, and JCL.</p>
+            <p><strong>Business Context:</strong> Provides the mainframe experience that fronts end-users and admin staff when assessing modernization choices; all modernization stories should keep this base intact.</p>
+        </section>
+
+        <section class="us-guide card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Account Lifecycle:</strong> As a cardholder, I want to see balances and credit limits on the `CAVW` screen so I can make payment decisions quickly.</li>
+                <li><strong>Transaction Review:</strong> As an operations analyst, I want to page through `CT00` so I can audit transactions without leaving the transaction list.</li>
+                <li><strong>Batch Orchestration:</strong> As a scheduler, I want `POSTTRAN`/`CREASTMT` to run successfully so nightly reconciliation completes before business hours.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>Copybook reuse:</strong> `CVACT01Y`, `CVCUS01Y`, and `CVTRA06Y` define the account, customer, and transaction payloads that any new screen can reuse.</li>
+                <li><strong>BMS templates:</strong> `COSGN00`, `COMEN01`, and other mapsets show how to structure prompts, message areas, and PF keys without building everything from scratch.</li>
+                <li><strong>JCL skeletons:</strong> Jobs like `POSTTRAN`, `ACCTFILE`, and `CREASTMT` already set up COPYLIB and datasets, so new steps can piggyback on their DD statements.</li>
+                <li><strong>Dataset awareness:</strong> VSAM files (`AWS.M2.CARDDEMO.ACCTDATA.PS`, `.DALYTRAN.PS`, `.CARDXREF.VSAM.KSDS`) are documented and reused across flows.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Add a new field or PF-key to an existing BMS map (e.g., display a helper text on `COSGN00`).</li>
+                <li><strong>Medium (3-5 pts):</strong> Enhance `COACTVWC` validation, add code to compute a derived balance, or wrap a new status message in `ERRMSG`.</li>
+                <li><strong>Complex (5-8 pts):</strong> Introduce new batch sequencing (e.g., add a step to `POSTTRAN` that writes to `TCATBALF` and ensure nightly dependencies remain stable).</li>
+            </ul>
+        </section>
+
+        <section class="technical card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>COBOL programs:</strong> `COACTVWC`, `COACTUPC`, `COCRDLI`, `COCRDSLC`, `COTRN00C`, `CORPT00C` handle account/card/transaction logic.</li>
+                <li><strong>BMS maps:</strong> `COSGN00`, `COMEN01`, `COTRN00`, `COACTVW`, `CU00` define each screen layout and message area.</li>
+                <li><strong>Copybooks:</strong> `CVACT01Y`, `CVCUS01Y`, and `CVTRA06Y` guarantee consistent offsets across VSAM/COBOL reads.</li>
+                <li><strong>Batch jobs:</strong> `POSTTRAN`, `CREASTMT`, `ACCTFILE`, `TRANIDX`, `TRANEXTR`, `TRANBKP` refresh VSAM data.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>VSAM datasets (`ACCTDATA`, `CARDDATA`, `DALYTRAN`, `CARDXREF`, etc.).</li>
+                <li>CICS resources defined via `app/csd/*.csd` with transactions like `CC00`, `CA00`, `CT00`.</li>
+                <li>JCL jobs referencing `AWS.M2.CARDDEMO.LOADLIB` and spool datasets.</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>CC00  (COSGN00)   - Sign-on page (User ID/Password fields)
+CM00  (COMEN01)   - Main menu routing
+CAVW  (COACTVWC)  - Account view and edit
+CT00  (COTRN00C)  - Transaction listing and paging
+CB00  (COBIL00C)  - Bill payment UI (writes DALYTRAN)
+POSTTRAN (CBTRN02C) - Batch posting/daily transaction processing
+CREASTMT (CBSTM03A/B) - Statement generation (input from DALYTRAN)
+</code></pre>
+        </section>
+
+        <section class="card">
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>Account view must show `ACCT-CURR-BAL`, `ACCT-CREDIT-LIMIT`, and respect `ACCT-ACTIVE-STATUS` (via `WS-INPUT-FLAG`).</li>
+                <li>Transaction list must page with PF7/PF8 and call the correct `COTRN00` mapset.</li>
+                <li>Batch flows (`POSTTRAN`, `CREASTMT`) must complete with SYSOUT return codes of zero and refresh `TCATBALF`/`DALYTRAN`.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="../../system-overview.md">← Back to System Overview</a></p>
+            <p><em>Last updated: 2026-03-12</em></p>
+        </footer>
+    </div>
+</body>
+</html>

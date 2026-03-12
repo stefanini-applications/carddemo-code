@@ -1,0 +1,20 @@
+# Module File Map
+<!-- MODULE_FILE_MAP_START -->
+app/asm/** = core-services
+app/bms/** = core-services
+app/cbl/** = core-services
+app/catlg/** = core-services
+app/cpy/** = core-services
+app/cpy-bms/** = core-services
+app/csd/** = core-services
+app/ctl/** = core-services
+app/data/** = core-services
+app/jcl/** = core-services
+app/maclib/** = core-services
+app/proc/** = core-services
+app/scheduler/** = core-services
+samples/** = core-services
+app/app-authorization-ims-db2-mq/** = authorizations
+app/app-transaction-type-db2/** = transaction-types
+app/app-vsam-mq/** = account-extractions
+<!-- MODULE_FILE_MAP_END -->
