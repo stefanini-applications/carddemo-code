@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Types - User Story Development Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#0f172a; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .header { padding: 24px; border-radius: 12px; background: linear-gradient(135deg, #fb923c, #f97316); color:#fff; }
+        section { margin-top: 24px; }
+        ul { margin-left: 20px; }
+        .card { background:#fff; border-radius: 12px; padding:20px; box-shadow:0 15px 30px rgba(15,23,42,.1); }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:8px; overflow:auto; }
+        footer { margin-top: 32px; font-size: 0.9rem; color:#475569; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🧾 Transaction Types</h1>
+            <p>Guide for stories that expand the DB2-backed reference data and keep VSAM in sync.</p>
+        </header>
+
+        <section class="overview card">
+            <h2>📋 Overview</h2>
+            <p><strong>Purpose:</strong> Extend the admin menu with CRUD operations over transaction type metadata, backed by DB2 tables and mirrored into VSAM so runtime processing stays performant.</p>
+            <p><strong>Business Context:</strong> Allows admins to edit transaction descriptions, categories, and metadata in a relational store while still feeding VSAM-based workflows.</p>
+        </section>
+
+        <section class="us-guide card">
+            <h2>🎯 User Story Development Guide</h2>
+            <h3>📝 Module-Specific US Templates</h3>
+            <ul>
+                <li><strong>Metadata edit:</strong> As an admin, I want to add a new transaction type via `CTTU` so new merchant categories appear in reports.</li>
+                <li><strong>Sync flow:</strong> As a data steward, I want `TRANEXTR` to export DB2 rows to VSAM nightly so transaction processing uses fresh data.</li>
+                <li><strong>Bulk update:</strong> As a release engineer, I want `MNTTRDB2` to update descriptions in batch when regulatory text changes.</li>
+            </ul>
+
+            <h3>⚡ Development Acceleration Factors</h3>
+            <ul>
+                <li><strong>SQL declarations:</strong> The `app/app-transaction-type-db2/dcl` files already declare host variables and SQLCA handling, so new statements follow the same scaffolding.</li>
+                <li><strong>DB2 schema:</strong> `CREADB21` establishes `TRANSACTION_TYPE` and `TRANSACTION_TYPE_CATEGORY`, so follow their column definitions when extending metadata.</li>
+                <li><strong>Extraction job:</strong> `TRANEXTR` uses `DSNTIAUL` to create VSAM-friendly files, so new fields just need updates in the extract routine and target copybook.</li>
+            </ul>
+
+            <h3>📊 Complexity Guidelines</h3>
+            <ul>
+                <li><strong>Simple (1-2 pts):</strong> Add a new description field to `CTTU` and update the associated BMS map.</li>
+                <li><strong>Medium (3-5 pts):</strong> Introduce a new `TRANSACTION_TYPE_CATEGORY` link, update `CTLI` to expose it, and add SQL `JOIN`s with SQLCA handling.</li>
+                <li><strong>Complex (5-8 pts):</strong> Extend `TRANEXTR` and downstream VSAM readers so that newly captured metadata becomes available to `POSTTRAN` and reporting.</li>
+            </ul>
+        </section>
+
+        <section class="technical card">
+            <h2>🔧 Technical Foundation</h2>
+            <h3>🏗️ Key Components</h3>
+            <ul>
+                <li><strong>CICS transactions:</strong> `CTTU` (`COTRTUP`) for add/edit and `CTLI` (`COTRTLI`) for list/update/delete.</li>
+                <li><strong>DB2 tables:</strong> `TRANSACTION_TYPE` (code + description) and `TRANSACTION_TYPE_CATEGORY` (category metadata with foreign key to type).</li>
+                <li><strong>JCL jobs:</strong> `CREADB21` seeds tables, `TRANEXTR` exports data, `MNTTRDB2` runs bulk updates (`COBTUPDT`).</li>
+                <li><strong>Copybooks:</strong> SQL host variables and list structures live under `app/app-transaction-type-db2/cpy` and `dcl`.</li>
+            </ul>
+
+            <h3>🔗 Dependencies</h3>
+            <ul>
+                <li>DB2 subsystem with plan `DB201PLN` registered in `app/app-transaction-type-db2/csd`.</li>
+                <li>VSAM layers (`TRANSACT.VSAM`) that consume the extracted metadata.</li>
+                <li>Admin menu option numbers (5/6) enabled when this module is installed.</li>
+            </ul>
+
+            <h3>🌐 Public Interfaces</h3>
+            <pre><code>CTTU  (COTRTUP) - Add/edit transaction type (static SQL with SQLCA)
+CTLI  (COTRTLI) - List/update/delete with forward/backward cursors
+CREADB21 - Batch job to create DB2 tables
+TRANEXTR - Extract DB2 rows to VSAM files for runtime use
+MNTTRDB2 - Batch maintenance job for large updates
+</code></pre>
+        </section>
+
+        <section class="card">
+            <h2>✅ Acceptance Criteria Examples</h2>
+            <ul>
+                <li>Inserts via `CTTU` must write to `TRANSACTION_TYPE` and commit if SQLCA shows success.</li>
+                <li>`CTLI` must refuse deletes with dependent rows and display the reason via the SQLCA message area.</li>
+                <li>`TRANEXTR` must produce VSAM files used by `POSTTRAN`, and the job should succeed with return code zero.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="../../system-overview.md">← Back to System Overview</a></p>
+            <p><em>Last updated: 2026-03-12</em></p>
+        </footer>
+    </div>
+</body>
+</html>
